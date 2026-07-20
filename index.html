@@ -697,66 +697,31 @@ function toast(msg){
   toastTimer = setTimeout(()=> t.classList.remove("show"), 1400);
 }
 
-/* ---------- EAT ANIMATION ---------- */
+/* ---------- EAT ANIMATION (food only, pops above the checkbox) ---------- */
 function playEat(rowEl, item, st){
   if(reduceMotion){ return; }
   const layer = document.getElementById("fxLayer");
   const box = rowEl.querySelector(".checkbox");
   const r = box.getBoundingClientRect();
+  const cx = r.left + r.width/2;   // центр кружка
   const cy = r.top + r.height/2;
-  eatSide++;
-  const side = eatSide % 2 === 0 ? "left" : "right";
-  const foodX = side==="left" ? r.left - 6 : r.right + 6;
-  const dir = side==="left" ? -1 : 1;
 
-  // food emoji
   const food = document.createElement("div");
   food.className = "fx-item";
   food.textContent = item.f;
-  food.style.cssText = `left:${foodX}px; top:${cy}px; font-size:26px; transform:translate(-50%,-50%);`;
+  food.style.cssText = `left:${cx}px; top:${cy}px; font-size:24px; transform:translate(-50%,-50%) scale(0);`;
   layer.appendChild(food);
 
-  // animal enters from the side, off the food
-  const animal = document.createElement("div");
-  animal.className = "fx-item";
-  animal.textContent = st.animal || "🐰";
-  const startX = foodX + dir*64;
-  animal.style.cssText = `left:${startX}px; top:${cy}px; font-size:34px; transform:translate(-50%,-50%) scaleX(${dir}) scale(.4); opacity:0;`;
-  layer.appendChild(animal);
+  const a = food.animate([
+    {transform:"translate(-50%,-50%) scale(0) rotate(-18deg)", opacity:0, offset:0},
+    {transform:"translate(-50%,-150%) scale(1.35) rotate(8deg)", opacity:1, offset:0.42},
+    {transform:"translate(-50%,-170%) scale(1) rotate(-5deg)", opacity:1, offset:0.62},
+    {transform:"translate(-50%,-190%) scale(0) rotate(14deg)", opacity:0, offset:1}
+  ], {duration:850, easing:"cubic-bezier(.34,1.5,.6,1)", fill:"forwards"});
+  a.onfinish = ()=> food.remove();
 
-  const ease = "cubic-bezier(.34,1.5,.6,1)";
-  // approach
-  animal.animate([
-    {transform:`translate(-50%,-50%) scaleX(${dir}) scale(.4)`, opacity:0},
-    {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1)`, opacity:1}
-  ], {duration:260, easing:ease, fill:"forwards"});
-
-  // chomp + retreat
-  setTimeout(()=>{
-    animal.animate([
-      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`},
-      {transform:`translate(calc(-50% + ${dir*40}px),-52%) scaleX(${dir}) scale(1.18) rotate(${dir*6}deg)`},
-      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`},
-      {transform:`translate(calc(-50% + ${dir*40}px),-52%) scaleX(${dir}) scale(1.15) rotate(${dir*-5}deg)`},
-      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`}
-    ], {duration:420, easing:"ease-in-out"});
-    // food gets eaten
-    food.animate([
-      {transform:"translate(-50%,-50%) scale(1) rotate(0deg)", opacity:1},
-      {transform:"translate(-50%,-50%) scale(.55) rotate(-12deg)", opacity:1, offset:.5},
-      {transform:"translate(-50%,-55%) scale(0) rotate(18deg)", opacity:0}
-    ], {duration:400, easing:"ease-in", fill:"forwards"});
-    spawnCrumbs(layer, foodX, cy);
-  }, 250);
-
-  // retreat + cleanup
-  setTimeout(()=>{
-    const back = animal.animate([
-      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1)`, opacity:1},
-      {transform:`translate(-50%,-50%) scaleX(${dir}) scale(.4)`, opacity:0}
-    ], {duration:300, easing:"ease-in", fill:"forwards"});
-    back.onfinish = ()=>{ animal.remove(); food.remove(); };
-  }, 760);
+  // крошки вылетают в момент «исчезновения» продукта, над кружком
+  setTimeout(()=> spawnCrumbs(layer, cx, cy - r.height*1.4), 360);
 }
 function spawnCrumbs(layer, x, y){
   const colors = ["#E2793D","#6FA25C","#E8AC2E","#E0708A","#3E8FC4"];
