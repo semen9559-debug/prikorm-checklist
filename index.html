@@ -130,6 +130,14 @@
   }
   .search-clear.show{ display:flex; }
 
+  .chips{ display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+  .chip{
+    border:1px solid #EAD9B8; background:var(--paper); color:var(--ink-soft);
+    border-radius:99px; padding:6px 15px; font-family:'Nunito',sans-serif;
+    font-weight:800; font-size:12.5px; cursor:pointer; transition:all .2s;
+  }
+  .chip.active{ background:var(--sage); border-color:var(--sage); color:#fff; box-shadow:0 2px 8px rgba(111,162,92,.3); }
+
   /* ---------- LAYOUT ---------- */
   .layout{
     max-width:940px;
@@ -202,6 +210,15 @@
   }
   .pcard-name{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; margin:0 0 8px; }
   .pcard-tip{ font-size:14px; line-height:1.55; color:#4C463C; font-weight:600; margin:0; }
+  .pcard-date{ margin-top:11px; font-size:12.5px; font-weight:800; color:var(--accent,#777); display:flex; gap:6px; align-items:center; }
+  .pcard-react{ margin-top:15px; }
+  .pcard-react-title{ font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:8px; }
+  .react-btns{ display:flex; gap:8px; }
+  .react-btn{ flex:1; border:1.5px solid #EADFC6; background:var(--paper); border-radius:13px; padding:9px 4px; font-size:22px; cursor:pointer; line-height:1; transition:transform .15s, border-color .2s, background .2s; }
+  .react-btn:hover{ transform:translateY(-2px); }
+  .react-btn.active{ border-color:var(--accent,#999); background:var(--accent-l,#eee); transform:translateY(-2px); }
+  .react-btn small{ display:block; font-size:9.5px; font-weight:800; color:var(--ink-soft); margin-top:4px; }
+  .row-react{ font-size:15px; flex-shrink:0; width:19px; text-align:center; }
 
   /* ---------- STAGES ---------- */
   .stage{
@@ -229,6 +246,9 @@
   .stage-progress-text{ font-size:12px; color:var(--ink-soft); margin-top:2px; font-weight:700; }
   .stage-chevron{ font-size:13px; color:var(--ink-soft); transition: transform .3s ease; flex-shrink:0; }
   .stage.collapsed .stage-chevron{ transform: rotate(-90deg); }
+  .stage-medal{ font-size:18px; margin-left:2px; display:none; flex-shrink:0; }
+  .stage.done .stage-medal{ display:inline-block; animation: medalPop .45s cubic-bezier(.34,1.6,.6,1); }
+  @keyframes medalPop{ 0%{transform:scale(0) rotate(-40deg);} 60%{transform:scale(1.3) rotate(8deg);} 100%{transform:scale(1) rotate(0);} }
 
   .stage-bar-track{ height:6px; background:#F1E4CE; margin:0 16px; border-radius:99px; overflow:hidden; }
   .stage-bar-fill{ height:100%; border-radius:99px; width:0%; background: var(--accent, #999); transition:width .5s cubic-bezier(.34,1.4,.6,1); }
@@ -388,6 +408,11 @@
     <span class="mag">🔍</span>
     <input id="search" type="search" placeholder="Поиск продукта…" aria-label="Поиск продукта" autocomplete="off">
     <button class="search-clear" id="searchClear" aria-label="Очистить поиск">✕</button>
+  </div>
+  <div class="chips" id="chips">
+    <button class="chip active" data-f="all" type="button">Все</button>
+    <button class="chip" data-f="todo" type="button">Невведённые</button>
+    <button class="chip" data-f="allergens" type="button">Аллергены</button>
   </div>
 </div>
 
@@ -580,19 +605,29 @@ const PRAISES = [
 ];
 
 const STORAGE_KEY = "prikorm-checked-v2"; // совместимо со старой версией
-let state = {};
+const R_KEY = "prikorm-reactions-v1";
+const D_KEY = "prikorm-dates-v1";
+let state = {}, reactions = {}, dates = {};
 let eatSide = 0;
+let filterMode = "all";
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isDesktop = () => window.matchMedia("(min-width:981px)").matches;
 
+const REMOJI = {love:"😋", meh:"😐", no:"🤢"};
+const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+function fmtDate(iso){ const d = new Date(iso); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
+
 /* ---------- STATE ---------- */
 function loadState(){
-  try{ const v = localStorage.getItem(STORAGE_KEY); if(v) state = JSON.parse(v); }
-  catch(e){ state = {}; }
+  try{ const v = localStorage.getItem(STORAGE_KEY); if(v) state = JSON.parse(v); }catch(e){ state = {}; }
+  try{ const r = localStorage.getItem(R_KEY); if(r) reactions = JSON.parse(r); }catch(e){ reactions = {}; }
+  try{ const d = localStorage.getItem(D_KEY); if(d) dates = JSON.parse(d); }catch(e){ dates = {}; }
 }
 function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
+function saveReactions(){ try{ localStorage.setItem(R_KEY, JSON.stringify(reactions)); }catch(e){} }
+function saveDates(){ try{ localStorage.setItem(D_KEY, JSON.stringify(dates)); }catch(e){} }
 function totalCounts(){
   let total=0, checked=0;
   STAGES.forEach(st=> st.items.forEach((_,i)=>{ total++; if(state[st.id+"-"+i]) checked++; }));
@@ -646,27 +681,57 @@ function guideDefaultHTML(){
     <div class="guide-disclaimer"><span>ℹ️</span><span>Это ориентир, а не медицинская инструкция. Схему прикорма согласуйте с педиатром.</span></div>
     <div class="guide-hint">👆 Наведите на продукт, чтобы увидеть совет</div>`;
 }
-function productCardHTML(st, item){
+function productCardHTML(st, item, key){
+  const dateHtml = (key && dates[key]) ? `<div class="pcard-date">📅 Введён: ${fmtDate(dates[key])}</div>` : "";
+  const cur = (key && reactions[key]) || "";
+  const rb = (r,em,lbl)=>`<button class="react-btn ${cur===r?'active':''}" data-r="${r}" type="button">${em}<small>${lbl}</small></button>`;
   return `
     <div class="pcard theme-${st.theme}">
       <div class="pcard-hero"><span class="pcard-animal">${st.animal||"🐰"}</span><span class="pcard-food">${item.f}</span></div>
       <span class="pcard-badge">${st.age}</span>
       <div class="pcard-name">${item.n.replace(/\s*\(.*?\)\s*/g," ").trim()}</div>
       <p class="pcard-tip">${item.t}</p>
+      ${dateHtml}
+      <div class="pcard-react">
+        <div class="pcard-react-title">Как малышу продукт?</div>
+        <div class="react-btns">
+          ${rb("love","😋","Нравится")}
+          ${rb("meh","😐","Нейтрально")}
+          ${rb("no","🤢","Не пошло")}
+        </div>
+      </div>
       <div class="guide-disclaimer"><span>ℹ️</span><span>Ориентир. Вводите с учётом рекомендаций вашего педиатра.</span></div>
     </div>`;
+}
+function renderCard(container, st, item, key){
+  container.innerHTML = productCardHTML(st, item, key);
+  container.querySelectorAll(".react-btn").forEach(b=>{
+    b.addEventListener("click", e=>{
+      e.stopPropagation();
+      const r = b.dataset.r;
+      if(reactions[key]===r) delete reactions[key]; else reactions[key] = r;
+      saveReactions();
+      renderCard(container, st, item, key);
+      updateRowReact(key);
+      if(navigator.vibrate) navigator.vibrate(12);
+    });
+  });
+}
+function updateRowReact(key){
+  const el = document.querySelector(`.item[data-key="${CSS.escape(key)}"] .row-react`);
+  if(el) el.textContent = reactions[key] ? REMOJI[reactions[key]] : "";
 }
 let guideDefaultTimer = null;
 function updateGuideDefault(){
   const gc = document.getElementById("guideCard");
   if(gc && !gc.dataset.locked) gc.innerHTML = guideDefaultHTML();
 }
-function showProductInGuide(st, item){
+function showProductInGuide(st, item, key){
   if(!isDesktop()) return;
   clearTimeout(guideDefaultTimer);
   const gc = document.getElementById("guideCard");
   gc.dataset.locked = "1";
-  gc.innerHTML = productCardHTML(st, item);
+  renderCard(gc, st, item, key);
 }
 function clearGuideSoon(){
   clearTimeout(guideDefaultTimer);
@@ -678,8 +743,8 @@ function clearGuideSoon(){
 }
 
 /* ---------- SHEET (mobile) ---------- */
-function openSheet(st, item){
-  document.getElementById("sheetContent").innerHTML = productCardHTML(st, item);
+function openSheet(st, item, key){
+  renderCard(document.getElementById("sheetContent"), st, item, key);
   document.getElementById("sheet").classList.add("open");
   document.getElementById("sheetBackdrop").classList.add("open");
 }
@@ -788,6 +853,7 @@ function render(){
         <p class="stage-title">${st.age}</p>
         <div class="stage-progress-text">0 из ${st.items.length}</div>
       </div>
+      <span class="stage-medal" title="Этап пройден">🏅</span>
       <div class="stage-chevron">▾</div>`;
     const toggle = ()=>{
       const c = stEl.classList.toggle("collapsed");
@@ -820,9 +886,11 @@ function render(){
       row.setAttribute("role","checkbox");
       row.setAttribute("tabindex","0");
       row.setAttribute("aria-label", item.n);
+      row.dataset.key = key;
       row.innerHTML = `
         <div class="checkbox">✓</div>
         <div class="item-label">${item.n}</div>
+        <span class="row-react"></span>
         <button class="info-btn" aria-label="Совет: ${item.n}" tabindex="-1">i</button>`;
       const box = row.querySelector(".checkbox");
       const label = row.querySelector(".item-label");
@@ -835,6 +903,7 @@ function render(){
         row.setAttribute("aria-checked", String(on));
       };
       applyState();
+      updateRowReact(key);
 
       const wasStageDone = ()=> st.items.every((_,j)=> state[st.id+"-"+j]);
 
@@ -846,6 +915,7 @@ function render(){
         updateHero();
         saveState();
         if(turningOn){
+          if(!dates[key]){ dates[key] = new Date().toISOString(); saveDates(); }
           playEat(row, item, st);
           toast(PRAISES[Math.floor(Math.random()*PRAISES.length)]);
           if(navigator.vibrate) navigator.vibrate(18);
@@ -854,6 +924,8 @@ function render(){
             const {total,checked}=totalCounts();
             if(total===checked){ setTimeout(()=>confetti(true),150); toast("Все продукты введены! 🎉🏆"); }
           }
+        } else {
+          delete dates[key]; saveDates();
         }
       };
 
@@ -863,16 +935,16 @@ function render(){
       });
       row.addEventListener("keydown", e=>{
         if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleItem(); }
-        if(e.key==="i"){ isDesktop()? showProductInGuide(st,item) : openSheet(st,item); }
+        if(e.key==="i"){ isDesktop()? showProductInGuide(st,item,key) : openSheet(st,item,key); }
       });
       // desktop hover → guide panel
-      row.addEventListener("mouseenter", ()=> showProductInGuide(st, item));
+      row.addEventListener("mouseenter", ()=> showProductInGuide(st, item, key));
       row.addEventListener("mouseleave", clearGuideSoon);
       // info button → mobile sheet (and desktop pin)
       info.addEventListener("click", e=>{
         e.stopPropagation();
-        if(isDesktop()) showProductInGuide(st, item);
-        else openSheet(st, item);
+        if(isDesktop()) showProductInGuide(st, item, key);
+        else openSheet(st, item, key);
       });
 
       body.appendChild(row);
@@ -924,51 +996,87 @@ function render(){
   });
   main.appendChild(resetBtn);
 
+  // свернуть все категории по умолчанию, раскрыть первую незавершённую (текущую)
+  const stageEls = [...document.querySelectorAll("#main .stage")];
+  stageEls.forEach(el=>{
+    el.classList.add("collapsed");
+    const h = el.querySelector(".stage-head");
+    if(h) h.setAttribute("aria-expanded","false");
+  });
+  const firstOpen = STAGES.find(st=> !st.items.every((_,j)=> state[st.id+"-"+j]));
+  const openEl = firstOpen ? document.querySelector(`#main .stage[data-stage="${firstOpen.id}"]`) : stageEls[0];
+  if(openEl){
+    openEl.classList.remove("collapsed");
+    const h = openEl.querySelector(".stage-head");
+    if(h) h.setAttribute("aria-expanded","true");
+  }
+
   updateHero();
   document.getElementById("guideCard").innerHTML = guideDefaultHTML();
 }
 
-/* ---------- SEARCH ---------- */
-function runSearch(q){
-  q = q.trim().toLowerCase();
-  const clearBtn = document.getElementById("searchClear");
-  clearBtn.classList.toggle("show", q.length>0);
+/* ---------- SEARCH + FILTERS ---------- */
+function applyFilters(){
+  const q = (document.getElementById("search").value||"").trim().toLowerCase();
+  document.getElementById("searchClear").classList.toggle("show", q.length>0);
+  const active = q.length>0 || filterMode!=="all";
   let anyVisible = false;
-  document.querySelectorAll(".stage").forEach(stEl=>{
-    if(stEl.dataset.stage==="w1"){
-      // warn section: filter list items
+
+  document.querySelectorAll("#main .stage").forEach(stEl=>{
+    const sid = stEl.dataset.stage;
+    const isWarn = sid==="w1";
+    const isAllergen = sid==="s8";
+
+    if(filterMode==="allergens" && !isAllergen){ stEl.classList.add("hide"); return; }
+
+    if(isWarn){
+      if(filterMode!=="all"){ stEl.classList.add("hide"); return; }
       let vis=0;
       stEl.querySelectorAll(".warn-list li").forEach(li=>{
         const m = !q || li.dataset.name.includes(q);
         li.style.display = m? "flex":"none"; if(m) vis++;
       });
-      const show = !q || vis>0;
+      const show = vis>0;
       stEl.classList.toggle("hide", !show);
-      if(show) anyVisible=true;
-      if(q) stEl.classList.remove("collapsed");
+      if(show){ anyVisible=true; if(active) stEl.classList.remove("collapsed"); }
       return;
     }
+
     let vis=0;
     stEl.querySelectorAll(".item").forEach(row=>{
-      const m = !q || row.dataset.name.includes(q);
+      const key = row.dataset.key;
+      let m = (!q || row.dataset.name.includes(q));
+      if(filterMode==="todo" && state[key]) m=false;
       row.classList.toggle("hidden", !m); if(m) vis++;
     });
-    const show = !q || vis>0;
+    const show = vis>0;
     stEl.classList.toggle("hide", !show);
-    if(show) anyVisible=true;
-    if(q){ stEl.classList.remove("collapsed"); }
+    if(show){ anyVisible=true; if(active) stEl.classList.remove("collapsed"); }
   });
-  document.getElementById("noResults").classList.toggle("show", q.length>0 && !anyVisible);
+
+  document.getElementById("noResults").classList.toggle("show", active && !anyVisible);
 }
 
 /* ---------- INIT ---------- */
 loadState();
 render();
 
-document.getElementById("search").addEventListener("input", e=> runSearch(e.target.value));
+document.getElementById("search").addEventListener("input", applyFilters);
 document.getElementById("searchClear").addEventListener("click", ()=>{
-  const s=document.getElementById("search"); s.value=""; runSearch(""); s.focus();
+  const s=document.getElementById("search"); s.value=""; applyFilters(); s.focus();
 });
+document.querySelectorAll("#chips .chip").forEach(c=>{
+  c.addEventListener("click", ()=>{
+    document.querySelectorAll("#chips .chip").forEach(x=> x.classList.remove("active"));
+    c.classList.add("active");
+    filterMode = c.dataset.f;
+    applyFilters();
+  });
+});
+// держим панель-подсказку, пока курсор на ней (десктоп)
+const gc = document.getElementById("guideCard");
+gc.addEventListener("mouseenter", ()=> clearTimeout(guideDefaultTimer));
+gc.addEventListener("mouseleave", clearGuideSoon);
 document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSheet(); });
 </script>
