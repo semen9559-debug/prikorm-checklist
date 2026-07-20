@@ -697,31 +697,31 @@ function toast(msg){
   toastTimer = setTimeout(()=> t.classList.remove("show"), 1400);
 }
 
-/* ---------- EAT ANIMATION (food only, pops above the checkbox) ---------- */
+/* ---------- EAT ANIMATION (food only, in the gap before the "i" button) ---------- */
 function playEat(rowEl, item, st){
   if(reduceMotion){ return; }
   const layer = document.getElementById("fxLayer");
-  const box = rowEl.querySelector(".checkbox");
-  const r = box.getBoundingClientRect();
-  const cx = r.left + r.width/2;   // центр кружка
-  const cy = r.top + r.height/2;
+  const info = rowEl.querySelector(".info-btn");
+  const ir = info.getBoundingClientRect();
+  const cx = ir.left - 30;              // свободное место между текстом и кнопкой «i»
+  const cy = ir.top + ir.height/2;
 
   const food = document.createElement("div");
   food.className = "fx-item";
   food.textContent = item.f;
-  food.style.cssText = `left:${cx}px; top:${cy}px; font-size:24px; transform:translate(-50%,-50%) scale(0);`;
+  food.style.cssText = `left:${cx}px; top:${cy}px; font-size:26px; transform:translate(-50%,-50%) scale(0);`;
   layer.appendChild(food);
 
   const a = food.animate([
-    {transform:"translate(-50%,-50%) scale(0) rotate(-18deg)", opacity:0, offset:0},
-    {transform:"translate(-50%,-150%) scale(1.35) rotate(8deg)", opacity:1, offset:0.42},
-    {transform:"translate(-50%,-170%) scale(1) rotate(-5deg)", opacity:1, offset:0.62},
-    {transform:"translate(-50%,-190%) scale(0) rotate(14deg)", opacity:0, offset:1}
-  ], {duration:850, easing:"cubic-bezier(.34,1.5,.6,1)", fill:"forwards"});
+    {transform:"translate(-50%,-50%) scale(0) rotate(-20deg)", opacity:0, offset:0},
+    {transform:"translate(-50%,-62%) scale(1.35) rotate(10deg)", opacity:1, offset:0.34},
+    {transform:"translate(-50%,-58%) scale(1.05) rotate(-6deg)", opacity:1, offset:0.6},
+    {transform:"translate(-50%,-80%) scale(0) rotate(14deg)", opacity:0, offset:1}
+  ], {duration:820, easing:"cubic-bezier(.34,1.5,.6,1)", fill:"forwards"});
   a.onfinish = ()=> food.remove();
 
-  // крошки вылетают в момент «исчезновения» продукта, над кружком
-  setTimeout(()=> spawnCrumbs(layer, cx, cy - r.height*1.4), 360);
+  // крошки-звёздочки вокруг продукта
+  setTimeout(()=> spawnCrumbs(layer, cx, cy - 6), 340);
 }
 function spawnCrumbs(layer, x, y){
   const colors = ["#E2793D","#6FA25C","#E8AC2E","#E0708A","#3E8FC4"];
