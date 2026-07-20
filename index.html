@@ -2,9 +2,12 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Трекер прикорма</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFF9F0">
+<meta name="description" content="Интерактивный трекер прикорма 5,5–12 месяцев: список продуктов по возрастам с короткими советами по каждому.">
+<title>Трекер прикорма 5,5–12 месяцев</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -30,12 +33,15 @@
     background:var(--cream);
     font-family:'Nunito', sans-serif;
     color:var(--ink);
-    padding-bottom:56px;
+    padding-bottom:40px;
+    overflow-x:hidden;
   }
+  :focus-visible{ outline:3px solid var(--sky); outline-offset:2px; border-radius:8px; }
 
+  /* ---------- HERO ---------- */
   .hero{
     position:relative;
-    padding:30px 20px 24px;
+    padding:calc(26px + env(safe-area-inset-top)) 20px 22px;
     background:
       radial-gradient(circle at 12% 20%, rgba(111,162,92,0.16), transparent 40%),
       radial-gradient(circle at 85% 15%, rgba(224,112,138,0.16), transparent 42%),
@@ -56,7 +62,7 @@
   .hero h1{
     font-family:'Fredoka', sans-serif;
     font-weight:700;
-    font-size:21px;
+    font-size:22px;
     margin:2px 0 4px;
     letter-spacing:.2px;
     background:linear-gradient(90deg, var(--sage), var(--sky), var(--coral));
@@ -71,7 +77,7 @@
     font-weight:700;
   }
   .stem-wrap{
-    max-width:340px;
+    max-width:360px;
     margin:0 auto;
     height:9px;
     border-radius:99px;
@@ -82,9 +88,9 @@
   .stem-fill{
     height:100%;
     border-radius:99px;
-    background:linear-gradient(90deg, var(--sage), var(--sky) 35%, var(--coral) 70%, var(--gold, var(--wheat)));
+    background:linear-gradient(90deg, var(--sage), var(--sky) 35%, var(--coral) 70%, var(--butter));
     width:0%;
-    transition: width .6s ease;
+    transition: width .6s cubic-bezier(.34,1.4,.6,1);
   }
   .hero-count{
     font-family:'Fredoka', sans-serif;
@@ -94,12 +100,110 @@
   }
   .hero-count b{ color:var(--ink); }
 
-  main{
-    max-width:520px;
+  .search-wrap{
+    max-width:360px;
+    margin:15px auto 0;
+    position:relative;
+  }
+  .search-wrap .mag{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-size:14px; opacity:.5; pointer-events:none;
+  }
+  #search{
+    width:100%;
+    border:1px solid #EAD9B8;
+    background:var(--paper);
+    border-radius:99px;
+    padding:11px 38px 11px 38px;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    box-shadow:0 2px 8px rgba(58,52,44,0.05);
+  }
+  #search::placeholder{ color:#BCB09A; font-weight:700; }
+  .search-clear{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:26px; height:26px; border:none; background:#F1E7D2; color:var(--ink-soft);
+    border-radius:50%; font-size:15px; cursor:pointer; display:none;
+    align-items:center; justify-content:center; font-weight:800;
+  }
+  .search-clear.show{ display:flex; }
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    max-width:940px;
     margin:0 auto;
     padding:18px 14px 10px;
+    display:flex;
+    gap:24px;
+    align-items:flex-start;
+  }
+  main{ flex:1 1 auto; min-width:0; max-width:560px; }
+  .no-results{
+    text-align:center; color:var(--ink-soft); font-weight:700;
+    padding:30px 10px; display:none;
+  }
+  .no-results.show{ display:block; }
+
+  /* ---------- GUIDE PANEL (desktop) ---------- */
+  .guide{
+    width:320px; flex:0 0 320px;
+    position:sticky; top:16px;
+  }
+  .guide-card{
+    background:var(--paper);
+    border:1px solid #F1E4CE;
+    border-radius:22px;
+    padding:20px 20px 18px;
+    box-shadow:0 4px 18px rgba(58,52,44,0.07);
+  }
+  .guide-card h2{
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:17px;
+    margin:0 0 10px;
+  }
+  .guide-card p{ font-size:13.5px; line-height:1.55; margin:0 0 10px; color:#5C554A; font-weight:600; }
+  .guide-rules{ list-style:none; padding:0; margin:6px 0 4px; }
+  .guide-rules li{
+    font-size:13px; line-height:1.45; padding:6px 0 6px 26px; position:relative;
+    font-weight:700; color:var(--ink);
+  }
+  .guide-rules li::before{
+    content:attr(data-ic); position:absolute; left:0; top:5px; font-size:15px;
+  }
+  .guide-motivate{
+    margin-top:14px; padding:12px 14px; border-radius:14px;
+    background:linear-gradient(135deg, var(--sage-l), var(--sky-l));
+    font-size:13px; font-weight:800; line-height:1.4; color:var(--ink);
+  }
+  .guide-disclaimer{
+    margin-top:12px; font-size:11.5px; line-height:1.4; color:var(--ink-soft);
+    font-weight:700; display:flex; gap:6px; align-items:flex-start;
+  }
+  .guide-hint{
+    margin-top:12px; font-size:12px; color:#B4A98F; font-weight:800; text-align:center;
   }
 
+  /* product card (shared by guide + sheet) */
+  .pcard{ animation: pcIn .28s cubic-bezier(.34,1.4,.6,1); }
+  @keyframes pcIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .pcard-hero{
+    height:96px; border-radius:16px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    background:linear-gradient(135deg, var(--accent-l,#eee), color-mix(in srgb, var(--accent,#ddd) 22%, #fff));
+    position:relative; overflow:hidden;
+  }
+  .pcard-animal{ font-size:46px; animation: bob 2.2s ease-in-out infinite; }
+  .pcard-food{ font-size:38px; animation: bob 2.2s ease-in-out infinite .3s; }
+  @keyframes bob{ 0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-7px) rotate(3deg);} }
+  .pcard-badge{
+    display:inline-block; font-size:11px; font-weight:800; color:#fff;
+    background:var(--accent,#999); padding:3px 10px; border-radius:99px; margin-bottom:8px;
+  }
+  .pcard-name{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; margin:0 0 8px; }
+  .pcard-tip{ font-size:14px; line-height:1.55; color:#4C463C; font-weight:600; margin:0; }
+
+  /* ---------- STAGES ---------- */
   .stage{
     background:var(--paper);
     border-radius:20px;
@@ -109,164 +213,93 @@
     border:1px solid #F1E4CE;
     border-left:5px solid var(--accent, #ccc);
   }
-
+  .stage.hide{ display:none; }
   .stage-head{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:16px 16px 14px;
-    cursor:pointer;
-    user-select:none;
+    display:flex; align-items:center; gap:12px;
+    padding:16px 16px 14px; cursor:pointer; user-select:none;
   }
   .stage-emoji{
-    font-size:24px;
-    width:42px; height:42px;
+    font-size:24px; width:44px; height:44px;
     display:flex; align-items:center; justify-content:center;
-    border-radius:15px;
-    flex-shrink:0;
+    border-radius:15px; flex-shrink:0;
     background: linear-gradient(135deg, var(--accent-l, #eee), var(--accent, #ddd) 130%);
   }
   .stage-title-wrap{ flex:1; min-width:0; }
-  .stage-title{
-    font-family:'Fredoka', sans-serif;
-    font-weight:600;
-    font-size:16px;
-    margin:0;
-  }
-  .stage-progress-text{
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-top:2px;
-    font-weight:700;
-  }
-  .stage-chevron{
-    font-size:13px;
-    color:var(--ink-soft);
-    transition: transform .3s ease;
-    flex-shrink:0;
-  }
+  .stage-title{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:16px; margin:0; }
+  .stage-progress-text{ font-size:12px; color:var(--ink-soft); margin-top:2px; font-weight:700; }
+  .stage-chevron{ font-size:13px; color:var(--ink-soft); transition: transform .3s ease; flex-shrink:0; }
   .stage.collapsed .stage-chevron{ transform: rotate(-90deg); }
 
-  .stage-bar-track{
-    height:6px;
-    background:#F1E4CE;
-    margin:0 16px;
-    border-radius:99px;
-    overflow:hidden;
-  }
-  .stage-bar-fill{
-    height:100%;
-    border-radius:99px;
-    width:0%;
-    background: var(--accent, #999);
-    transition:width .4s ease;
-  }
+  .stage-bar-track{ height:6px; background:#F1E4CE; margin:0 16px; border-radius:99px; overflow:hidden; }
+  .stage-bar-fill{ height:100%; border-radius:99px; width:0%; background: var(--accent, #999); transition:width .5s cubic-bezier(.34,1.4,.6,1); }
+  .stage.done .stage-emoji{ box-shadow:0 0 0 3px var(--accent); }
 
   .stage-body{
-    max-height:2400px;
-    overflow:hidden;
+    max-height:3000px; overflow:hidden;
     transition: max-height .4s ease, opacity .3s ease, padding .3s ease;
-    padding:14px 10px 16px;
+    padding:12px 10px 14px;
   }
-  .stage.collapsed .stage-body{
-    max-height:0;
-    opacity:0;
-    padding-top:0; padding-bottom:0;
-  }
+  .stage.collapsed .stage-body{ max-height:0; opacity:0; padding-top:0; padding-bottom:0; }
 
   .item{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 8px;
-    border-radius:12px;
+    display:flex; align-items:center; gap:12px;
+    padding:10px 8px; border-radius:12px;
     transition: background .2s ease;
+    cursor:pointer; position:relative;
   }
-  .item:active{ background:var(--accent-l, #F7F2E7); }
+  .item:hover{ background:var(--accent-l, #F7F2E7); }
+  .item.hidden{ display:none; }
+  .item.hl{ background:var(--accent-l, #F7F2E7); }
 
   .checkbox{
-    width:25px; height:25px;
-    border-radius:50%;
-    border:2px solid #DDD0B4;
-    flex-shrink:0;
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid #DDD0B4; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    transition: all .25s ease;
-    font-size:13px;
-    color:transparent;
+    transition: all .25s cubic-bezier(.34,1.56,.64,1);
+    font-size:14px; color:transparent;
   }
   .checkbox.checked{
-    border-color: transparent;
-    color:#fff;
+    border-color: transparent; color:#fff;
     background: var(--accent, #999);
-    box-shadow: 0 2px 6px color-mix(in srgb, var(--accent, #999) 50%, transparent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent, #999) 50%, transparent);
+    transform: scale(1.06);
   }
   .item-label{
-    font-size:15px;
-    font-weight:700;
-    color:var(--ink);
-    transition: color .25s ease, opacity .25s ease;
-    line-height:1.3;
+    flex:1; font-size:15px; font-weight:700; color:var(--ink);
+    transition: color .25s ease, opacity .25s ease; line-height:1.3;
   }
   .item-label.checked{
-    color:var(--ink-soft);
-    text-decoration: line-through;
-    text-decoration-color:#C9BFA9;
-    opacity:.7;
-    font-weight:600;
+    color:var(--ink-soft); text-decoration: line-through;
+    text-decoration-color:#C9BFA9; opacity:.7; font-weight:600;
   }
+  .info-btn{
+    width:27px; height:27px; border-radius:50%; flex-shrink:0;
+    border:1.5px solid color-mix(in srgb, var(--accent,#ccc) 55%, #fff);
+    color:var(--accent,#999); background:transparent;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .info-btn:hover{ background:var(--accent-l,#eee); }
+  .info-btn:active{ transform:scale(.88); }
 
   .goal-note{
-    margin:8px 8px 2px;
-    padding:12px 14px;
-    border-radius:14px;
-    font-size:13px;
-    line-height:1.5;
-    display:flex;
-    gap:8px;
-    align-items:flex-start;
-    background: var(--accent-l, #eee);
-    color: var(--ink);
-    font-weight:700;
+    margin:8px 8px 2px; padding:12px 14px; border-radius:14px;
+    font-size:13px; line-height:1.5; display:flex; gap:8px; align-items:flex-start;
+    background: var(--accent-l, #eee); color: var(--ink); font-weight:700;
   }
   .goal-note span.ic{ font-size:15px; }
+  .subtitle-note{ margin:-2px 8px 10px; font-size:12.5px; color:var(--ink-soft); font-weight:700; padding:0 8px; }
 
-  .subtitle-note{
-    margin:-4px 8px 10px;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-weight:700;
-    padding:0 8px;
-  }
-
-  .plain-list{
-    list-style:none;
-    padding:0 8px;
-    margin:0;
-  }
-  .plain-list li{
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    font-size:15px;
-    font-weight:700;
-    padding:9px 8px;
-    line-height:1.4;
-  }
+  .plain-list{ list-style:none; padding:0 8px; margin:0; }
+  .plain-list li{ display:flex; gap:10px; align-items:flex-start; font-size:15px; font-weight:700; padding:9px 8px; line-height:1.4; }
   .warn-list li{ color:#8C2E2E; }
   .warn-list li::before{
-    content:"✕";
-    color:var(--warn);
-    font-size:14px;
-    font-weight:800;
-    line-height:1.4;
-    background: var(--warn-l);
-    width:20px; height:20px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
+    content:"✕"; color:var(--warn); font-size:14px; font-weight:800; line-height:1.4;
+    background: var(--warn-l); width:20px; height:20px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
 
-  /* theme accent variables per stage */
   .theme-sage{ --accent:var(--sage); --accent-l:var(--sage-l); }
   .theme-rust{ --accent:var(--rust); --accent-l:var(--rust-l); }
   .theme-butter{ --accent:var(--butter); --accent-l:var(--butter-l); }
@@ -277,52 +310,70 @@
   .theme-hazel{ --accent:var(--hazel); --accent-l:var(--hazel-l); }
   .theme-warn{ --accent:var(--warn); --accent-l:var(--warn-l); }
 
-  footer{
-    text-align:center;
-    font-size:11.5px;
-    color:#B4A98F;
-    padding:18px 20px 6px;
-  }
-
+  /* ---------- FOOTER ---------- */
+  footer{ text-align:center; font-size:11.5px; color:#B4A98F; padding:14px 20px 6px; max-width:560px; margin:0 auto; }
   .reset-btn{
-    display:block;
-    margin:14px auto 0;
-    background:none;
-    border:1px solid #E5D6B4;
-    color:var(--ink-soft);
-    font-family:'Nunito',sans-serif;
-    font-weight:800;
-    font-size:12px;
-    padding:9px 18px;
-    border-radius:99px;
+    display:block; margin:6px auto 16px; background:none;
+    border:1px solid #E5D6B4; color:var(--ink-soft);
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
+    padding:9px 18px; border-radius:99px; cursor:pointer;
   }
-
-  .made-with{
-    margin-top:6px;
-    font-size:12.5px;
-    color:#A99E85;
-    font-weight:800;
-    letter-spacing:.2px;
-  }
+  .made-with{ margin-top:6px; font-size:12.5px; color:#A99E85; font-weight:800; letter-spacing:.2px; }
   .made-with .heart{ color:var(--coral); }
-  .social{
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin-top:11px;
-    padding-bottom:4px;
-  }
+  .social{ display:flex; justify-content:center; gap:14px; margin-top:11px; padding-bottom:4px; }
   .social a{
-    width:40px; height:40px;
-    border-radius:50%;
+    width:40px; height:40px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    background:var(--paper);
-    border:1px solid #F1E4CE;
+    background:var(--paper); border:1px solid #F1E4CE;
     box-shadow:0 2px 9px rgba(58,52,44,0.08);
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: transform .2s ease;
   }
   .social a:active{ transform: scale(.9); }
   .social svg{ width:21px; height:21px; display:block; }
+
+  /* ---------- BOTTOM SHEET (mobile) ---------- */
+  .sheet-backdrop{
+    position:fixed; inset:0; background:rgba(40,34,28,.42);
+    opacity:0; pointer-events:none; transition:opacity .25s; z-index:80;
+  }
+  .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:81;
+    background:var(--paper); border-radius:24px 24px 0 0;
+    padding:12px 22px calc(26px + env(safe-area-inset-bottom));
+    transform:translateY(102%); transition:transform .34s cubic-bezier(.34,1.3,.5,1);
+    max-width:520px; margin:0 auto; box-shadow:0 -6px 34px rgba(0,0,0,.18);
+    max-height:82vh; overflow-y:auto;
+  }
+  .sheet.open{ transform:translateY(0); }
+  .sheet-grip{ width:42px; height:5px; border-radius:99px; background:#E3D8BE; margin:0 auto 14px; }
+  .sheet .guide-disclaimer{ margin-top:14px; }
+  @media(min-width:981px){ .sheet, .sheet-backdrop{ display:none !important; } }
+  @media(max-width:980px){
+    .layout{ display:block; }
+    main{ max-width:520px; margin:0 auto; }
+    .guide{ display:none; }
+  }
+
+  /* ---------- TOAST ---------- */
+  .toast{
+    position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top));
+    transform:translateX(-50%) translateY(-24px);
+    background:var(--ink); color:#fff; padding:10px 20px; border-radius:99px;
+    font-weight:800; font-size:13.5px; z-index:95; opacity:0;
+    transition:all .32s cubic-bezier(.34,1.4,.6,1); box-shadow:0 8px 24px rgba(0,0,0,.22);
+    pointer-events:none; white-space:nowrap;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---------- FX ---------- */
+  .fx-layer{ position:fixed; inset:0; pointer-events:none; z-index:90; overflow:hidden; }
+  .fx-item{ position:fixed; will-change:transform,opacity; pointer-events:none; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    .stem-fill, .stage-bar-fill{ transition-duration:.3s !important; }
+  }
 </style>
 </head>
 <body>
@@ -330,12 +381,24 @@
 <div class="hero">
   <div class="hero-plant" id="heroPlant">🌱</div>
   <h1>🌸 Трекер прикорма 5,5–12 месяцев</h1>
-  <p class="hero-sub">Список продуктов для введения прикорма</p>
+  <p class="hero-sub">Отмечайте продукты и открывайте советы по каждому</p>
   <div class="stem-wrap"><div class="stem-fill" id="stemFill"></div></div>
   <div class="hero-count" id="heroCount">0 из 0 продуктов</div>
+  <div class="search-wrap">
+    <span class="mag">🔍</span>
+    <input id="search" type="search" placeholder="Поиск продукта…" aria-label="Поиск продукта" autocomplete="off">
+    <button class="search-clear" id="searchClear" aria-label="Очистить поиск">✕</button>
+  </div>
 </div>
 
-<main id="main"></main>
+<div class="layout">
+  <main id="main"></main>
+  <aside class="guide" aria-label="Гайд по прикорму">
+    <div class="guide-card" id="guideCard"></div>
+  </aside>
+</div>
+
+<div class="no-results" id="noResults">Ничего не найдено 🙈<br>Попробуйте другое слово</div>
 
 <footer>
   Отмечайте продукты по мере знакомства малыша с ними 🍼
@@ -363,44 +426,146 @@
   </div>
 </footer>
 
+<!-- mobile sheet -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Совет по продукту">
+  <div class="sheet-grip"></div>
+  <div id="sheetContent"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
 <script>
+/* ---------- DATA ---------- */
 const STAGES = [
   {
-    id:"s1", emoji:"🌱", theme:"sage", age:"5,5–6 месяцев",
-    items:["Кабачок","Цветная капуста","Брокколи","Гречневая каша","Яблоко","Рисовая каша","Груша","Кукурузная каша","Тыква","Овсяная каша","Морковь","Банан","Чернослив","Растительное масло (по несколько капель в овощное пюре)","Вода после прикорма"],
-    goal:"К концу 6 месяцев желательно познакомить малыша с овощами, безглютеновыми кашами и несколькими фруктами."
+    id:"s1", emoji:"🌱", theme:"sage", age:"5,5–6 месяцев", animal:"🐰",
+    goal:"К концу 6 месяцев желательно познакомить малыша с овощами, безглютеновыми кашами и несколькими фруктами.",
+    items:[
+      {n:"Кабачок", f:"🥒", t:"Идеальный первый овощ: гипоаллергенный и нежный. Отварите или на пару, взбейте в гладкое пюре без соли."},
+      {n:"Цветная капуста", f:"🥬", t:"Лёгкая и редко вызывает реакцию. Готовьте на пару до мягкости и пюрируйте."},
+      {n:"Брокколи", f:"🥦", t:"Богата витамином C и клетчаткой. Берите только соцветия, готовьте на пару."},
+      {n:"Гречневая каша", f:"🥣", t:"Безглютеновая, богата железом. Варите на воде до консистенции жидкого пюре."},
+      {n:"Яблоко", f:"🍎", t:"Начните с зелёного печёного яблока — оно мягче для животика. Пюре без сахара."},
+      {n:"Рисовая каша", f:"🍚", t:"Безглютеновая, мягко обволакивает. Не давайте слишком часто — рис может крепить."},
+      {n:"Груша", f:"🍐", t:"Сладкая и нежная, но может слабить. Лучше запечь и сделать пюре."},
+      {n:"Кукурузная каша", f:"🌽", t:"Безглютеновая, хорошо усваивается. Разваривайте до гладкости."},
+      {n:"Тыква", f:"🎃", t:"Сладковатая, богата бета-каротином. Готовьте на пару и пюрируйте."},
+      {n:"Овсяная каша", f:"🥣", t:"Содержит глютен — вводите после безглютеновых круп. Нежная и питательная."},
+      {n:"Морковь", f:"🥕", t:"Сладкий вкус нравится малышам. Давайте 2–3 раза в неделю из-за каротина."},
+      {n:"Банан", f:"🍌", t:"Удобный «фрукт на бегу»: просто разомните вилкой. Питательный и сытный."},
+      {n:"Чернослив", f:"🍇", t:"Мягко помогает при запорах. Давайте понемногу в виде пюре."},
+      {n:"Растительное масло (по несколько капель в овощное пюре)", f:"🫗", t:"Пара капель в овощное пюре помогает усвоению жирорастворимых витаминов."},
+      {n:"Вода после прикорма", f:"💧", t:"С началом прикорма предлагайте немного чистой воды из ложки или кружки."}
+    ]
   },
   {
-    id:"s2", emoji:"🥩", theme:"rust", age:"6–7 месяцев",
-    items:["Индейка","Батат","Кролик","Персик","Курица","Абрикос","Говядина","Телятина","Зелёный горошек","Слива","Кабачок кусочками (если готова)","Брокколи кусочками","Цветная капуста кусочками","Сливочное масло (в кашу)"],
-    goal:"После введения мяса предлагайте его регулярно небольшими порциями."
+    id:"s2", emoji:"🥩", theme:"rust", age:"6–7 месяцев", animal:"🐻",
+    goal:"После введения мяса предлагайте его регулярно небольшими порциями.",
+    items:[
+      {n:"Индейка", f:"🦃", t:"Нежное гипоаллергенное мясо — отличный старт белка. Отварите и дважды пюрируйте."},
+      {n:"Батат", f:"🍠", t:"Сладкий картофель, богат бета-каротином. На пару и в пюре — малыши обожают."},
+      {n:"Кролик", f:"🍖", t:"Диетическое гипоаллергенное мясо, много железа. Хорошо разварите и измельчите."},
+      {n:"Персик", f:"🍑", t:"Сочный и сладкий. Снимите кожицу, начните с небольшого пюре."},
+      {n:"Курица", f:"🍗", t:"Доступный источник белка. Берите грудку, отваривайте и тщательно измельчайте."},
+      {n:"Абрикос", f:"🍑", t:"Богат калием и бета-каротином. Спелый, без кожицы, в виде пюре."},
+      {n:"Говядина", f:"🥩", t:"Много железа и цинка. Долго варите и измельчайте до однородности."},
+      {n:"Телятина", f:"🥩", t:"Нежнее говядины. Отваривайте и пюрируйте, вводите отдельно от молочного."},
+      {n:"Зелёный горошек", f:"🫛", t:"Растительный белок и клетчатка. Протрите через сито, чтобы убрать шкурки."},
+      {n:"Слива", f:"🍑", t:"Помогает при запорах. Спелая, без кожицы, понемногу."},
+      {n:"Кабачок кусочками (если готова)", f:"🥒", t:"Если малыш готов к текстуре — предложите мягкие паровые кусочки для жевания."},
+      {n:"Брокколи кусочками", f:"🥦", t:"Мягкие соцветия на пару размером с горошину — удобно брать ручками."},
+      {n:"Цветная капуста кусочками", f:"🥬", t:"Отличная еда руками: мягкие кусочки на пару."},
+      {n:"Сливочное масло (в кашу)", f:"🧈", t:"Небольшой кусочек в кашу добавляет калорий и приятный вкус."}
+    ]
   },
   {
-    id:"s3", emoji:"🥚", theme:"butter", age:"7–8 месяцев",
-    items:["Желток","Картофель","Натуральный йогурт без сахара","Творог","Пшеничная каша","Пшённая каша","Многозерновая каша","Стручковая фасоль","Свёкла"]
+    id:"s3", emoji:"🥚", theme:"butter", age:"7–8 месяцев", animal:"🐱",
+    items:[
+      {n:"Желток", f:"🥚", t:"Начните с 1/4 варёного желтка, следите за реакцией. Источник холина и железа."},
+      {n:"Картофель", f:"🥔", t:"Вводите после других овощей. На пару и в пюре, можно смешать с кабачком."},
+      {n:"Натуральный йогурт без сахара", f:"🥛", t:"Цельномолочный, без добавок. Знакомит с полезными бактериями."},
+      {n:"Творог", f:"🧀", t:"Кальций и белок. Начните с чайной ложки, выбирайте детский без сахара."},
+      {n:"Пшеничная каша", f:"🥣", t:"Содержит глютен. Вводите постепенно, наблюдая за переносимостью."},
+      {n:"Пшённая каша", f:"🥣", t:"Безглютеновая, богата магнием. Хорошо разваривайте."},
+      {n:"Многозерновая каша", f:"🥣", t:"Только когда каждая крупа в составе уже введена по отдельности."},
+      {n:"Стручковая фасоль", f:"🫛", t:"Нежный растительный белок. Готовьте на пару и пюрируйте."},
+      {n:"Свёкла", f:"🥬", t:"Сладкая, помогает пищеварению. Немного и не каждый день; может окрашивать стул."}
+    ]
   },
   {
-    id:"s4", emoji:"🐟", theme:"sky", age:"8–9 месяцев",
-    items:["Хек","Авокадо","Минтай","Черника","Треска","Малина","Судак","Клубника","Киви","Форель или лосось"],
-    goal:"Рыбу предлагать 1–2 раза в неделю."
+    id:"s4", emoji:"🐟", theme:"sky", age:"8–9 месяцев", animal:"🐧",
+    goal:"Рыбу предлагать 1–2 раза в неделю.",
+    items:[
+      {n:"Хек", f:"🐟", t:"Нежирная белая рыба — лёгкий старт. Тщательно проверьте на кости."},
+      {n:"Авокадо", f:"🥑", t:"Полезные жиры для мозга. Просто разомните спелый — готовить не нужно."},
+      {n:"Минтай", f:"🐟", t:"Постная белая рыба, гипоаллергеннее красной. Отварите и разберите на волокна."},
+      {n:"Черника", f:"🫐", t:"Антиоксиданты для зрения. Разомните, чтобы избежать риска подавиться."},
+      {n:"Треска", f:"🐟", t:"Богата белком и йодом. Отварите и тщательно уберите кости."},
+      {n:"Малина", f:"🍓", t:"Ароматная и полезная. Разомните и протрите от косточек."},
+      {n:"Судак", f:"🐟", t:"Нежная речная рыба. Отваривайте и внимательно выбирайте кости."},
+      {n:"Клубника", f:"🍓", t:"Частый аллерген — вводите осторожно, спелую и размятую."},
+      {n:"Киви", f:"🥝", t:"Много витамина C. Начните с маленькой порции, следите за кожей."},
+      {n:"Форель или лосось", f:"🐟", t:"Красная рыба с омега-3. Раз в неделю, тщательно от костей."}
+    ]
   },
   {
-    id:"s5", emoji:"🍝", theme:"wheat", age:"9–10 месяцев",
-    items:["Макароны","Манго","Хлеб","Чечевица","Нут","Фасоль","Кукуруза","Обычная гречневая крупа","Овсяные хлопья"]
+    id:"s5", emoji:"🍝", theme:"wheat", age:"9–10 месяцев", animal:"🐹",
+    items:[
+      {n:"Макароны", f:"🍝", t:"Мелкие или хорошо разваренные, из твёрдых сортов. Хорошая еда руками."},
+      {n:"Манго", f:"🥭", t:"Сладкий, много витамина A. Спелый, кусочками или пюре."},
+      {n:"Хлеб", f:"🍞", t:"Небольшой кусочек подсушенного пшеничного хлеба без соли и сахара."},
+      {n:"Чечевица", f:"🫘", t:"Растительный белок и железо. Хорошо разварите и разомните."},
+      {n:"Нут", f:"🫘", t:"Питательные бобовые. Разварите до мягкости, сделайте пюре (основа хумуса)."},
+      {n:"Фасоль", f:"🫘", t:"Белок и клетчатка. Долго варите и разминайте; вводите понемногу из-за газообразования."},
+      {n:"Кукуруза", f:"🌽", t:"Сладкая, но шкурки тяжелы для животика — протирайте через сито."},
+      {n:"Обычная гречневая крупа", f:"🌾", t:"Более грубая, чем детская. Хорошо разваривайте."},
+      {n:"Овсяные хлопья", f:"🥣", t:"Варите до мягкости. Клетчатка помогает пищеварению."}
+    ]
   },
   {
-    id:"s6", emoji:"🍳", theme:"coral", age:"10–11 месяцев",
-    items:["Целое яйцо","Сыр","Омлет","Томат (без кожицы)","Огурец (без кожуры)","Болгарский перец"]
+    id:"s6", emoji:"🍳", theme:"coral", age:"10–11 месяцев", animal:"🐣",
+    items:[
+      {n:"Целое яйцо", f:"🥚", t:"После желтка добавьте белок. Только полностью сваренное, следите за реакцией."},
+      {n:"Сыр", f:"🧀", t:"Мягкий и несолёный. Тёртый или маленькими кусочками — кальций и белок."},
+      {n:"Омлет", f:"🍳", t:"На пару или без масла, хорошо прожаренный, порезанный на полоски."},
+      {n:"Томат (без кожицы)", f:"🍅", t:"Снимите кожицу и уберите семена. Немного — может давать реакцию на коже."},
+      {n:"Огурец (без кожуры)", f:"🥒", t:"Освежающий, очистите от кожуры. Полоски приятно грызть при прорезывании зубов."},
+      {n:"Болгарский перец", f:"🫑", t:"Снимите кожицу и тушите до мягкости. Много витамина C."}
+    ]
   },
   {
-    id:"s7", emoji:"🍽️", theme:"plum", age:"11–12 месяцев",
-    items:["Семейные супы без соли","Овощные рагу","Паровые котлеты","Тефтели","Фрикадельки","Запеканки","Запечённая рыба","Домашние оладьи без сахара","Каши из обычной крупы","Фрукты кусочками","Овощи кусочками","Самостоятельно есть ложкой","Пить из кружки"]
+    id:"s7", emoji:"🍽️", theme:"plum", age:"11–12 месяцев", animal:"🐨",
+    items:[
+      {n:"Семейные супы без соли", f:"🍲", t:"Малыш переходит к общему столу — варите без соли и специй."},
+      {n:"Овощные рагу", f:"🥘", t:"Мягко тушёные овощи кусочками развивают жевание."},
+      {n:"Паровые котлеты", f:"🍖", t:"Из нежирного мяса, на пару. Мягкие и сочные."},
+      {n:"Тефтели", f:"🧆", t:"С рисом или овощами, отварные. Режьте на кусочки по возрасту."},
+      {n:"Фрикадельки", f:"🧆", t:"Маленькие, в супе или на пару. Удобно брать ручками."},
+      {n:"Запеканки", f:"🥧", t:"Творожные или овощные без сахара — вкусно и питательно."},
+      {n:"Запечённая рыба", f:"🐟", t:"Без костей, мягкими кусочками. Полезные жиры."},
+      {n:"Домашние оладьи без сахара", f:"🥞", t:"На банане или яблоке вместо сахара. Мягкие, для еды руками."},
+      {n:"Каши из обычной крупы", f:"🥣", t:"Переходите с детских на обычные, хорошо разваренные каши."},
+      {n:"Фрукты кусочками", f:"🍎", t:"Мягкие спелые кусочки развивают самостоятельность."},
+      {n:"Овощи кусочками", f:"🥕", t:"Отварные или паровые кусочки тренируют жевание."},
+      {n:"Самостоятельно есть ложкой", f:"🥄", t:"Дайте ложку и не бойтесь беспорядка — это важный навык."},
+      {n:"Пить из кружки", f:"🥤", t:"Предлагайте воду из открытой кружки или поильника-непроливайки."}
+    ]
   },
   {
-    id:"s8", emoji:"🌰", theme:"hazel", age:"Основные аллергены",
+    id:"s8", emoji:"🌰", theme:"hazel", age:"Основные аллергены", animal:"🦔",
     subtitle:"Ввести в течение первого года",
-    items:["Яйцо","Рыба","Пшеница","Молочные продукты","Соя","Кунжут","Арахис (только в виде пасты, а не цельных орехов)"]
-  },
+    items:[
+      {n:"Яйцо", f:"🥚", t:"Один из главных аллергенов. Вводите рано и регулярно, начиная с малого."},
+      {n:"Рыба", f:"🐟", t:"Частый аллерген. Начните с белой рыбы, наблюдайте за реакцией."},
+      {n:"Пшеница", f:"🌾", t:"Источник глютена. Вводите постепенно небольшими порциями."},
+      {n:"Молочные продукты", f:"🥛", t:"Йогурт, творог, сыр — да; цельное молоко как напиток — после года."},
+      {n:"Соя", f:"🫘", t:"Встречается во многих продуктах. Вводите осознанно и следите за реакцией."},
+      {n:"Кунжут", f:"🌰", t:"Аллерген; удобно в виде тахини (пасты), добавленной в еду."},
+      {n:"Арахис (только в виде пасты, а не цельных орехов)", f:"🥜", t:"Только гладкая паста, разведённая в пюре — никогда цельные орехи."}
+    ]
+  }
 ];
 
 const WARN_SECTION = {
@@ -408,55 +573,235 @@ const WARN_SECTION = {
   list:["Мёд","Цельное коровье молоко как основной напиток","Соль и сахар в блюда","Цельные орехи","Попкорн","Целые виноградины и другие продукты с высоким риском поперхнуться"]
 };
 
-const STORAGE_KEY = "prikorm-checked-v2";
-let state = {};
+const PRAISES = [
+  "Ням-ням! 🎉","Ещё один вкус открыт 🌟","Отлично получается! 👏",
+  "Малыш растёт 🌱","Вкусный прогресс! 😋","Так держать! 💪",
+  "Новый продукт покорён 🏆","Здорово! 🥰"
+];
 
+const STORAGE_KEY = "prikorm-checked-v2"; // совместимо со старой версией
+let state = {};
+let eatSide = 0;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const isDesktop = () => window.matchMedia("(min-width:981px)").matches;
+
+/* ---------- STATE ---------- */
 function loadState(){
-  try{
-    const val = localStorage.getItem(STORAGE_KEY);
-    if(val) state = JSON.parse(val);
-  }catch(e){ state = {}; }
+  try{ const v = localStorage.getItem(STORAGE_KEY); if(v) state = JSON.parse(v); }
+  catch(e){ state = {}; }
 }
 function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  catch(e){ console.error("save failed", e); }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
-
 function totalCounts(){
   let total=0, checked=0;
-  STAGES.forEach(st=>{
-    st.items.forEach((_,i)=>{
-      total++;
-      if(state[st.id+"-"+i]) checked++;
-    });
-  });
+  STAGES.forEach(st=> st.items.forEach((_,i)=>{ total++; if(state[st.id+"-"+i]) checked++; }));
   return {total, checked};
 }
 
+/* ---------- HERO ---------- */
 function updateHero(){
   const {total, checked} = totalCounts();
   const pct = total? Math.round(checked/total*100) : 0;
   document.getElementById("stemFill").style.width = pct+"%";
   document.getElementById("heroCount").innerHTML = `<b>${checked}</b> из ${total} продуктов`;
   const plant = document.getElementById("heroPlant");
-  const size = 28 + (pct/100)*34;
-  plant.style.fontSize = size+"px";
-  let emoji = "🌱";
-  if(pct>=90) emoji="🌳";
-  else if(pct>=60) emoji="🌿";
-  else if(pct>=25) emoji="🌾";
-  plant.textContent = emoji;
+  plant.style.fontSize = (28 + (pct/100)*34) + "px";
+  let e = "🌱";
+  if(pct>=90) e="🌳"; else if(pct>=60) e="🌿"; else if(pct>=25) e="🌾";
+  plant.textContent = e;
+  updateGuideDefault();
 }
-
 function updateStageProgress(stEl, st){
-  const items = st.items;
-  let checked=0;
-  items.forEach((_,i)=>{ if(state[st.id+"-"+i]) checked++; });
-  stEl.querySelector(".stage-progress-text").textContent = `${checked} из ${items.length}`;
-  const barFill = stEl.querySelector(".stage-bar-fill");
-  barFill.style.width = (items.length? checked/items.length*100:0)+"%";
+  let checked=0; st.items.forEach((_,i)=>{ if(state[st.id+"-"+i]) checked++; });
+  stEl.querySelector(".stage-progress-text").textContent = `${checked} из ${st.items.length}`;
+  stEl.querySelector(".stage-bar-fill").style.width = (st.items.length? checked/st.items.length*100:0)+"%";
+  stEl.classList.toggle("done", checked===st.items.length && st.items.length>0);
 }
 
+/* ---------- GUIDE PANEL ---------- */
+function motivateLine(){
+  const {total, checked} = totalCounts();
+  const pct = total? checked/total*100 : 0;
+  if(checked===0) return "Впереди целое вкусное приключение! Отметьте первый продукт 🍽️";
+  if(pct>=100) return "Все продукты введены — поздравляем! Огромная работа 🎉🏆";
+  if(pct>=75) return "Почти всё! Финишная прямая 🏁";
+  if(pct>=50) return "Половина пути позади — вы большие молодцы! 🌳";
+  if(pct>=25) return "Уже четверть пройдена, вкусовой мир растёт 🌿";
+  return "Отличное начало! Малыш открывает новые вкусы 🌱";
+}
+function guideDefaultHTML(){
+  const {checked, total} = totalCounts();
+  return `
+    <h2>Как проходит прикорм 🌱</h2>
+    <p>Прикорм — знакомство малыша с новой едой в дополнение к грудному молоку или смеси. Начинают обычно в 5,5–6 месяцев при признаках готовности.</p>
+    <ul class="guide-rules">
+      <li data-ic="🍽️">Один новый продукт раз в 3–5 дней</li>
+      <li data-ic="🥄">Начинайте с 1/2–1 ложки, увеличивая постепенно</li>
+      <li data-ic="🌅">Новое — в первой половине дня</li>
+      <li data-ic="🧂">Без соли и сахара до года</li>
+      <li data-ic="👀">Наблюдайте за реакцией кожи и животика</li>
+    </ul>
+    <div class="guide-motivate">${motivateLine()}<br><span style="font-weight:700;opacity:.75">Отмечено ${checked} из ${total}</span></div>
+    <div class="guide-disclaimer"><span>ℹ️</span><span>Это ориентир, а не медицинская инструкция. Схему прикорма согласуйте с педиатром.</span></div>
+    <div class="guide-hint">👆 Наведите на продукт, чтобы увидеть совет</div>`;
+}
+function productCardHTML(st, item){
+  return `
+    <div class="pcard theme-${st.theme}">
+      <div class="pcard-hero"><span class="pcard-animal">${st.animal||"🐰"}</span><span class="pcard-food">${item.f}</span></div>
+      <span class="pcard-badge">${st.age}</span>
+      <div class="pcard-name">${item.n.replace(/\s*\(.*?\)\s*/g," ").trim()}</div>
+      <p class="pcard-tip">${item.t}</p>
+      <div class="guide-disclaimer"><span>ℹ️</span><span>Ориентир. Вводите с учётом рекомендаций вашего педиатра.</span></div>
+    </div>`;
+}
+let guideDefaultTimer = null;
+function updateGuideDefault(){
+  const gc = document.getElementById("guideCard");
+  if(gc && !gc.dataset.locked) gc.innerHTML = guideDefaultHTML();
+}
+function showProductInGuide(st, item){
+  if(!isDesktop()) return;
+  clearTimeout(guideDefaultTimer);
+  const gc = document.getElementById("guideCard");
+  gc.dataset.locked = "1";
+  gc.innerHTML = productCardHTML(st, item);
+}
+function clearGuideSoon(){
+  clearTimeout(guideDefaultTimer);
+  guideDefaultTimer = setTimeout(()=>{
+    const gc = document.getElementById("guideCard");
+    delete gc.dataset.locked;
+    gc.innerHTML = guideDefaultHTML();
+  }, 400);
+}
+
+/* ---------- SHEET (mobile) ---------- */
+function openSheet(st, item){
+  document.getElementById("sheetContent").innerHTML = productCardHTML(st, item);
+  document.getElementById("sheet").classList.add("open");
+  document.getElementById("sheetBackdrop").classList.add("open");
+}
+function closeSheet(){
+  document.getElementById("sheet").classList.remove("open");
+  document.getElementById("sheetBackdrop").classList.remove("open");
+}
+
+/* ---------- TOAST ---------- */
+let toastTimer=null;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove("show"), 1400);
+}
+
+/* ---------- EAT ANIMATION ---------- */
+function playEat(rowEl, item, st){
+  if(reduceMotion){ return; }
+  const layer = document.getElementById("fxLayer");
+  const box = rowEl.querySelector(".checkbox");
+  const r = box.getBoundingClientRect();
+  const cy = r.top + r.height/2;
+  eatSide++;
+  const side = eatSide % 2 === 0 ? "left" : "right";
+  const foodX = side==="left" ? r.left - 6 : r.right + 6;
+  const dir = side==="left" ? -1 : 1;
+
+  // food emoji
+  const food = document.createElement("div");
+  food.className = "fx-item";
+  food.textContent = item.f;
+  food.style.cssText = `left:${foodX}px; top:${cy}px; font-size:26px; transform:translate(-50%,-50%);`;
+  layer.appendChild(food);
+
+  // animal enters from the side, off the food
+  const animal = document.createElement("div");
+  animal.className = "fx-item";
+  animal.textContent = st.animal || "🐰";
+  const startX = foodX + dir*64;
+  animal.style.cssText = `left:${startX}px; top:${cy}px; font-size:34px; transform:translate(-50%,-50%) scaleX(${dir}) scale(.4); opacity:0;`;
+  layer.appendChild(animal);
+
+  const ease = "cubic-bezier(.34,1.5,.6,1)";
+  // approach
+  animal.animate([
+    {transform:`translate(-50%,-50%) scaleX(${dir}) scale(.4)`, opacity:0},
+    {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1)`, opacity:1}
+  ], {duration:260, easing:ease, fill:"forwards"});
+
+  // chomp + retreat
+  setTimeout(()=>{
+    animal.animate([
+      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`},
+      {transform:`translate(calc(-50% + ${dir*40}px),-52%) scaleX(${dir}) scale(1.18) rotate(${dir*6}deg)`},
+      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`},
+      {transform:`translate(calc(-50% + ${dir*40}px),-52%) scaleX(${dir}) scale(1.15) rotate(${dir*-5}deg)`},
+      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1) rotate(0deg)`}
+    ], {duration:420, easing:"ease-in-out"});
+    // food gets eaten
+    food.animate([
+      {transform:"translate(-50%,-50%) scale(1) rotate(0deg)", opacity:1},
+      {transform:"translate(-50%,-50%) scale(.55) rotate(-12deg)", opacity:1, offset:.5},
+      {transform:"translate(-50%,-55%) scale(0) rotate(18deg)", opacity:0}
+    ], {duration:400, easing:"ease-in", fill:"forwards"});
+    spawnCrumbs(layer, foodX, cy);
+  }, 250);
+
+  // retreat + cleanup
+  setTimeout(()=>{
+    const back = animal.animate([
+      {transform:`translate(calc(-50% + ${dir*40}px),-50%) scaleX(${dir}) scale(1)`, opacity:1},
+      {transform:`translate(-50%,-50%) scaleX(${dir}) scale(.4)`, opacity:0}
+    ], {duration:300, easing:"ease-in", fill:"forwards"});
+    back.onfinish = ()=>{ animal.remove(); food.remove(); };
+  }, 760);
+}
+function spawnCrumbs(layer, x, y){
+  const colors = ["#E2793D","#6FA25C","#E8AC2E","#E0708A","#3E8FC4"];
+  for(let i=0;i<6;i++){
+    const c = document.createElement("div");
+    c.className = "fx-item";
+    const size = 5 + Math.random()*4;
+    c.style.cssText = `left:${x}px; top:${y}px; width:${size}px; height:${size}px; border-radius:50%; background:${colors[i%colors.length]};`;
+    layer.appendChild(c);
+    const ang = Math.random()*Math.PI*2;
+    const dist = 22 + Math.random()*24;
+    const dx = Math.cos(ang)*dist, dy = Math.sin(ang)*dist - 6;
+    const a = c.animate([
+      {transform:"translate(-50%,-50%) scale(1)", opacity:1},
+      {transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity:0}
+    ], {duration:500+Math.random()*220, easing:"cubic-bezier(.2,.6,.4,1)", fill:"forwards"});
+    a.onfinish = ()=> c.remove();
+  }
+}
+
+/* ---------- CONFETTI ---------- */
+function confetti(big){
+  if(reduceMotion) return;
+  const layer = document.getElementById("fxLayer");
+  const colors = ["#E2793D","#6FA25C","#E8AC2E","#E0708A","#3E8FC4","#A6567A"];
+  const n = big ? 46 : 22;
+  for(let i=0;i<n;i++){
+    const p = document.createElement("div");
+    p.className = "fx-item";
+    const size = 7 + Math.random()*7;
+    const x = window.innerWidth*(0.2+Math.random()*0.6);
+    p.style.cssText = `left:${x}px; top:-14px; width:${size}px; height:${size*0.6}px; background:${colors[i%colors.length]}; border-radius:2px;`;
+    layer.appendChild(p);
+    const dur = 1200 + Math.random()*1100;
+    const dx = (Math.random()-0.5)*220;
+    const rot = (Math.random()-0.5)*720;
+    const a = p.animate([
+      {transform:"translate(0,0) rotate(0deg)", opacity:1},
+      {transform:`translate(${dx}px, ${window.innerHeight+40}px) rotate(${rot}deg)`, opacity:.9}
+    ], {duration:dur, easing:"cubic-bezier(.3,.5,.5,1)", fill:"forwards"});
+    a.onfinish = ()=> p.remove();
+  }
+}
+
+/* ---------- RENDER ---------- */
 function render(){
   const main = document.getElementById("main");
   main.innerHTML = "";
@@ -464,20 +809,26 @@ function render(){
   STAGES.forEach(st=>{
     const stEl = document.createElement("div");
     stEl.className = `stage theme-${st.theme}`;
+    stEl.dataset.stage = st.id;
 
     const head = document.createElement("div");
     head.className = "stage-head";
+    head.setAttribute("role","button");
+    head.setAttribute("tabindex","0");
+    head.setAttribute("aria-expanded","true");
     head.innerHTML = `
       <div class="stage-emoji">${st.emoji}</div>
       <div class="stage-title-wrap">
         <p class="stage-title">${st.age}</p>
         <div class="stage-progress-text">0 из ${st.items.length}</div>
       </div>
-      <div class="stage-chevron">▾</div>
-    `;
-    head.addEventListener("click", ()=>{
-      stEl.classList.toggle("collapsed");
-    });
+      <div class="stage-chevron">▾</div>`;
+    const toggle = ()=>{
+      const c = stEl.classList.toggle("collapsed");
+      head.setAttribute("aria-expanded", String(!c));
+    };
+    head.addEventListener("click", toggle);
+    head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
     stEl.appendChild(head);
 
     const barTrack = document.createElement("div");
@@ -495,30 +846,70 @@ function render(){
       body.appendChild(sub);
     }
 
-    st.items.forEach((name,i)=>{
+    st.items.forEach((item,i)=>{
       const key = st.id+"-"+i;
-      const item = document.createElement("div");
-      item.className = "item";
-      item.innerHTML = `
+      const row = document.createElement("div");
+      row.className = "item";
+      row.dataset.name = item.n.toLowerCase();
+      row.setAttribute("role","checkbox");
+      row.setAttribute("tabindex","0");
+      row.setAttribute("aria-label", item.n);
+      row.innerHTML = `
         <div class="checkbox">✓</div>
-        <div class="item-label">${name}</div>
-      `;
-      const box = item.querySelector(".checkbox");
-      const label = item.querySelector(".item-label");
+        <div class="item-label">${item.n}</div>
+        <button class="info-btn" aria-label="Совет: ${item.n}" tabindex="-1">i</button>`;
+      const box = row.querySelector(".checkbox");
+      const label = row.querySelector(".item-label");
+      const info = row.querySelector(".info-btn");
+
       const applyState = ()=>{
-        const isChecked = !!state[key];
-        box.classList.toggle("checked", isChecked);
-        label.classList.toggle("checked", isChecked);
+        const on = !!state[key];
+        box.classList.toggle("checked", on);
+        label.classList.toggle("checked", on);
+        row.setAttribute("aria-checked", String(on));
       };
       applyState();
-      item.addEventListener("click", async ()=>{
-        state[key] = !state[key];
+
+      const wasStageDone = ()=> st.items.every((_,j)=> state[st.id+"-"+j]);
+
+      const toggleItem = ()=>{
+        const turningOn = !state[key];
+        state[key] = turningOn;
         applyState();
         updateStageProgress(stEl, st);
         updateHero();
-        await saveState();
+        saveState();
+        if(turningOn){
+          playEat(row, item, st);
+          toast(PRAISES[Math.floor(Math.random()*PRAISES.length)]);
+          if(navigator.vibrate) navigator.vibrate(18);
+          if(wasStageDone()){
+            confetti(false);
+            const {total,checked}=totalCounts();
+            if(total===checked){ setTimeout(()=>confetti(true),150); toast("Все продукты введены! 🎉🏆"); }
+          }
+        }
+      };
+
+      row.addEventListener("click", e=>{
+        if(e.target.closest(".info-btn")) return;
+        toggleItem();
       });
-      body.appendChild(item);
+      row.addEventListener("keydown", e=>{
+        if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleItem(); }
+        if(e.key==="i"){ isDesktop()? showProductInGuide(st,item) : openSheet(st,item); }
+      });
+      // desktop hover → guide panel
+      row.addEventListener("mouseenter", ()=> showProductInGuide(st, item));
+      row.addEventListener("mouseleave", clearGuideSoon);
+      // info button → mobile sheet (and desktop pin)
+      info.addEventListener("click", e=>{
+        e.stopPropagation();
+        if(isDesktop()) showProductInGuide(st, item);
+        else openSheet(st, item);
+      });
+
+      body.appendChild(row);
     });
 
     if(st.goal){
@@ -533,11 +924,12 @@ function render(){
     updateStageProgress(stEl, st);
   });
 
-  // warning section (non-checkbox)
+  // warning section
   const warnEl = document.createElement("div");
   warnEl.className = `stage theme-${WARN_SECTION.theme}`;
+  warnEl.dataset.stage = "w1";
   warnEl.innerHTML = `
-    <div class="stage-head">
+    <div class="stage-head" role="button" tabindex="0" aria-expanded="true">
       <div class="stage-emoji">${WARN_SECTION.emoji}</div>
       <div class="stage-title-wrap">
         <p class="stage-title">${WARN_SECTION.age}</p>
@@ -547,35 +939,72 @@ function render(){
     </div>
     <div class="stage-body">
       <ul class="plain-list warn-list">
-        ${WARN_SECTION.list.map(t=>`<li>${t}</li>`).join("")}
+        ${WARN_SECTION.list.map(t=>`<li data-name="${t.toLowerCase()}">${t}</li>`).join("")}
       </ul>
-    </div>
-  `;
-  warnEl.querySelector(".stage-head").addEventListener("click", ()=>{
-    warnEl.classList.toggle("collapsed");
-  });
+    </div>`;
+  const wHead = warnEl.querySelector(".stage-head");
+  const wToggle = ()=>{ const c=warnEl.classList.toggle("collapsed"); wHead.setAttribute("aria-expanded",String(!c)); };
+  wHead.addEventListener("click", wToggle);
+  wHead.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); wToggle(); }});
   main.appendChild(warnEl);
 
   const resetBtn = document.createElement("button");
   resetBtn.className = "reset-btn";
   resetBtn.textContent = "Сбросить отметки";
-  resetBtn.addEventListener("click", async ()=>{
+  resetBtn.addEventListener("click", ()=>{
     if(confirm("Сбросить все отметки?")){
-      state = {};
-      await saveState();
-      render();
-      updateHero();
+      state = {}; saveState(); render(); updateHero();
     }
   });
   main.appendChild(resetBtn);
 
   updateHero();
+  document.getElementById("guideCard").innerHTML = guideDefaultHTML();
 }
 
-(async ()=>{
-  await loadState();
-  render();
-})();
+/* ---------- SEARCH ---------- */
+function runSearch(q){
+  q = q.trim().toLowerCase();
+  const clearBtn = document.getElementById("searchClear");
+  clearBtn.classList.toggle("show", q.length>0);
+  let anyVisible = false;
+  document.querySelectorAll(".stage").forEach(stEl=>{
+    if(stEl.dataset.stage==="w1"){
+      // warn section: filter list items
+      let vis=0;
+      stEl.querySelectorAll(".warn-list li").forEach(li=>{
+        const m = !q || li.dataset.name.includes(q);
+        li.style.display = m? "flex":"none"; if(m) vis++;
+      });
+      const show = !q || vis>0;
+      stEl.classList.toggle("hide", !show);
+      if(show) anyVisible=true;
+      if(q) stEl.classList.remove("collapsed");
+      return;
+    }
+    let vis=0;
+    stEl.querySelectorAll(".item").forEach(row=>{
+      const m = !q || row.dataset.name.includes(q);
+      row.classList.toggle("hidden", !m); if(m) vis++;
+    });
+    const show = !q || vis>0;
+    stEl.classList.toggle("hide", !show);
+    if(show) anyVisible=true;
+    if(q){ stEl.classList.remove("collapsed"); }
+  });
+  document.getElementById("noResults").classList.toggle("show", q.length>0 && !anyVisible);
+}
+
+/* ---------- INIT ---------- */
+loadState();
+render();
+
+document.getElementById("search").addEventListener("input", e=> runSearch(e.target.value));
+document.getElementById("searchClear").addEventListener("click", ()=>{
+  const s=document.getElementById("search"); s.value=""; runSearch(""); s.focus();
+});
+document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSheet(); });
 </script>
 </body>
 </html>
