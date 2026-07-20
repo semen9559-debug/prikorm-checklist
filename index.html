@@ -360,14 +360,14 @@ const WARN_SECTION = {
 const STORAGE_KEY = "prikorm-checked-v2";
 let state = {};
 
-async function loadState(){
+function loadState(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    if(res && res.value) state = JSON.parse(res.value);
+    const val = localStorage.getItem(STORAGE_KEY);
+    if(val) state = JSON.parse(val);
   }catch(e){ state = {}; }
 }
-async function saveState(){
-  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e){ console.error("save failed", e); }
 }
 
