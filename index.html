@@ -296,6 +296,33 @@
     padding:9px 18px;
     border-radius:99px;
   }
+
+  .made-with{
+    margin-top:6px;
+    font-size:12.5px;
+    color:#A99E85;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+  .made-with .heart{ color:var(--coral); }
+  .social{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    margin-top:11px;
+    padding-bottom:4px;
+  }
+  .social a{
+    width:40px; height:40px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--paper);
+    border:1px solid #F1E4CE;
+    box-shadow:0 2px 9px rgba(58,52,44,0.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .social a:active{ transform: scale(.9); }
+  .social svg{ width:21px; height:21px; display:block; }
 </style>
 </head>
 <body>
@@ -310,7 +337,31 @@
 
 <main id="main"></main>
 
-<footer>Отмечайте продукты по мере знакомства малыша с ними 🍼</footer>
+<footer>
+  Отмечайте продукты по мере знакомства малыша с ними 🍼
+  <div class="made-with">Создана с любовью <span class="heart">❤</span></div>
+  <div class="social">
+    <a href="https://www.instagram.com/anastaaasia__/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="igGrad" x1="2" y1="22" x2="22" y2="2" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#F9CE34"/>
+            <stop offset="0.5" stop-color="#EE2A7B"/>
+            <stop offset="1" stop-color="#6228D7"/>
+          </linearGradient>
+        </defs>
+        <rect x="2.2" y="2.2" width="19.6" height="19.6" rx="5.6" stroke="url(#igGrad)" stroke-width="2"/>
+        <circle cx="12" cy="12" r="4.4" stroke="url(#igGrad)" stroke-width="2"/>
+        <circle cx="17.6" cy="6.4" r="1.25" fill="url(#igGrad)"/>
+      </svg>
+    </a>
+    <a href="https://t.me/mamaclub_ru" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#29A9EB" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.892-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.14.121.098.154.23.169.323.016.093.036.306.02.472z"/>
+      </svg>
+    </a>
+  </div>
+</footer>
 
 <script>
 const STAGES = [
