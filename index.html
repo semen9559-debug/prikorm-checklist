@@ -714,14 +714,15 @@ function playEat(rowEl, item, st){
 
   const a = food.animate([
     {transform:"translate(-50%,-50%) scale(0) rotate(-20deg)", opacity:0, offset:0},
-    {transform:"translate(-50%,-62%) scale(1.35) rotate(10deg)", opacity:1, offset:0.34},
-    {transform:"translate(-50%,-58%) scale(1.05) rotate(-6deg)", opacity:1, offset:0.6},
-    {transform:"translate(-50%,-80%) scale(0) rotate(14deg)", opacity:0, offset:1}
-  ], {duration:820, easing:"cubic-bezier(.34,1.5,.6,1)", fill:"forwards"});
+    {transform:"translate(-50%,-64%) scale(1.4) rotate(10deg)", opacity:1, offset:0.18},
+    {transform:"translate(-50%,-60%) scale(1.08) rotate(-6deg)", opacity:1, offset:0.32},
+    {transform:"translate(-50%,-62%) scale(1.12) rotate(4deg)", opacity:1, offset:0.72},
+    {transform:"translate(-50%,-84%) scale(0) rotate(14deg)", opacity:0, offset:1}
+  ], {duration:1500, easing:"cubic-bezier(.34,1.4,.6,1)", fill:"forwards"});
   a.onfinish = ()=> food.remove();
 
   // крошки-звёздочки вокруг продукта
-  setTimeout(()=> spawnCrumbs(layer, cx, cy - 6), 340);
+  setTimeout(()=> spawnCrumbs(layer, cx, cy - 6), 260);
 }
 function spawnCrumbs(layer, x, y){
   const colors = ["#E2793D","#6FA25C","#E8AC2E","#E0708A","#3E8FC4"];
