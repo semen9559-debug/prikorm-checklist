@@ -366,7 +366,16 @@
     max-height:82vh; overflow-y:auto;
   }
   .sheet.open{ transform:translateY(0); }
-  .sheet-grip{ width:42px; height:5px; border-radius:99px; background:#E3D8BE; margin:0 auto 14px; }
+  .sheet-grip{ width:44px; height:6px; border-radius:99px; background:#E3D8BE; margin:2px auto 14px; cursor:grab; }
+  .sheet-close{
+    position:absolute; top:12px; right:14px; width:32px; height:32px; z-index:2;
+    border:none; border-radius:50%; background:#F1E7D2; color:var(--ink-soft);
+    font-size:15px; font-weight:800; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s, background .2s;
+  }
+  .sheet-close:hover{ background:#EADFC6; }
+  .sheet-close:active{ transform:scale(.88); }
   .sheet .guide-disclaimer{ margin-top:14px; }
   @media(min-width:981px){ .sheet, .sheet-backdrop{ display:none !important; } }
   @media(max-width:980px){
@@ -454,7 +463,8 @@
 <!-- mobile sheet -->
 <div class="sheet-backdrop" id="sheetBackdrop"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Совет по продукту">
-  <div class="sheet-grip"></div>
+  <button class="sheet-close" id="sheetClose" aria-label="Закрыть">✕</button>
+  <div class="sheet-grip" id="sheetGrip"></div>
   <div id="sheetContent"></div>
 </div>
 
@@ -1078,7 +1088,33 @@ const gc = document.getElementById("guideCard");
 gc.addEventListener("mouseenter", ()=> clearTimeout(guideDefaultTimer));
 gc.addEventListener("mouseleave", clearGuideSoon);
 document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
+document.getElementById("sheetClose").addEventListener("click", closeSheet);
+document.getElementById("sheetGrip").addEventListener("click", closeSheet);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSheet(); });
+
+// свайп вниз, чтобы закрыть шторку
+(function(){
+  const sheet = document.getElementById("sheet");
+  let startY = 0, delta = 0, dragging = false;
+  sheet.addEventListener("touchstart", e=>{
+    if(sheet.scrollTop > 0) return;              // если контент прокручен — обычный скролл
+    if(e.target.closest(".react-btn")) return;   // не мешаем нажатию на реакции
+    startY = e.touches[0].clientY; delta = 0; dragging = true;
+    sheet.style.transition = "none";
+  }, {passive:true});
+  sheet.addEventListener("touchmove", e=>{
+    if(!dragging) return;
+    delta = e.touches[0].clientY - startY;
+    if(delta > 0) sheet.style.transform = `translateY(${delta}px)`;
+  }, {passive:true});
+  sheet.addEventListener("touchend", ()=>{
+    if(!dragging) return;
+    dragging = false;
+    sheet.style.transition = "";
+    sheet.style.transform = "";
+    if(delta > 80) closeSheet();
+  });
+})();
 </script>
 </body>
 </html>
