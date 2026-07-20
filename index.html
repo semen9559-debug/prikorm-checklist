@@ -621,7 +621,8 @@ const PRAISES = [
 const STORAGE_KEY = "prikorm-checked-v2"; // совместимо со старой версией
 const R_KEY = "prikorm-reactions-v1";
 const D_KEY = "prikorm-dates-v1";
-let state = {}, reactions = {}, dates = {};
+const O_KEY = "prikorm-open-v1"; // какие категории раскрыты
+let state = {}, reactions = {}, dates = {}, openState = {};
 let eatSide = 0;
 let filterMode = "all";
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -636,7 +637,9 @@ function loadState(){
   try{ const v = localStorage.getItem(STORAGE_KEY); if(v) state = JSON.parse(v); }catch(e){ state = {}; }
   try{ const r = localStorage.getItem(R_KEY); if(r) reactions = JSON.parse(r); }catch(e){ reactions = {}; }
   try{ const d = localStorage.getItem(D_KEY); if(d) dates = JSON.parse(d); }catch(e){ dates = {}; }
+  try{ const o = localStorage.getItem(O_KEY); if(o) openState = JSON.parse(o); }catch(e){ openState = {}; }
 }
+function saveOpen(){ try{ localStorage.setItem(O_KEY, JSON.stringify(openState)); }catch(e){} }
 function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
@@ -872,6 +875,7 @@ function render(){
     const toggle = ()=>{
       const c = stEl.classList.toggle("collapsed");
       head.setAttribute("aria-expanded", String(!c));
+      openState[st.id] = !c; saveOpen();
     };
     head.addEventListener("click", toggle);
     head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
@@ -995,7 +999,7 @@ function render(){
       </ul>
     </div>`;
   const wHead = warnEl.querySelector(".stage-head");
-  const wToggle = ()=>{ const c=warnEl.classList.toggle("collapsed"); wHead.setAttribute("aria-expanded",String(!c)); };
+  const wToggle = ()=>{ const c=warnEl.classList.toggle("collapsed"); wHead.setAttribute("aria-expanded",String(!c)); openState["w1"]=!c; saveOpen(); };
   wHead.addEventListener("click", wToggle);
   wHead.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); wToggle(); }});
   main.appendChild(warnEl);
@@ -1010,19 +1014,25 @@ function render(){
   });
   main.appendChild(resetBtn);
 
-  // свернуть все категории по умолчанию, раскрыть первую незавершённую (текущую)
+  // Восстановить, какие категории были раскрыты в прошлый раз.
+  // Если это первый заход (ничего не сохранено) — свернуть все и раскрыть текущую (первую незавершённую).
   const stageEls = [...document.querySelectorAll("#main .stage")];
+  const hasSaved = Object.keys(openState).length > 0;
   stageEls.forEach(el=>{
-    el.classList.add("collapsed");
+    const sid = el.dataset.stage;
+    const open = hasSaved ? !!openState[sid] : false;
+    el.classList.toggle("collapsed", !open);
     const h = el.querySelector(".stage-head");
-    if(h) h.setAttribute("aria-expanded","false");
+    if(h) h.setAttribute("aria-expanded", String(open));
   });
-  const firstOpen = STAGES.find(st=> !st.items.every((_,j)=> state[st.id+"-"+j]));
-  const openEl = firstOpen ? document.querySelector(`#main .stage[data-stage="${firstOpen.id}"]`) : stageEls[0];
-  if(openEl){
-    openEl.classList.remove("collapsed");
-    const h = openEl.querySelector(".stage-head");
-    if(h) h.setAttribute("aria-expanded","true");
+  if(!hasSaved){
+    const firstOpen = STAGES.find(st=> !st.items.every((_,j)=> state[st.id+"-"+j]));
+    const openEl = firstOpen ? document.querySelector(`#main .stage[data-stage="${firstOpen.id}"]`) : stageEls[0];
+    if(openEl){
+      openEl.classList.remove("collapsed");
+      const h = openEl.querySelector(".stage-head");
+      if(h) h.setAttribute("aria-expanded","true");
+    }
   }
 
   updateHero();
