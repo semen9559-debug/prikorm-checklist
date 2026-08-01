@@ -179,6 +179,16 @@
   }
   .chip.active{ background:var(--sage); border-color:var(--sage); color:#fff; box-shadow:0 2px 8px rgba(111,162,92,.3); }
 
+  .kids{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  .kid{
+    border:1px solid var(--line2); background:var(--paper); color:var(--ink);
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:12.5px;
+    padding:6px 14px; border-radius:99px; cursor:pointer; transition:all .2s;
+  }
+  .kid.active{ background:var(--sky); border-color:var(--sky); color:#fff; box-shadow:0 2px 8px rgba(62,143,196,.3); }
+  .kid-add{ color:var(--ink-soft); border-style:dashed; }
+  .kid-edit{ padding:6px 11px; }
+
   /* ---------- LAYOUT ---------- */
   .layout{
     max-width:940px;
@@ -568,6 +578,7 @@
     <button class="chip" data-f="todo" type="button">Невведённые</button>
     <button class="chip" data-f="allergens" type="button">Аллергены</button>
   </div>
+  <div class="kids" id="kids"></div>
 </div>
 
 <div class="layout">
@@ -637,6 +648,18 @@
   <label class="fld-label" for="addDesc">Описание / заметка</label>
   <textarea id="addDesc" class="fld" placeholder="Как готовить, особенности, ваши наблюдения…"></textarea>
   <button class="add-submit" id="addSubmit">Добавить продукт</button>
+</div>
+
+<div class="modal-backdrop" id="kidBackdrop"></div>
+<div class="modal" id="kidModal" role="dialog" aria-modal="true" aria-label="Ребёнок">
+  <div class="modal-head">
+    <h3 id="kidTitle">Ребёнок</h3>
+    <button class="modal-x" id="kidClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="kidName">Имя ребёнка</label>
+  <input id="kidName" class="fld" type="text" maxlength="30" placeholder="Например: Аня">
+  <button class="add-submit" id="kidSave">Сохранить</button>
+  <button class="pcard-del" id="kidDelete" type="button" style="margin-top:10px; display:none">🗑 Удалить ребёнка</button>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -793,8 +816,12 @@ const O_KEY = "prikorm-open-v1"; // какие категории раскрыт
 const N_KEY = "prikorm-notes-v1"; // заметки к продуктам
 const C_KEY = "prikorm-custom-v1"; // свои продукты пользователя
 const T_KEY = "prikorm-theme";
-const ALL_KEYS = [STORAGE_KEY, R_KEY, D_KEY, O_KEY, N_KEY, C_KEY, T_KEY];
+const CH_KEY = "prikorm-children-v1";  // список детей
+const ACT_KEY = "prikorm-active-v1";   // активный ребёнок
+const BASE_KEYS = [STORAGE_KEY, R_KEY, D_KEY, O_KEY, N_KEY, C_KEY]; // данные на каждого ребёнка
 let state = {}, reactions = {}, dates = {}, openState = {}, notes = {}, customItems = {};
+let children = [], activeChild = "c1", editingKid = null;
+function k(base){ return base + "__" + activeChild; }
 let eatSide = 0;
 let filterMode = "all";
 let lastResetBackup = null;
@@ -808,24 +835,108 @@ const MONTHS = ["января","февраля","марта","апреля","м�
 function fmtDate(iso){ const d = new Date(iso); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
 function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-/* ---------- STATE ---------- */
+/* ---------- ДЕТИ (профили) ---------- */
+function saveChildren(){ try{ localStorage.setItem(CH_KEY, JSON.stringify(children)); }catch(e){} }
+function saveActive(){ try{ localStorage.setItem(ACT_KEY, activeChild); }catch(e){} }
+function loadChildrenMeta(){
+  try{ const c = localStorage.getItem(CH_KEY); if(c) children = JSON.parse(c); }catch(e){ children = []; }
+  try{ const a = localStorage.getItem(ACT_KEY); if(a) activeChild = a; }catch(e){}
+  if(!children.length){
+    // первый запуск новой версии: переносим существующие отметки в первого ребёнка
+    children = [{ id:"c1", name:"Малыш" }];
+    activeChild = "c1";
+    BASE_KEYS.forEach(base=>{
+      const old = localStorage.getItem(base);
+      if(old != null && localStorage.getItem(base+"__c1") == null){
+        localStorage.setItem(base+"__c1", old);
+        localStorage.removeItem(base);
+      }
+    });
+    saveChildren(); saveActive();
+  }
+  if(!children.find(c=> c.id===activeChild)) activeChild = children[0].id;
+}
+
+/* ---------- STATE (данные активного ребёнка) ---------- */
 function loadState(){
-  try{ const v = localStorage.getItem(STORAGE_KEY); if(v) state = JSON.parse(v); }catch(e){ state = {}; }
-  try{ const r = localStorage.getItem(R_KEY); if(r) reactions = JSON.parse(r); }catch(e){ reactions = {}; }
-  try{ const d = localStorage.getItem(D_KEY); if(d) dates = JSON.parse(d); }catch(e){ dates = {}; }
-  try{ const o = localStorage.getItem(O_KEY); if(o) openState = JSON.parse(o); }catch(e){ openState = {}; }
-  try{ const n = localStorage.getItem(N_KEY); if(n) notes = JSON.parse(n); }catch(e){ notes = {}; }
-  try{ const c = localStorage.getItem(C_KEY); if(c) customItems = JSON.parse(c); }catch(e){ customItems = {}; }
+  state={}; reactions={}; dates={}; openState={}; notes={}; customItems={};
+  try{ const v = localStorage.getItem(k(STORAGE_KEY)); if(v) state = JSON.parse(v); }catch(e){}
+  try{ const r = localStorage.getItem(k(R_KEY)); if(r) reactions = JSON.parse(r); }catch(e){}
+  try{ const d = localStorage.getItem(k(D_KEY)); if(d) dates = JSON.parse(d); }catch(e){}
+  try{ const o = localStorage.getItem(k(O_KEY)); if(o) openState = JSON.parse(o); }catch(e){}
+  try{ const n = localStorage.getItem(k(N_KEY)); if(n) notes = JSON.parse(n); }catch(e){}
+  try{ const c = localStorage.getItem(k(C_KEY)); if(c) customItems = JSON.parse(c); }catch(e){}
 }
-function saveOpen(){ try{ localStorage.setItem(O_KEY, JSON.stringify(openState)); }catch(e){} }
-function saveNotes(){ try{ localStorage.setItem(N_KEY, JSON.stringify(notes)); }catch(e){} }
-function saveCustom(){ try{ localStorage.setItem(C_KEY, JSON.stringify(customItems)); }catch(e){} }
+function saveState(){ try{ localStorage.setItem(k(STORAGE_KEY), JSON.stringify(state)); }catch(e){} }
+function saveReactions(){ try{ localStorage.setItem(k(R_KEY), JSON.stringify(reactions)); }catch(e){} }
+function saveDates(){ try{ localStorage.setItem(k(D_KEY), JSON.stringify(dates)); }catch(e){} }
+function saveOpen(){ try{ localStorage.setItem(k(O_KEY), JSON.stringify(openState)); }catch(e){} }
+function saveNotes(){ try{ localStorage.setItem(k(N_KEY), JSON.stringify(notes)); }catch(e){} }
+function saveCustom(){ try{ localStorage.setItem(k(C_KEY), JSON.stringify(customItems)); }catch(e){} }
 function customFor(stId){ return customItems[stId] || []; }
-function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+
+/* ---------- переключение / управление детьми ---------- */
+function switchChild(id){
+  if(id === activeChild) return;
+  activeChild = id; saveActive();
+  loadState();
+  render(); renderKids(); updateHero();
 }
-function saveReactions(){ try{ localStorage.setItem(R_KEY, JSON.stringify(reactions)); }catch(e){} }
-function saveDates(){ try{ localStorage.setItem(D_KEY, JSON.stringify(dates)); }catch(e){} }
+function renderKids(){
+  const el = document.getElementById("kids");
+  if(!el) return;
+  el.innerHTML =
+    children.map(c=> `<button class="kid ${c.id===activeChild?'active':''}" data-id="${c.id}" type="button">${esc(c.name)}</button>`).join("") +
+    `<button class="kid kid-edit" id="kidEdit" type="button" aria-label="Изменить имя">✏️</button>` +
+    `<button class="kid kid-add" id="kidAdd" type="button">＋ ребёнок</button>`;
+  el.querySelectorAll(".kid[data-id]").forEach(b=> b.addEventListener("click", ()=> switchChild(b.dataset.id)));
+  document.getElementById("kidAdd").addEventListener("click", ()=> openKidModal(null));
+  document.getElementById("kidEdit").addEventListener("click", ()=> openKidModal(activeChild));
+}
+function openKidModal(id){
+  editingKid = id;
+  const isEdit = !!id;
+  document.getElementById("kidTitle").textContent = isEdit ? "Имя ребёнка" : "Новый ребёнок";
+  document.getElementById("kidName").value = isEdit ? (children.find(c=>c.id===id)?.name || "") : "";
+  const del = document.getElementById("kidDelete");
+  del.style.display = (isEdit && children.length>1) ? "block" : "none";
+  document.getElementById("kidModal").classList.add("open");
+  document.getElementById("kidBackdrop").classList.add("open");
+  setTimeout(()=> document.getElementById("kidName").focus(), 80);
+}
+function closeKidModal(){
+  document.getElementById("kidModal").classList.remove("open");
+  document.getElementById("kidBackdrop").classList.remove("open");
+}
+function saveKid(){
+  const name = document.getElementById("kidName").value.trim();
+  if(!name){ document.getElementById("kidName").focus(); return; }
+  if(editingKid){
+    const c = children.find(c=> c.id===editingKid);
+    if(c) c.name = name;
+    saveChildren();
+    closeKidModal(); renderKids(); toast("Имя обновлено");
+  } else {
+    const id = "c" + Date.now().toString(36);
+    children.push({ id, name });
+    saveChildren();
+    activeChild = id; saveActive();
+    loadState();
+    closeKidModal(); render(); renderKids(); updateHero();
+    toast("Ребёнок добавлен 🎉");
+  }
+}
+function deleteKid(){
+  if(children.length <= 1 || !editingKid) return;
+  if(!confirm("Удалить ребёнка и все его отметки?")) return;
+  const id = editingKid;
+  BASE_KEYS.forEach(base=> localStorage.removeItem(base+"__"+id));
+  children = children.filter(c=> c.id !== id);
+  saveChildren();
+  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); }
+  closeKidModal(); render(); renderKids(); updateHero();
+  toast("Ребёнок удалён");
+}
 function customKey(stId, id){ return stId+"-c"+id; }
 function stageCounts(st){
   let total=0, checked=0;
@@ -1345,8 +1456,16 @@ function applyFilters(){
 }
 
 /* ---------- INIT ---------- */
+loadChildrenMeta();
 loadState();
 render();
+renderKids();
+
+document.getElementById("kidClose").addEventListener("click", closeKidModal);
+document.getElementById("kidBackdrop").addEventListener("click", closeKidModal);
+document.getElementById("kidSave").addEventListener("click", saveKid);
+document.getElementById("kidDelete").addEventListener("click", deleteKid);
+document.getElementById("kidName").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); saveKid(); }});
 
 document.getElementById("search").addEventListener("input", applyFilters);
 document.getElementById("searchClear").addEventListener("click", ()=>{
@@ -1371,7 +1490,7 @@ document.getElementById("addClose").addEventListener("click", closeAddProduct);
 document.getElementById("addBackdrop").addEventListener("click", closeAddProduct);
 document.getElementById("addSubmit").addEventListener("click", submitAddProduct);
 document.getElementById("addName").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); submitAddProduct(); }});
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); closeKidModal(); } });
 
 // свайп вниз, чтобы закрыть шторку
 (function(){
@@ -1452,8 +1571,11 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
 /* ---------- РЕЗЕРВНАЯ КОПИЯ ---------- */
 document.getElementById("exportBtn").addEventListener("click", ()=>{
   const data = {};
-  ALL_KEYS.forEach(k=>{ const v = localStorage.getItem(k); if(v!=null) data[k]=v; });
-  const blob = new Blob([JSON.stringify({app:"prikorm", version:1, data}, null, 2)], {type:"application/json"});
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.indexOf("prikorm-")===0) data[key] = localStorage.getItem(key);
+  }
+  const blob = new Blob([JSON.stringify({app:"prikorm", version:2, data}, null, 2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = "prikorm-backup.json"; a.click();
@@ -1468,7 +1590,7 @@ document.getElementById("importFile").addEventListener("change", e=>{
     try{
       const parsed = JSON.parse(r.result);
       const data = parsed.data || parsed;
-      Object.keys(data).forEach(k=>{ if(ALL_KEYS.includes(k)) localStorage.setItem(k, data[k]); });
+      Object.keys(data).forEach(key=>{ if(key.indexOf("prikorm-")===0) localStorage.setItem(key, data[key]); });
       toast("Восстановлено ✅");
       setTimeout(()=> location.reload(), 600);
     }catch(err){ toast("Не удалось прочитать файл 😕"); }
