@@ -20,6 +20,22 @@
       document.documentElement.setAttribute('data-theme','dark');
     }
   }catch(e){}
+  // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
+  window.APP_VERSION = "v14";
+  (function(){
+    try{
+      fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if(j && j.v && j.v !== window.APP_VERSION){
+            if(sessionStorage.getItem('pk-upd') === j.v) return; // уже пробовали — не зацикливаемся
+            sessionStorage.setItem('pk-upd', j.v);
+            location.replace(location.pathname + '?v=' + encodeURIComponent(j.v));
+          }
+        })
+        .catch(function(){});
+    }catch(e){}
+  })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

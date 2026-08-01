@@ -1,4 +1,4 @@
-const CACHE = "prikorm-v1";
+const CACHE = "prikorm-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -25,6 +25,21 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
+
+  // Никогда не кэшируем проверку версии
+  if (req.url.indexOf("version.json") !== -1) return;
+
+  // Страница (HTML): сначала сеть — всегда свежая версия, кэш только офлайн
+  if (req.mode === "navigate") {
+    e.respondWith(
+      fetch(req)
+        .then(res => { const c = res.clone(); caches.open(CACHE).then(cc => cc.put("./index.html", c)); return res; })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  // Остальные ресурсы: сначала кэш (быстро), потом сеть
   e.respondWith((async () => {
     const cached = await caches.match(req);
     if (cached) return cached;
@@ -37,8 +52,7 @@ self.addEventListener("fetch", e => {
       }
       return res;
     } catch (err) {
-      const fallback = await caches.match("./index.html");
-      return fallback || Response.error();
+      return caches.match("./index.html");
     }
   })());
 });
