@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v22";
+  window.APP_VERSION = "v23";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -662,6 +662,8 @@
   <button class="drawer-item" data-view="dev" type="button">👣 Развитие по месяцам</button>
   <button class="drawer-item" data-view="diary" type="button">😴 Дневник дня</button>
   <button class="drawer-item" data-view="docs" type="button">📄 Документы и выплаты</button>
+  <button class="drawer-item" data-view="vac" type="button">💉 Календарь прививок</button>
+  <button class="drawer-item" data-view="preg" type="button">🤰 До родов по триместрам</button>
 </nav>
 
 <div id="viewPrikorm">
@@ -804,6 +806,50 @@
   <div class="no-results" id="docsNoResults">Ничего не найдено 🙈</div>
   <div class="tools">
     <button id="docsCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewVac" hidden>
+  <div class="hero">
+    <div class="hero-plant">💉</div>
+    <h1>💉 Календарь прививок</h1>
+    <p class="hero-sub">Национальный календарь РФ по возрасту</p>
+    <div class="stem-wrap"><div class="stem-fill" id="vacFill"></div></div>
+    <div class="hero-count" id="vacCount">0 из 0 сделано</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <input id="vacSearch" type="search" placeholder="Поиск прививки…" aria-label="Поиск прививки" autocomplete="off">
+      <button class="search-clear" id="vacSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="vacKids"></div>
+  </div>
+  <div class="dev-intro"><div>Ориентир по национальному календарю РФ. Точные сроки и схема — индивидуально с педиатром (возможны медотводы и группы риска). Прививки по календарю бесплатны по ОМС.</div></div>
+  <main id="vacMain" class="sumka-main"></main>
+  <div class="no-results" id="vacNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="vacCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewPreg" hidden>
+  <div class="hero">
+    <div class="hero-plant">🤰</div>
+    <h1>🤰 До родов по триместрам</h1>
+    <p class="hero-sub">Учёт, скрининги, анализы и подготовка</p>
+    <div class="stem-wrap"><div class="stem-fill" id="pregFill"></div></div>
+    <div class="hero-count" id="pregCount">0 из 0 выполнено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <input id="pregSearch" type="search" placeholder="Поиск шага…" aria-label="Поиск шага" autocomplete="off">
+      <button class="search-clear" id="pregSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="pregKids"></div>
+  </div>
+  <div class="dev-intro"><div>Справочная информация. Сроки ориентировочные, ведение беременности индивидуально — следуйте назначениям вашего врача женской консультации.</div></div>
+  <main id="pregMain" class="sumka-main"></main>
+  <div class="no-results" id="pregNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="pregCollapseBtn" type="button">🔽 Свернуть всё</button>
   </div>
 </div>
 
@@ -1128,10 +1174,14 @@ function switchChild(id){
   if(typeof dLoad==="function") dLoad();
   if(typeof dyLoad==="function") dyLoad();
   if(typeof dcLoad==="function") dcLoad();
+  if(typeof vacMod!=="undefined") vacMod.load();
+  if(typeof pregMod!=="undefined") pregMod.load();
   render();
   if(currentView==="dev") renderDev();
   if(currentView==="diary") renderDiary();
   if(currentView==="docs") renderDocs();
+  if(currentView==="vac") vacMod.render();
+  if(currentView==="preg") pregMod.render();
   renderKids(); updateHero();
 }
 function renderKidChips(el, withManage){
@@ -1147,6 +1197,8 @@ function renderKids(){
   const dk=document.getElementById("devKids"); if(dk) renderKidChips(dk, false);
   const yk=document.getElementById("diaryKids"); if(yk) renderKidChips(yk, false);
   const ck=document.getElementById("docsKids"); if(ck) renderKidChips(ck, false);
+  const vk=document.getElementById("vacKids"); if(vk) renderKidChips(vk, false);
+  const pk=document.getElementById("pregKids"); if(pk) renderKidChips(pk, false);
 }
 function openKidModal(id){
   editingKid = id;
@@ -1176,11 +1228,13 @@ function saveKid(){
     children.push({ id, name });
     saveChildren();
     activeChild = id; saveActive();
-    loadState(); dLoad(); dyLoad(); dcLoad();
+    loadState(); dLoad(); dyLoad(); dcLoad(); vacMod.load(); pregMod.load();
     closeKidModal(); render();
     if(currentView==="dev") renderDev();
     if(currentView==="diary") renderDiary();
     if(currentView==="docs") renderDocs();
+    if(currentView==="vac") vacMod.render();
+    if(currentView==="preg") pregMod.render();
     renderKids(); updateHero();
     toast("Ребёнок добавлен 🎉");
   }
@@ -1192,11 +1246,13 @@ function deleteKid(){
   BASE_KEYS.forEach(base=> localStorage.removeItem(base+"__"+id));
   children = children.filter(c=> c.id !== id);
   saveChildren();
-  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); dcLoad(); }
+  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); dcLoad(); vacMod.load(); pregMod.load(); }
   closeKidModal(); render();
   if(currentView==="dev") renderDev();
   if(currentView==="diary") renderDiary();
   if(currentView==="docs") renderDocs();
+  if(currentView==="vac") vacMod.render();
+  if(currentView==="preg") pregMod.render();
   renderKids(); updateHero();
   toast("Ребёнок удалён");
 }
@@ -2652,6 +2708,164 @@ function docsCollapseAll(){
   document.getElementById("docsCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
 }
 
+/* ===================== ОБЩИЙ ДВИЖОК ЧЕК-ЛИСТА (инфо + галочка + заметка) ===================== */
+function makeInfoChecklist(cfg){
+  let state={}, notes={}, open={};
+  const K=cfg.keys;
+  function load(){
+    state={}; notes={}; open={};
+    try{ const v=localStorage.getItem(k(K.check)); if(v) state=JSON.parse(v); }catch(e){}
+    try{ const v=localStorage.getItem(k(K.notes)); if(v) notes=JSON.parse(v); }catch(e){}
+    try{ const v=localStorage.getItem(k(K.open)); if(v) open=JSON.parse(v); }catch(e){}
+  }
+  const saveCheck=()=>{ try{ localStorage.setItem(k(K.check), JSON.stringify(state)); }catch(e){} };
+  const saveNotes=()=>{ try{ localStorage.setItem(k(K.notes), JSON.stringify(notes)); }catch(e){} };
+  const saveOpen=()=>{ try{ localStorage.setItem(k(K.open), JSON.stringify(open)); }catch(e){} };
+  function catCounts(cat){ let t=0,c=0; cat.items.forEach((_,i)=>{ t++; if(state[cat.id+"-"+i]) c++; }); return {total:t, checked:c}; }
+  function totals(){ let t=0,c=0; cfg.data.forEach(cat=>{ const cc=catCounts(cat); t+=cc.total; c+=cc.checked; }); return {total:t, checked:c}; }
+  function updateHead(){ const {total,checked}=totals(); const pct=total?Math.round(checked/total*100):0; const f=document.getElementById(cfg.ids.fill); if(f) f.style.width=pct+"%"; const cnt=document.getElementById(cfg.ids.count); if(cnt) cnt.innerHTML=`<b>${checked}</b> из ${total} ${cfg.countWord}`; }
+  function updateCat(el,cat){ const {total,checked}=catCounts(cat); el.querySelector(".stage-progress-text").textContent=`${checked} из ${total}`; el.querySelector(".stage-bar-fill").style.width=(total?checked/total*100:0)+"%"; el.classList.toggle("done",total>0&&checked===total); }
+  function buildRow(cat,item,key){
+    const wrap=document.createElement("div"); wrap.className="s-row"; wrap.dataset.key=key; wrap.dataset.name=(item.n+" "+(item.info||"")).toLowerCase();
+    const row=document.createElement("div"); row.className="item"; row.setAttribute("role","checkbox"); row.setAttribute("tabindex","0"); row.setAttribute("aria-label",item.n);
+    row.innerHTML=`<div class="checkbox">✓</div><div class="item-label">${esc(item.n)}${item.info?`<span class="doc-sub">${esc(item.info)}</span>`:''}</div><button class="note-btn" aria-label="Заметка" tabindex="-1">✎</button>`;
+    const box=row.querySelector(".checkbox"),label=row.querySelector(".item-label"),nbtn=row.querySelector(".note-btn");
+    const apply=()=>{ const on=!!state[key]; box.classList.toggle("checked",on); label.classList.toggle("checked",on); row.setAttribute("aria-checked",String(on)); };
+    apply();
+    const toggle=()=>{ state[key]=!state[key]; apply(); updateCat(wrap.closest(".stage"),cat); updateHead(); saveCheck(); if(state[key]){ if(navigator.vibrate) navigator.vibrate(14); const cc=catCounts(cat); if(cc.checked===cc.total) confetti(false); } };
+    row.addEventListener("click",e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
+    row.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+    const note=document.createElement("div"); note.className="s-note";
+    note.innerHTML=`<textarea placeholder="${esc(cfg.notePlaceholder||'Заметка / дата')}">${esc(notes[key]||"")}</textarea>`;
+    const ta=note.querySelector("textarea");
+    ta.addEventListener("input",()=>{ const v=ta.value; if(v.trim()) notes[key]=v; else delete notes[key]; saveNotes(); nbtn.classList.toggle("has",!!notes[key]); });
+    nbtn.classList.toggle("has",!!notes[key]);
+    nbtn.addEventListener("click",e=>{ e.stopPropagation(); const o=!note.classList.contains("open"); note.classList.toggle("open",o); if(o) setTimeout(()=>ta.focus(),60); });
+    wrap.appendChild(row); wrap.appendChild(note); return wrap;
+  }
+  function render(){
+    const main=document.getElementById(cfg.ids.main); main.innerHTML="";
+    cfg.data.forEach(cat=>{
+      const el=document.createElement("div"); el.className=`stage theme-${cat.theme}`; el.dataset.cat=cat.id;
+      const head=document.createElement("div"); head.className="stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
+      head.innerHTML=`<div class="stage-emoji">${cat.emoji}</div><div class="stage-title-wrap"><p class="stage-title">${cat.name}</p><div class="stage-progress-text">0</div></div><span class="stage-medal" title="Готово">🏅</span><div class="stage-chevron">▾</div>`;
+      const toggle=()=>{ const c=el.classList.toggle("collapsed"); head.setAttribute("aria-expanded",String(!c)); open[cat.id]=!c; saveOpen(); };
+      head.addEventListener("click",toggle); head.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+      el.appendChild(head);
+      const bar=document.createElement("div"); bar.className="stage-bar-track"; bar.innerHTML=`<div class="stage-bar-fill"></div>`; el.appendChild(bar);
+      const body=document.createElement("div"); body.className="stage-body";
+      cat.items.forEach((it,i)=> body.appendChild(buildRow(cat,it,cat.id+"-"+i)));
+      if(cat.tip){ const t=document.createElement("div"); t.className="goal-note"; t.innerHTML=`<span class="ic">💡</span><span>${esc(cat.tip)}</span>`; body.appendChild(t); }
+      el.appendChild(body); main.appendChild(el); updateCat(el,cat);
+    });
+    const els=[...main.querySelectorAll(".stage")]; const hasSaved=Object.keys(open).length>0;
+    els.forEach(el=>{ const o=hasSaved?!!open[el.dataset.cat]:false; el.classList.toggle("collapsed",!o); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(o)); });
+    if(!hasSaved){ const fc=cfg.data.find(c=>{ const cc=catCounts(c); return cc.checked<cc.total; })||cfg.data[0]; const el=main.querySelector(`.stage[data-cat="${fc.id}"]`); if(el){ el.classList.remove("collapsed"); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded","true"); } }
+    updateHead();
+  }
+  function applySearch(){
+    const q=(document.getElementById(cfg.ids.search).value||"").trim().toLowerCase();
+    document.getElementById(cfg.ids.searchClear).classList.toggle("show",q.length>0);
+    let any=false;
+    document.querySelectorAll("#"+cfg.ids.main+" .stage").forEach(el=>{
+      let vis=0; el.querySelectorAll(".s-row").forEach(r=>{ const m=!q||r.dataset.name.includes(q); r.style.display=m?"":"none"; if(m)vis++; });
+      el.querySelectorAll(".goal-note").forEach(x=> x.style.display = q ? "none" : "");
+      const show=!q||vis>0; el.classList.toggle("hide",!show); if(show){ any=true; if(q) el.classList.remove("collapsed"); }
+    });
+    document.getElementById(cfg.ids.noResults).classList.toggle("show",q.length>0&&!any);
+  }
+  function collapseAll(){
+    const els=[...document.querySelectorAll("#"+cfg.ids.main+" .stage")];
+    const anyOpen=els.some(el=> !el.classList.contains("collapsed"));
+    els.forEach(el=>{ el.classList.toggle("collapsed",anyOpen); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(!anyOpen)); open[el.dataset.cat]=!anyOpen; });
+    saveOpen();
+    document.getElementById(cfg.ids.collapseBtn).textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
+  }
+  return { load, render, applySearch, collapseAll };
+}
+
+/* ---------- Данные: календарь прививок (нац. календарь РФ) ---------- */
+const VAC = [
+  { id:"rd", emoji:"🏥", name:"В роддоме (первые дни)", theme:"sky",
+    tip:"Прививки по национальному календарю бесплатны по ОМС. Точные сроки — по графику педиатра; при медотводах схема сдвигается.",
+    items:[
+      { n:"Гепатит B — 1-я вакцинация", info:"В первые 24 часа жизни. Схема для всех детей: 0–1–6 месяцев." },
+      { n:"Туберкулёз (БЦЖ / БЦЖ-М)", info:"На 3–7 день жизни, ещё в роддоме." }
+    ]},
+  { id:"h1", emoji:"👶", name:"До полугода", theme:"sage",
+    items:[
+      { n:"1 мес — Гепатит B (2-я)", info:"Вторая вакцинация по схеме 0–1–6." },
+      { n:"2 мес — Пневмококковая инфекция (1-я)", info:"Первая вакцинация против пневмококка." },
+      { n:"3 мес — АКДС: дифтерия, коклюш, столбняк (1-я)", info:"Первая вакцинация. Часто в комбинации с полиомиелитом и гемофильной." },
+      { n:"3 мес — Полиомиелит (1-я)", info:"Первая вакцинация (инактивированная вакцина, ИПВ)." },
+      { n:"3 мес — Гемофильная инфекция (группы риска)", info:"Для детей из групп риска — по назначению врача." },
+      { n:"4,5 мес — АКДС (2-я)", info:"Вторая вакцинация." },
+      { n:"4,5 мес — Полиомиелит (2-я)", info:"Вторая вакцинация (ИПВ)." },
+      { n:"4,5 мес — Пневмококковая (2-я)", info:"Вторая вакцинация." }
+    ]},
+  { id:"h2", emoji:"🎂", name:"Полгода — год", theme:"coral",
+    items:[
+      { n:"6 мес — АКДС (3-я)", info:"Третья вакцинация." },
+      { n:"6 мес — Гепатит B (3-я)", info:"Третья вакцинация по схеме 0–1–6." },
+      { n:"6 мес — Полиомиелит (3-я)", info:"Третья вакцинация." },
+      { n:"12 мес — Корь, краснуха, паротит (КПК)", info:"Вакцинация одной комбинированной прививкой." },
+      { n:"12 мес — Гепатит B (4-я, группы риска)", info:"Для детей из групп риска — по схеме 0–1–2–12." }
+    ]},
+  { id:"after", emoji:"🧒", name:"После года (ревакцинации)", theme:"butter",
+    items:[
+      { n:"15 мес — Пневмококковая (ревакцинация)", info:"Ревакцинация против пневмококка." },
+      { n:"18 мес — АКДС (1-я ревакцинация)", info:"Первая ревакцинация." },
+      { n:"18 мес — Полиомиелит (1-я ревакцинация)", info:"Первая ревакцинация." },
+      { n:"20 мес — Полиомиелит (2-я ревакцинация)", info:"Вторая ревакцинация." },
+      { n:"6 лет — Корь, краснуха, паротит (ревакцинация)", info:"Ревакцинация КПК." },
+      { n:"6–7 лет — Дифтерия, столбняк (АДС-М)", info:"Ревакцинация." },
+      { n:"6–7 лет — Туберкулёз (БЦЖ, ревакцинация)", info:"При отрицательной пробе Манту." }
+    ]},
+  { id:"year", emoji:"💉", name:"Ежегодно и по показаниям", theme:"plum",
+    items:[
+      { n:"Грипп — ежегодно", info:"С 6 месяцев, каждый сезон (осенью)." },
+      { n:"Ротавирусная инфекция", info:"По национальному календарю/региональным программам, курс в первые месяцы жизни. Уточните у педиатра." },
+      { n:"Ветряная оспа", info:"По рекомендации и региональным программам. Уточните у педиатра." }
+    ]}
+];
+
+/* ---------- Данные: до родов по триместрам ---------- */
+const PREG = [
+  { id:"t1", emoji:"🌱", name:"1 триместр (до 13 недель)", theme:"sage",
+    tip:"Встать на учёт лучше до 12 недель — это важно для здоровья и для единого пособия беременным (при ранней постановке).",
+    items:[
+      { n:"Встать на учёт в женской консультации", info:"Оптимально до 12 недель (лучше в 7–8). Заводят обменную карту, назначают анализы и наблюдение." },
+      { n:"Первый скрининг (11–14 недель)", info:"УЗИ + анализ крови (ХГЧ и PAPP-A). Оценка рисков хромосомных патологий." },
+      { n:"Базовые анализы", info:"Кровь (ОАК, группа и резус, ВИЧ, гепатиты, сифилис, TORCH, глюкоза, коагулограмма), моча, мазки." },
+      { n:"Осмотры специалистов", info:"Терапевт, стоматолог, ЛОР, окулист — при постановке на учёт." },
+      { n:"Фолиевая кислота и йод", info:"Приём по назначению врача (фолиевая — с планирования и в 1 триместре)." }
+    ]},
+  { id:"t2", emoji:"🤰", name:"2 триместр (14–27 недель)", theme:"coral",
+    items:[
+      { n:"Второй скрининг УЗИ (18–21 неделя)", info:"Оценка анатомии плода, плаценты; можно узнать пол ребёнка." },
+      { n:"Глюкозотолерантный тест (24–28 недель)", info:"Обязателен для всех (оптимально 24–26 недель) — исключение гестационного диабета." },
+      { n:"Повторные анализы и наблюдение", info:"ОАК, ОАМ и другие по назначению; контроль давления, веса, шевелений (с ~18–20 недель)." },
+      { n:"Обменная карта на руки", info:"Ведётся весь срок; носите с собой — понадобится в роддоме." }
+    ]},
+  { id:"t3", emoji:"🎒", name:"3 триместр (28–40 недель)", theme:"sky",
+    tip:"В 30 недель оформляются больничный по беременности и родам (декрет) и родовой сертификат. При многоплодной беременности — с 28 недель.",
+    items:[
+      { n:"Третий скрининг УЗИ (30–34 недели)", info:"Оценка роста и положения плода, плаценты; часто с допплерометрией." },
+      { n:"КТГ плода (с 32–34 недель)", info:"Оценка сердцебиения и состояния малыша, регулярно ближе к родам." },
+      { n:"Декрет и родовой сертификат (30 недель)", info:"Больничный по БиР и родовой сертификат оформляются в 30 недель (28 — при двойне)." },
+      { n:"Выбрать роддом", info:"Определиться с роддомом; при желании — заключить контракт или познакомиться заранее." },
+      { n:"Собрать сумку в роддом", info:"См. раздел «Сумка в роддом». Держите готовой к 36–37 неделям." },
+      { n:"Анализы перед родами", info:"Повторные мазки, кровь и другие исследования по назначению врача." }
+    ]}
+];
+
+const vacMod = makeInfoChecklist({ data:VAC, countWord:"сделано", notePlaceholder:"Например: сделали 5 июля",
+  keys:{ check:"prikorm-vac-checked", notes:"prikorm-vac-notes", open:"prikorm-vac-open" },
+  ids:{ main:"vacMain", fill:"vacFill", count:"vacCount", search:"vacSearch", searchClear:"vacSearchClear", noResults:"vacNoResults", collapseBtn:"vacCollapseBtn" } });
+const pregMod = makeInfoChecklist({ data:PREG, countWord:"выполнено", notePlaceholder:"Например: сделала на 12 неделе",
+  keys:{ check:"prikorm-preg-checked", notes:"prikorm-preg-notes", open:"prikorm-preg-open" },
+  ids:{ main:"pregMain", fill:"pregFill", count:"pregCount", search:"pregSearch", searchClear:"pregSearchClear", noResults:"pregNoResults", collapseBtn:"pregCollapseBtn" } });
+
 /* ---------- переключение разделов ---------- */
 function setView(v){
   currentView = v; try{ localStorage.setItem(VIEW_KEY, v); }catch(e){}
@@ -2661,12 +2875,16 @@ function setView(v){
   document.getElementById("viewDev").hidden = (v!=="dev");
   document.getElementById("viewDiary").hidden = (v!=="diary");
   document.getElementById("viewDocs").hidden = (v!=="docs");
+  document.getElementById("viewVac").hidden = (v!=="vac");
+  document.getElementById("viewPreg").hidden = (v!=="preg");
   document.querySelectorAll(".drawer-item").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
   if(v==="sumka") renderSumka();
   if(v==="buy") renderBuy();
   if(v==="dev") renderDev();
   if(v==="diary") renderDiary();
   if(v==="docs") renderDocs();
+  if(v==="vac") vacMod.render();
+  if(v==="preg") pregMod.render();
   window.scrollTo(0,0);
 }
 function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBackdrop").classList.add("open"); }
@@ -2677,6 +2895,8 @@ bLoad();
 dLoad();
 dyLoad();
 dcLoad();
+vacMod.load();
+pregMod.load();
 document.getElementById("menuBtn").addEventListener("click", openDrawer);
 document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
 document.querySelectorAll(".drawer-item").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
@@ -2706,6 +2926,12 @@ document.getElementById("dyEditDel").addEventListener("click", delDyEdit);
 document.getElementById("docsSearch").addEventListener("input", docsApplySearch);
 document.getElementById("docsSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("docsSearch"); s.value=""; docsApplySearch(); s.focus(); });
 document.getElementById("docsCollapseBtn").addEventListener("click", docsCollapseAll);
+document.getElementById("vacSearch").addEventListener("input", ()=> vacMod.applySearch());
+document.getElementById("vacSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("vacSearch"); s.value=""; vacMod.applySearch(); s.focus(); });
+document.getElementById("vacCollapseBtn").addEventListener("click", ()=> vacMod.collapseAll());
+document.getElementById("pregSearch").addEventListener("input", ()=> pregMod.applySearch());
+document.getElementById("pregSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("pregSearch"); s.value=""; pregMod.applySearch(); s.focus(); });
+document.getElementById("pregCollapseBtn").addEventListener("click", ()=> pregMod.collapseAll());
 setView(currentView);
 
 /* ---------- SERVICE WORKER (офлайн) ---------- */
