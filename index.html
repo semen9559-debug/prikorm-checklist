@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v15";
+  window.APP_VERSION = "v16";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -166,7 +166,7 @@
     position:absolute; left:14px; top:50%; transform:translateY(-50%);
     font-size:14px; opacity:.5; pointer-events:none;
   }
-  #search{
+  .search-wrap input{
     width:100%;
     border:1px solid var(--line2);
     background:var(--paper);
@@ -178,7 +178,7 @@
     color:var(--ink);
     box-shadow:0 2px 8px rgba(58,52,44,0.05);
   }
-  #search::placeholder{ color:var(--text-dim); font-weight:700; }
+  .search-wrap input::placeholder{ color:var(--text-dim); font-weight:700; }
   .search-clear{
     position:absolute; right:8px; top:50%; transform:translateY(-50%);
     width:26px; height:26px; border:none; background:var(--btn-bg); color:var(--ink-soft);
