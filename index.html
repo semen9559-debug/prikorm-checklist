@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v19";
+  window.APP_VERSION = "v20";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -629,12 +629,16 @@
   .qadd button:active{ transform:scale(.94); }
   .qadd button .qi{ font-size:23px; }
   .diary-list{ list-style:none; margin:12px 0 0; padding:0; }
-  .diary-entry{ display:flex; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); margin-bottom:8px; box-shadow:0 2px 8px rgba(58,52,44,.05); }
+  .diary-entry{ display:flex; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); margin-bottom:8px; box-shadow:0 2px 8px rgba(58,52,44,.05); cursor:pointer; }
+  .diary-entry:hover{ border-color:var(--line2); }
   .diary-entry .de-time{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:var(--ink); width:50px; flex-shrink:0; }
   .diary-entry .de-ic{ font-size:20px; }
   .diary-entry .de-label{ flex:1; font-weight:700; font-size:14px; }
-  .diary-entry .de-del{ border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer; padding:4px; }
+  .diary-entry .de-note{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-top:1px; }
+  .diary-entry .de-del{ border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer; padding:4px; flex-shrink:0; }
   .diary-empty{ text-align:center; color:var(--ink-soft); font-weight:700; line-height:1.6; padding:26px 10px; }
+  .diary-hint{ text-align:center; font-size:12px; color:var(--ink-soft); font-weight:700; margin:4px auto 2px; max-width:430px; line-height:1.45; }
+  .qadd-title{ text-align:center; font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:var(--ink); margin:14px 0 0; }
 
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
@@ -771,6 +775,8 @@
       <button id="dyNext" type="button" aria-label="Следующий день">›</button>
     </div>
     <div class="diary-sum" id="dySum"></div>
+    <p class="qadd-title">➕ Добавить запись</p>
+    <div class="diary-hint">Нажмите на кнопку — событие запишется с текущим временем. Затем нажмите на запись в списке, чтобы поправить время или добавить детали (мл, грудь, температуру).</div>
     <div class="qadd" id="dyAdd"></div>
     <ul class="diary-list" id="dyList"></ul>
   </div>
@@ -860,6 +866,20 @@
   <label class="fld-label" for="bAddName">Название</label>
   <input id="bAddName" class="fld" type="text" maxlength="80" placeholder="Например: Конверт на выписку">
   <button class="add-submit" id="bAddSave">Добавить</button>
+</div>
+
+<div class="modal-backdrop" id="dyEditBackdrop"></div>
+<div class="modal" id="dyEditModal" role="dialog" aria-modal="true" aria-label="Запись дневника">
+  <div class="modal-head">
+    <h3 id="dyEditTitle">Запись</h3>
+    <button class="modal-x" id="dyEditClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="dyEditTime">Время</label>
+  <input id="dyEditTime" class="fld" type="time">
+  <label class="fld-label" for="dyEditNote">Заметка (по желанию)</label>
+  <textarea id="dyEditNote" class="fld" placeholder="Например: 120 мл, левая грудь / покакал / 37,2°"></textarea>
+  <button class="add-submit" id="dyEditSave">Сохранить</button>
+  <button class="pcard-del" id="dyEditDel" type="button" style="margin-top:10px">🗑 Удалить запись</button>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1703,7 +1723,7 @@ document.getElementById("addClose").addEventListener("click", closeAddProduct);
 document.getElementById("addBackdrop").addEventListener("click", closeAddProduct);
 document.getElementById("addSubmit").addEventListener("click", submitAddProduct);
 document.getElementById("addName").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); submitAddProduct(); }});
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); closeKidModal(); closeDrawer(); sCloseAdd(); bCloseAdd(); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); closeKidModal(); closeDrawer(); sCloseAdd(); bCloseAdd(); closeDyEdit(); } });
 
 // свайп вниз, чтобы закрыть шторку
 (function(){
@@ -2385,7 +2405,7 @@ function devCollapseAll(){
 
 /* ===================== ДНЕВНИК ДНЯ ===================== */
 const DY_KEY="prikorm-diary";
-let dyData={}, dySelDate=new Date();
+let dyData={}, dySelDate=new Date(), dyEditCtx=null;
 const DY_TYPES=[
   {type:"feed",   ic:"🍼", label:"Кормление"},
   {type:"sleep",  ic:"😴", label:"Сон"},
@@ -2434,12 +2454,48 @@ function renderDiary(){
   document.getElementById("dySum").innerHTML = DY_TYPES.filter(t=>counts[t.type]).map(t=>`<span>${t.ic} ${counts[t.type]}</span>`).join("") || `<span style="opacity:.55">За день пока пусто</span>`;
   const list=document.getElementById("dyList");
   if(!entries.length){ list.innerHTML=`<div class="diary-empty">Пока нет записей за этот день.<br>Нажмите кнопку выше, чтобы добавить.</div>`; return; }
-  list.innerHTML = entries.map(e=>{ const t=DY_TYPES.find(x=>x.type===e.type)||{ic:"•",label:e.type}; return `<li class="diary-entry" data-id="${e.id}"><span class="de-time">${dyFmtTime(e.time)}</span><span class="de-ic">${t.ic}</span><span class="de-label">${esc(t.label)}</span><button class="de-del" aria-label="Удалить">✕</button></li>`; }).join("");
-  list.querySelectorAll(".diary-entry").forEach(li=> li.querySelector(".de-del").addEventListener("click", ()=>{
-    dyData[key]=(dyData[key]||[]).filter(x=> x.id!==li.dataset.id);
-    if(!dyData[key].length) delete dyData[key];
-    dySave(); renderDiary();
-  }));
+  list.innerHTML = entries.map(e=>{ const t=DY_TYPES.find(x=>x.type===e.type)||{ic:"•",label:e.type}; return `<li class="diary-entry" data-id="${e.id}"><span class="de-time">${dyFmtTime(e.time)}</span><span class="de-ic">${t.ic}</span><span class="de-label">${esc(t.label)}${e.note?`<span class="de-note">${esc(e.note)}</span>`:''}</span><button class="de-del" aria-label="Удалить">✕</button></li>`; }).join("");
+  list.querySelectorAll(".diary-entry").forEach(li=>{
+    li.addEventListener("click", ()=> openDyEdit(key, li.dataset.id));
+    li.querySelector(".de-del").addEventListener("click", ev=>{
+      ev.stopPropagation();
+      dyData[key]=(dyData[key]||[]).filter(x=> x.id!==li.dataset.id);
+      if(!dyData[key].length) delete dyData[key];
+      dySave(); renderDiary();
+    });
+  });
+}
+function openDyEdit(dateKey, id){
+  const arr=dyData[dateKey]||[]; const e=arr.find(x=> x.id===id); if(!e) return;
+  dyEditCtx={dateKey, id};
+  const t=DY_TYPES.find(x=>x.type===e.type)||{ic:"•", label:e.type};
+  document.getElementById("dyEditTitle").textContent = `${t.ic} ${t.label}`;
+  const d=new Date(e.time);
+  document.getElementById("dyEditTime").value = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  document.getElementById("dyEditNote").value = e.note||"";
+  document.getElementById("dyEditModal").classList.add("open");
+  document.getElementById("dyEditBackdrop").classList.add("open");
+}
+function closeDyEdit(){
+  document.getElementById("dyEditModal").classList.remove("open");
+  document.getElementById("dyEditBackdrop").classList.remove("open");
+}
+function saveDyEdit(){
+  if(!dyEditCtx) return;
+  const {dateKey, id}=dyEditCtx; const e=(dyData[dateKey]||[]).find(x=> x.id===id);
+  if(!e){ closeDyEdit(); return; }
+  const tv=document.getElementById("dyEditTime").value;
+  if(tv){ const p=tv.split(":"); const d=new Date(e.time); d.setHours(+p[0]||0, +p[1]||0, 0, 0); e.time=d.toISOString(); }
+  const nv=document.getElementById("dyEditNote").value.trim();
+  if(nv) e.note=nv; else delete e.note;
+  dySave(); closeDyEdit(); renderDiary(); toast("Сохранено ✅");
+}
+function delDyEdit(){
+  if(!dyEditCtx) return;
+  const {dateKey, id}=dyEditCtx;
+  dyData[dateKey]=(dyData[dateKey]||[]).filter(x=> x.id!==id);
+  if(!dyData[dateKey].length) delete dyData[dateKey];
+  dySave(); closeDyEdit(); renderDiary();
 }
 
 /* ---------- переключение разделов ---------- */
@@ -2486,6 +2542,10 @@ document.getElementById("devSearchClear").addEventListener("click", ()=>{ const 
 document.getElementById("devCollapseBtn").addEventListener("click", devCollapseAll);
 document.getElementById("dyPrev").addEventListener("click", ()=> dyChangeDay(-1));
 document.getElementById("dyNext").addEventListener("click", ()=> dyChangeDay(1));
+document.getElementById("dyEditClose").addEventListener("click", closeDyEdit);
+document.getElementById("dyEditBackdrop").addEventListener("click", closeDyEdit);
+document.getElementById("dyEditSave").addEventListener("click", saveDyEdit);
+document.getElementById("dyEditDel").addEventListener("click", delDyEdit);
 setView(currentView);
 
 /* ---------- SERVICE WORKER (офлайн) ---------- */
