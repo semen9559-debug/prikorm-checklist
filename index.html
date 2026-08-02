@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v16";
+  window.APP_VERSION = "v17";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -617,6 +617,7 @@
   <div class="drawer-title">Разделы</div>
   <button class="drawer-item" data-view="prikorm" type="button">🌱 Трекер прикорма</button>
   <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>
+  <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>
 </nav>
 
 <div id="viewPrikorm">
@@ -674,6 +675,26 @@
   <div class="no-results" id="sumkaNoResults">Ничего не найдено 🙈</div>
   <div class="tools">
     <button id="sumkaCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewBuy" hidden>
+  <div class="hero">
+    <div class="hero-plant">🛒</div>
+    <h1>🛒 Покупки к рождению</h1>
+    <p class="hero-sub">Отмечайте, что уже куплено 🛍️</p>
+    <div class="stem-wrap"><div class="stem-fill" id="buyFill"></div></div>
+    <div class="hero-count" id="buyCount">0 из 0 куплено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <input id="buySearch" type="search" placeholder="Поиск покупки…" aria-label="Поиск покупки" autocomplete="off">
+      <button class="search-clear" id="buySearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+  </div>
+  <main id="buyMain" class="sumka-main"></main>
+  <div class="no-results" id="buyNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="buyCollapseBtn" type="button">🔽 Свернуть всё</button>
   </div>
 </div>
 
@@ -750,6 +771,17 @@
   <label class="fld-label" for="sAddName">Название</label>
   <input id="sAddName" class="fld" type="text" maxlength="60" placeholder="Например: Плед">
   <button class="add-submit" id="sAddSave">Добавить</button>
+</div>
+
+<div class="modal-backdrop" id="bAddBackdrop"></div>
+<div class="modal" id="bAddModal" role="dialog" aria-modal="true" aria-label="Добавить покупку">
+  <div class="modal-head">
+    <h3 id="bAddTitle">Добавить своё</h3>
+    <button class="modal-x" id="bAddClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="bAddName">Название</label>
+  <input id="bAddName" class="fld" type="text" maxlength="80" placeholder="Например: Конверт на выписку">
+  <button class="add-submit" id="bAddSave">Добавить</button>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1580,7 +1612,7 @@ document.getElementById("addClose").addEventListener("click", closeAddProduct);
 document.getElementById("addBackdrop").addEventListener("click", closeAddProduct);
 document.getElementById("addSubmit").addEventListener("click", submitAddProduct);
 document.getElementById("addName").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); submitAddProduct(); }});
-document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); closeKidModal(); closeDrawer(); sCloseAdd(); } });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeAddProduct(); closeKidModal(); closeDrawer(); sCloseAdd(); bCloseAdd(); } });
 
 // свайп вниз, чтобы закрыть шторку
 (function(){
@@ -1902,19 +1934,236 @@ function sCollapseAll(){
   document.getElementById("sumkaCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
 }
 
+/* ===================== ПОКУПКИ К РОЖДЕНИЮ ===================== */
+const BK_CHECK="prikorm-buy-checked-v1", BK_NOTES="prikorm-buy-notes-v1", BK_CUSTOM="prikorm-buy-custom-v1", BK_OPEN="prikorm-buy-open-v1";
+let bState={}, bNotes={}, bCustom={}, bOpen={}, bAddCtx=null;
+
+const PURCHASE = [
+  { id:"home", emoji:"🏠", name:"Дом — комод и кроватка", theme:"plum",
+    subs:[
+      { name:"Комод и сон", items:["Корзиночки (WB)","Органайзеры (Ozon)","Матрасик (Ozon)","Ночник (Ozon)","Увлажнитель","Люлька","Матрас для люльки","Фитбол"] },
+      { name:"Кроватка", items:["Кроватка-люлька Terra Light","Матрас (Яндекс Маркет)","Простынь — 2 шт. (Ozon)","Наматрасник (Ozon)","Бортики (Ozon)","Плед — 2 шт. (Ozon)","Органайзер (WB)","Ночник с белым шумом (WB)","Мобиль (Ozon)"] }
+    ]},
+  { id:"stroll", emoji:"🧺", name:"Пелёнки и коляска", theme:"sky",
+    tip:"Коляска 3-в-1: блок для новорождённых, прогулочный блок и автолюлька — очень выгодное решение!",
+    subs:[
+      { name:"Пелёнки", items:["Тонкие хлопковые Mjolk (Ozon)","Муслиновые 2–3 шт. 90×120","Непромокаемые 1–2 шт.","Одноразовые 60×60 — 2 шт.","Одноразовые 60×90 — 1 шт."] },
+      { name:"Коляска", items:["Коляска Anex iQ Premium 3-в-1","Подстаканник (Ozon)","Сумка на коляску","Наматрасник"] }
+    ]},
+  { id:"bath", emoji:"🛁", name:"Для купания", theme:"sage",
+    tip:"Средства WELEDA и LIBREDERM — мягкие, гипоаллергенные, идеально подходят для нежной кожи новорождённых.",
+    subs:[
+      { name:"Ванна и принадлежности", items:["Ванночка на подставке","Термометр для воды","Полотенце — 2 шт. (Ozon)","Ковшик"] },
+      { name:"Средства и уход", items:["Гель WELEDA Calendula Baby Wash","Крем-гель для подмывания LIBREDERM baby (goldapple)","Расчёска (Ozon)"] }
+    ]},
+  { id:"cloth", emoji:"👶", name:"Одежда", theme:"coral",
+    tip:"Бренды: Mjolk, Rokakids, Emocia, Child-friendly, Супер Пупс.",
+    subs:[
+      { name:"Размеры 50–62", items:["Слипы 50–56 — 2–3 шт.","Слипы 62 — 1–2 шт.","Боди 56 короткий — 4–5 шт.","Боди 56 длинный — 1–2 шт.","Боди 62 короткий — 2–3 шт.","Боди 62 длинный — 1 шт.","Штанишки 56 — 1–2 шт.","Штанишки 62 — 1 шт.","Песочник — 2–3 шт."] },
+      { name:"Аксессуары и выход", items:["Шапочки лёгкие — 2–3 шт.","Носки 0–3 мес. — 3–4 пары","Антицарапки — 2–3 шт.","Кокон на липучке (Ozon)","Кокон на молнии (Ozon)","Слюнявчики — 4 шт. (Ozon)","Платочки (Ozon)","Костюм на выход — 1–2 шт."] }
+    ]},
+  { id:"feed", emoji:"🍼", name:"Кормление", theme:"butter",
+    tip:"При грудном вскармливании молокоотсос и бутылочки могут не понадобиться сразу — лучше купить после консультации с неонатологом.",
+    subs:[
+      { name:"Бутылочки и соски", items:["Бутылочки Avent Philips","Бутылочка Thyseed","Соски (Ozon)","Щётка для бутылочки","Держатель для сосок","Контейнер для соски"] },
+      { name:"Техника и аксессуары", items:["Молокоотсос (WB)","Стерилизатор (Ozon)","Сушка для бутылочек","Средство для мытья бутылок (Ozon)","Подогреватель для бутылочки","Подушка для кормления","Стульчик Carrello Comfort (MM)"] }
+    ]},
+  { id:"hyg", emoji:"🧴", name:"Гигиена", theme:"sky",
+    subs:[
+      { name:"Уход за малышом", items:["Подгузники (Ozon)","Влажные салфетки (Ozon)","Сухие салфетки (Ozon)","Аспиратор (Ozon)","Ушные палочки (Ozon)","Ушные палочки с липким слоем для носа","Маникюрные ножницы (Ozon)","Тример (Ozon)"] },
+      { name:"Уход за кожей", items:["Крем под подгузник WELEDA","Молочко WELEDA White Mallow","Масло WELEDA Calendula Oil","Ватные диски","Гель для стирки (Ozon)"] }
+    ]},
+  { id:"med", emoji:"💊", name:"Аптечка и прочее", theme:"rust",
+    tip:"Аптечку можно формировать постепенно. Обязательный минимум: термометр, Бепантен и Аквамарис. Остальное — по рекомендации педиатра.",
+    subs:[
+      { name:"Аптечка", items:["Аквамарис","Бепантен","Витамин Д","Мочеприёмники","Градусник","Эспумизан"] },
+      { name:"Прочее", items:["Гигрометр","Неваляшка","Грелка","Карточки Ч/Б","Кокон (Ozon)","Шезлонг (Ozon)","Видеоняня (Ozon)","Развивающий коврик (Ozon)","Автолюлька Joie I-Snug 2","Дуга с игрушками"] }
+    ]},
+  { id:"mama", emoji:"💛", name:"Для мамы", theme:"wheat",
+    subs:[
+      { name:"В роддом и ГВ", items:["Лиф для кормления","Сумка в роддом (набор 3 шт.)","Вкладыши для груди (Ozon)","Трусы 3–4 пачки (Ozon)","Пелёнки 60×90","Бандаж (Ozon)","Сорочки + халат 2–3 шт.","Чулки (Ozon)","Накладки на грудь","Биде для подмывания"] },
+      { name:"Уход и комфорт", items:["Прокладки ночные","Крем с ланолином (Ozon)","Тапочки","Микролакс","Влажная туалетная бумага","Костюм на выписку","Масло WELEDA Schwangerschafts","Подушка для беременных"] }
+    ]}
+];
+
+function bLoad(){
+  try{ const v=localStorage.getItem(BK_CHECK); if(v) bState=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(BK_NOTES); if(v) bNotes=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(BK_CUSTOM); if(v) bCustom=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(BK_OPEN); if(v) bOpen=JSON.parse(v); }catch(e){}
+}
+function bSaveCheck(){ try{ localStorage.setItem(BK_CHECK, JSON.stringify(bState)); }catch(e){} }
+function bSaveNotes(){ try{ localStorage.setItem(BK_NOTES, JSON.stringify(bNotes)); }catch(e){} }
+function bSaveCustom(){ try{ localStorage.setItem(BK_CUSTOM, JSON.stringify(bCustom)); }catch(e){} }
+function bSaveOpen(){ try{ localStorage.setItem(BK_OPEN, JSON.stringify(bOpen)); }catch(e){} }
+function bSubKey(catId, si){ return catId+"|"+si; }
+function bCustomFor(sk){ return bCustom[sk] || []; }
+function bCatCounts(cat){
+  let total=0, checked=0;
+  cat.subs.forEach((sub,si)=>{
+    sub.items.forEach((_,ii)=>{ total++; if(bState[cat.id+"-"+si+"-"+ii]) checked++; });
+    bCustomFor(bSubKey(cat.id,si)).forEach(ci=>{ total++; if(bState[cat.id+"-"+si+"-c"+ci.id]) checked++; });
+  });
+  return {total, checked};
+}
+function bTotals(){ let t=0,c=0; PURCHASE.forEach(cat=>{ const cc=bCatCounts(cat); t+=cc.total; c+=cc.checked; }); return {total:t, checked:c}; }
+function updateBuyHead(){
+  const {total, checked} = bTotals();
+  const pct = total? Math.round(checked/total*100):0;
+  document.getElementById("buyFill").style.width = pct+"%";
+  document.getElementById("buyCount").innerHTML = `<b>${checked}</b> из ${total} куплено`;
+}
+function updateBuyCat(catEl, cat){
+  const {total, checked} = bCatCounts(cat);
+  catEl.querySelector(".stage-progress-text").textContent = `${checked} из ${total}`;
+  catEl.querySelector(".stage-bar-fill").style.width = (total? checked/total*100:0)+"%";
+  catEl.classList.toggle("done", total>0 && checked===total);
+}
+function bBuildRow(cat, name, key, isCustom, sk, customId){
+  const wrap = document.createElement("div");
+  wrap.className = "s-row"; wrap.dataset.key = key; wrap.dataset.name = name.toLowerCase();
+  const row = document.createElement("div");
+  row.className = "item" + (isCustom ? " custom" : "");
+  row.setAttribute("role","checkbox"); row.setAttribute("tabindex","0"); row.setAttribute("aria-label", name);
+  row.innerHTML = `
+    <div class="checkbox">✓</div>
+    <div class="item-label">${esc(name)}${isCustom ? '<span class="own-badge">своё</span>' : ''}</div>
+    <button class="note-btn" aria-label="Заметка" tabindex="-1">✎</button>`;
+  const box = row.querySelector(".checkbox"), label = row.querySelector(".item-label"), nbtn = row.querySelector(".note-btn");
+  const apply = ()=>{ const on=!!bState[key]; box.classList.toggle("checked",on); label.classList.toggle("checked",on); row.setAttribute("aria-checked",String(on)); };
+  apply();
+  const toggle = ()=>{
+    bState[key] = !bState[key]; apply();
+    updateBuyCat(wrap.closest(".stage"), cat); updateBuyHead(); bSaveCheck();
+    if(bState[key]){
+      if(navigator.vibrate) navigator.vibrate(14);
+      const cc = bCatCounts(cat);
+      if(cc.checked===cc.total){ confetti(false); const t=bTotals(); if(t.checked===t.total){ setTimeout(()=>confetti(true),150); toast("Всё куплено! 🎉🛍️"); } }
+    }
+  };
+  row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
+  row.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+  const note = document.createElement("div");
+  note.className = "s-note";
+  note.innerHTML = `<textarea placeholder="Например: забрать с WB, заехать в Детский мир">${esc(bNotes[key]||"")}</textarea>${isCustom ? '<button class="s-del" type="button">🗑 удалить пункт</button>' : ''}`;
+  const ta = note.querySelector("textarea");
+  ta.addEventListener("input", ()=>{ const v=ta.value; if(v.trim()) bNotes[key]=v; else delete bNotes[key]; bSaveNotes(); nbtn.classList.toggle("has", !!bNotes[key]); });
+  nbtn.classList.toggle("has", !!bNotes[key]);
+  nbtn.addEventListener("click", e=>{ e.stopPropagation(); const opening=!note.classList.contains("open"); note.classList.toggle("open", opening); if(opening) setTimeout(()=>ta.focus(),60); });
+  const del = note.querySelector(".s-del");
+  if(del) del.addEventListener("click", ()=>{
+    if(confirm("Удалить пункт?")){
+      bCustom[sk] = bCustomFor(sk).filter(c=> c.id!==customId);
+      delete bState[key]; delete bNotes[key];
+      bSaveCustom(); bSaveCheck(); bSaveNotes(); renderBuy();
+    }
+  });
+  wrap.appendChild(row); wrap.appendChild(note);
+  return wrap;
+}
+function renderBuy(){
+  const main = document.getElementById("buyMain");
+  main.innerHTML = "";
+  PURCHASE.forEach(cat=>{
+    const catEl = document.createElement("div");
+    catEl.className = `stage theme-${cat.theme}`; catEl.dataset.cat = cat.id;
+    const head = document.createElement("div");
+    head.className = "stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
+    head.innerHTML = `
+      <div class="stage-emoji">${cat.emoji}</div>
+      <div class="stage-title-wrap"><p class="stage-title">${cat.name}</p><div class="stage-progress-text">0</div></div>
+      <span class="stage-medal" title="Куплено">🏅</span>
+      <div class="stage-chevron">▾</div>`;
+    const toggle = ()=>{ const c=catEl.classList.toggle("collapsed"); head.setAttribute("aria-expanded",String(!c)); bOpen[cat.id]=!c; bSaveOpen(); };
+    head.addEventListener("click", toggle);
+    head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+    catEl.appendChild(head);
+    const bar = document.createElement("div"); bar.className="stage-bar-track"; bar.innerHTML=`<div class="stage-bar-fill"></div>`; catEl.appendChild(bar);
+    const body = document.createElement("div"); body.className="stage-body";
+    cat.subs.forEach((sub,si)=>{
+      const sh = document.createElement("div"); sh.className="sub-head"; sh.textContent=sub.name; body.appendChild(sh);
+      sub.items.forEach((name,ii)=> body.appendChild(bBuildRow(cat, name, cat.id+"-"+si+"-"+ii, false, bSubKey(cat.id,si))));
+      bCustomFor(bSubKey(cat.id,si)).forEach(ci=> body.appendChild(bBuildRow(cat, ci.n, cat.id+"-"+si+"-c"+ci.id, true, bSubKey(cat.id,si), ci.id)));
+      const add = document.createElement("button"); add.className="add-product"; add.innerHTML=`<span class="ap-plus">+</span> Добавить своё`;
+      add.addEventListener("click", ()=> bOpenAdd(cat, si)); body.appendChild(add);
+    });
+    if(cat.tip){ const t=document.createElement("div"); t.className="goal-note"; t.innerHTML=`<span class="ic">✔</span><span>${esc(cat.tip)}</span>`; body.appendChild(t); }
+    catEl.appendChild(body);
+    main.appendChild(catEl);
+    updateBuyCat(catEl, cat);
+  });
+  const els = [...main.querySelectorAll(".stage")];
+  const hasSaved = Object.keys(bOpen).length>0;
+  els.forEach(el=>{ const open = hasSaved ? !!bOpen[el.dataset.cat] : false; el.classList.toggle("collapsed", !open); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded", String(open)); });
+  if(!hasSaved){
+    const fc = PURCHASE.find(c=>{ const cc=bCatCounts(c); return cc.checked<cc.total; }) || PURCHASE[0];
+    const el = main.querySelector(`.stage[data-cat="${fc.id}"]`);
+    if(el){ el.classList.remove("collapsed"); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded","true"); }
+  }
+  updateBuyHead();
+}
+function bOpenAdd(cat, si){
+  bAddCtx = { catId:cat.id, si };
+  document.getElementById("bAddName").value = "";
+  document.getElementById("bAddTitle").textContent = "Добавить в «" + cat.name + "»";
+  document.getElementById("bAddModal").classList.add("open");
+  document.getElementById("bAddBackdrop").classList.add("open");
+  setTimeout(()=> document.getElementById("bAddName").focus(), 80);
+}
+function bCloseAdd(){
+  document.getElementById("bAddModal").classList.remove("open");
+  document.getElementById("bAddBackdrop").classList.remove("open");
+}
+function bSaveAdd(){
+  if(!bAddCtx) return;
+  const name = document.getElementById("bAddName").value.trim();
+  if(!name){ document.getElementById("bAddName").focus(); return; }
+  const sk = bSubKey(bAddCtx.catId, bAddCtx.si);
+  if(!bCustom[sk]) bCustom[sk] = [];
+  bCustom[sk].push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,5), n:name });
+  bSaveCustom(); bCloseAdd(); renderBuy();
+  const el = document.querySelector(`#buyMain .stage[data-cat="${bAddCtx.catId}"]`);
+  if(el){ el.classList.remove("collapsed"); bOpen[bAddCtx.catId]=true; bSaveOpen(); el.scrollIntoView({behavior:"smooth", block:"center"}); }
+  toast("Добавлено 🎉");
+}
+function bApplySearch(){
+  const q = (document.getElementById("buySearch").value||"").trim().toLowerCase();
+  document.getElementById("buySearchClear").classList.toggle("show", q.length>0);
+  let any=false;
+  document.querySelectorAll("#buyMain .stage").forEach(catEl=>{
+    let vis=0;
+    catEl.querySelectorAll(".s-row").forEach(r=>{ const m=!q||r.dataset.name.includes(q); r.style.display=m?"":"none"; if(m)vis++; });
+    catEl.querySelectorAll(".add-product,.sub-head,.goal-note").forEach(x=> x.style.display = q ? "none" : "");
+    const show = !q || vis>0;
+    catEl.classList.toggle("hide", !show);
+    if(show){ any=true; if(q) catEl.classList.remove("collapsed"); }
+  });
+  document.getElementById("buyNoResults").classList.toggle("show", q.length>0 && !any);
+}
+function bCollapseAll(){
+  const els = [...document.querySelectorAll("#buyMain .stage")];
+  const anyOpen = els.some(el=> !el.classList.contains("collapsed"));
+  els.forEach(el=>{ el.classList.toggle("collapsed", anyOpen); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded", String(!anyOpen)); bOpen[el.dataset.cat]=!anyOpen; });
+  bSaveOpen();
+  document.getElementById("buyCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
+}
+
 /* ---------- переключение разделов ---------- */
 function setView(v){
   currentView = v; try{ localStorage.setItem(VIEW_KEY, v); }catch(e){}
   document.getElementById("viewPrikorm").hidden = (v!=="prikorm");
   document.getElementById("viewSumka").hidden = (v!=="sumka");
+  document.getElementById("viewBuy").hidden = (v!=="buy");
   document.querySelectorAll(".drawer-item").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
   if(v==="sumka") renderSumka();
+  if(v==="buy") renderBuy();
   window.scrollTo(0,0);
 }
 function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBackdrop").classList.add("open"); }
 function closeDrawer(){ document.getElementById("drawer").classList.remove("open"); document.getElementById("drawerBackdrop").classList.remove("open"); }
 
 sLoad();
+bLoad();
 document.getElementById("menuBtn").addEventListener("click", openDrawer);
 document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
 document.querySelectorAll(".drawer-item").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
@@ -1925,6 +2174,13 @@ document.getElementById("sAddName").addEventListener("keydown", e=>{ if(e.key===
 document.getElementById("sumkaSearch").addEventListener("input", sApplySearch);
 document.getElementById("sumkaSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("sumkaSearch"); s.value=""; sApplySearch(); s.focus(); });
 document.getElementById("sumkaCollapseBtn").addEventListener("click", sCollapseAll);
+document.getElementById("bAddClose").addEventListener("click", bCloseAdd);
+document.getElementById("bAddBackdrop").addEventListener("click", bCloseAdd);
+document.getElementById("bAddSave").addEventListener("click", bSaveAdd);
+document.getElementById("bAddName").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); bSaveAdd(); }});
+document.getElementById("buySearch").addEventListener("input", bApplySearch);
+document.getElementById("buySearchClear").addEventListener("click", ()=>{ const s=document.getElementById("buySearch"); s.value=""; bApplySearch(); s.focus(); });
+document.getElementById("buyCollapseBtn").addEventListener("click", bCollapseAll);
 setView(currentView);
 
 /* ---------- SERVICE WORKER (офлайн) ---------- */
