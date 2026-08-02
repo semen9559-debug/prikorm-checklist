@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v26";
+  window.APP_VERSION = "v27";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -2980,6 +2980,51 @@ setView(currentView);
 if("serviceWorker" in navigator && location.protocol === "https:"){
   window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
 }
+</script>
+<script>
+/* v27: replace interface emoji with inline SVG icons */
+(function(){
+  var A='fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"';
+  function s(i){return '<svg viewBox="0 0 24 24" '+A+'>'+i+'</svg>';}
+  var ICONS={
+    "\u2715":s('<path d="M6 6l12 12M18 6L6 18"/>'),
+    "\u2716":s('<path d="M6 6l12 12M18 6L6 18"/>'),
+    "\u{1F53D}":s('<path d="M6 9l6 6 6-6"/>'),
+    "\u{1F53C}":s('<path d="M6 15l6-6 6 6"/>'),
+    "\u25BE":s('<path d="M6 9l6 6 6-6"/>'),
+    "\u25B4":s('<path d="M6 15l6-6 6 6"/>'),
+    "\u{1F50D}":s('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
+    "\u{1F5D1}":s('<path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>'),
+    "\u270E":s('<path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/>'),
+    "\u2713":s('<path d="M5 13l4 4L19 7"/>'),
+    "\u2714":s('<path d="M5 13l4 4L19 7"/>'),
+    "\u2705":s('<path d="M5 13l4 4L19 7"/>'),
+    "\u{1F4BE}":s('<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7"/><path d="M8 21v-6h8v6"/>'),
+    "\u{1F4E4}":s('<path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>'),
+    "\u{1F4E5}":s('<path d="M12 4v11M8 11l4 4 4-4"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>'),
+    "\u2795":s('<path d="M12 5v14M5 12h14"/>'),
+    "\u2191":s('<path d="M12 20V5M6 11l6-6 6 6"/>'),
+    "\u25A6":s('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+    "\u2600":s('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/>'),
+    "\u{1F319}":s('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>')
+  };
+  var st=document.createElement("style");
+  st.textContent=".svgi{display:inline-flex;width:1em;height:1em;vertical-align:-0.14em;line-height:1;flex:0 0 auto}.svgi>svg{width:100%;height:100%;display:block}";
+  document.head.appendChild(st);
+  function mk(ch){var sp=document.createElement("span");sp.className="svgi";sp.setAttribute("data-e",ch);sp.innerHTML=ICONS[ch];return sp;}
+  function proc(node){var txt=node.nodeValue; if(!txt) return; var hit=false; for(var ch in ICONS){ if(txt.indexOf(ch)>=0){hit=true;break;} } if(!hit) return;
+    var frag=document.createDocumentFragment(), buf="";
+    for(var c of txt){ if(ICONS[c]){ if(buf){frag.appendChild(document.createTextNode(buf));buf="";} frag.appendChild(mk(c)); } else if(c!=="\uFE0F"){ buf+=c; } }
+    if(buf) frag.appendChild(document.createTextNode(buf));
+    if(node.parentNode) node.parentNode.replaceChild(frag,node); }
+  function walk(n){ if(n.nodeType===3){proc(n);return;} if(n.nodeType!==1) return; var tg=n.tagName;
+    if(tg==="SCRIPT"||tg==="STYLE"||tg==="svg"||(n.classList&&n.classList.contains("svgi"))) return;
+    var k=[]; for(var x=n.firstChild;x;x=x.nextSibling) k.push(x); for(var i=0;i<k.length;i++) walk(k[i]); }
+  function run(){ walk(document.body);
+    var mo=new MutationObserver(function(ms){ for(var i=0;i<ms.length;i++){ var m=ms[i]; if(m.type==="characterData") proc(m.target); else { for(var j=0;j<m.addedNodes.length;j++) walk(m.addedNodes[j]); } } });
+    mo.observe(document.body,{childList:true,subtree:true,characterData:true}); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run); else run();
+})();
 </script>
 </body>
 </html>
