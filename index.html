@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v18";
+  window.APP_VERSION = "v19";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -601,6 +601,41 @@
   .s-note textarea{ width:100%; min-height:46px; resize:vertical; border:1.5px solid var(--line2); border-radius:10px; padding:8px 10px; font-family:'Nunito',sans-serif; font-weight:600; font-size:13px; color:var(--ink); background:var(--cream); }
   .s-del{ margin-top:6px; border:none; background:none; color:var(--warn); font-weight:800; font-size:12px; cursor:pointer; padding:2px 0; }
 
+  /* ---- развитие: инфо-блоки ---- */
+  .dev-intro{ max-width:520px; margin:0 auto 4px; padding:0 14px; }
+  .dev-intro div{ background:var(--btn-bg); border-radius:14px; padding:11px 14px; font-size:12.5px; font-weight:700; line-height:1.5; color:var(--ink-soft); }
+  .dev-info{ margin:10px 8px 2px; padding:12px 14px; border-radius:14px; background:var(--accent-l,#eee); }
+  .dev-info.flags{ background:var(--warn-l); }
+  .dev-info h4{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; margin:0 0 7px; color:var(--ink); }
+  .dev-info.flags h4{ color:#8C2E2E; }
+  html[data-theme="dark"] .dev-info.flags h4{ color:#F0A5A5; }
+  .dev-info ul{ list-style:none; margin:0; padding:0; }
+  .dev-info li{ font-size:13px; line-height:1.5; font-weight:700; color:var(--ink); padding:3px 0 3px 18px; position:relative; }
+  .dev-info li::before{ content:"•"; position:absolute; left:5px; color:var(--accent,#999); font-weight:800; }
+  .dev-info.flags li{ color:#8C2E2E; }
+  .dev-info.flags li::before{ content:"!"; left:5px; color:var(--warn); }
+  html[data-theme="dark"] .dev-info.flags li{ color:#F0A5A5; }
+
+  /* ---- дневник дня ---- */
+  .diary-wrap{ max-width:520px; margin:0 auto; padding:14px 14px 6px; }
+  .daynav{ display:flex; align-items:center; justify-content:center; gap:14px; margin:4px 0; }
+  .daynav button{ width:36px; height:36px; border-radius:50%; border:1px solid var(--line2); background:var(--paper); color:var(--ink); font-size:17px; cursor:pointer; }
+  .daynav button:disabled{ opacity:.35; cursor:default; }
+  .daynav .dn-date{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; min-width:150px; text-align:center; }
+  .diary-sum{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; min-height:20px; }
+  .diary-sum span{ background:var(--paper); border:1px solid var(--line2); border-radius:99px; padding:6px 13px; font-weight:800; font-size:12.5px; color:var(--ink); }
+  .qadd{ display:grid; grid-template-columns:repeat(auto-fit, minmax(92px,1fr)); gap:9px; margin:12px 0 6px; }
+  .qadd button{ border:1px solid var(--line2); background:var(--paper); border-radius:15px; padding:12px 8px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:12.5px; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:5px; transition:transform .12s; }
+  .qadd button:active{ transform:scale(.94); }
+  .qadd button .qi{ font-size:23px; }
+  .diary-list{ list-style:none; margin:12px 0 0; padding:0; }
+  .diary-entry{ display:flex; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); margin-bottom:8px; box-shadow:0 2px 8px rgba(58,52,44,.05); }
+  .diary-entry .de-time{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:var(--ink); width:50px; flex-shrink:0; }
+  .diary-entry .de-ic{ font-size:20px; }
+  .diary-entry .de-label{ flex:1; font-weight:700; font-size:14px; }
+  .diary-entry .de-del{ border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer; padding:4px; }
+  .diary-empty{ text-align:center; color:var(--ink-soft); font-weight:700; line-height:1.6; padding:26px 10px; }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
     .stem-fill, .stage-bar-fill{ transition-duration:.3s !important; }
@@ -618,6 +653,8 @@
   <button class="drawer-item" data-view="prikorm" type="button">🌱 Трекер прикорма</button>
   <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>
   <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>
+  <button class="drawer-item" data-view="dev" type="button">👣 Развитие по месяцам</button>
+  <button class="drawer-item" data-view="diary" type="button">😴 Дневник дня</button>
 </nav>
 
 <div id="viewPrikorm">
@@ -695,6 +732,47 @@
   <div class="no-results" id="buyNoResults">Ничего не найдено 🙈</div>
   <div class="tools">
     <button id="buyCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewDev" hidden>
+  <div class="hero">
+    <div class="hero-plant">👣</div>
+    <h1>👣 Развитие по месяцам</h1>
+    <p class="hero-sub">Отмечайте, что малыш уже умеет 🌟</p>
+    <div class="stem-wrap"><div class="stem-fill" id="devFill"></div></div>
+    <div class="hero-count" id="devCount">0 из 0 освоено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <input id="devSearch" type="search" placeholder="Поиск навыка…" aria-label="Поиск навыка" autocomplete="off">
+      <button class="search-clear" id="devSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="devKids"></div>
+  </div>
+  <div class="dev-intro"><div>Сроки ориентировочные — каждый малыш развивается в своём темпе. Это опора, а не диагноз. При сомнениях покажитесь педиатру или неврологу.</div></div>
+  <main id="devMain" class="sumka-main"></main>
+  <div class="no-results" id="devNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="devCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewDiary" hidden>
+  <div class="hero">
+    <div class="hero-plant">😴</div>
+    <h1>😴 Дневник дня</h1>
+    <p class="hero-sub">Кормления, сон и подгузники за день</p>
+    <div class="kids" id="diaryKids"></div>
+  </div>
+  <div class="diary-wrap">
+    <div class="daynav">
+      <button id="dyPrev" type="button" aria-label="Предыдущий день">‹</button>
+      <div class="dn-date" id="dyDate">Сегодня</div>
+      <button id="dyNext" type="button" aria-label="Следующий день">›</button>
+    </div>
+    <div class="diary-sum" id="dySum"></div>
+    <div class="qadd" id="dyAdd"></div>
+    <ul class="diary-list" id="dyList"></ul>
   </div>
 </div>
 
@@ -1002,18 +1080,25 @@ function switchChild(id){
   if(id === activeChild) return;
   activeChild = id; saveActive();
   loadState();
-  render(); renderKids(); updateHero();
+  if(typeof dLoad==="function") dLoad();
+  if(typeof dyLoad==="function") dyLoad();
+  render();
+  if(currentView==="dev") renderDev();
+  if(currentView==="diary") renderDiary();
+  renderKids(); updateHero();
 }
-function renderKids(){
-  const el = document.getElementById("kids");
-  if(!el) return;
+function renderKidChips(el, withManage){
   el.innerHTML =
     children.map(c=> `<button class="kid ${c.id===activeChild?'active':''}" data-id="${c.id}" type="button">${esc(c.name)}</button>`).join("") +
-    `<button class="kid kid-edit" id="kidEdit" type="button" aria-label="Изменить имя">✏️</button>` +
-    `<button class="kid kid-add" id="kidAdd" type="button">＋ ребёнок</button>`;
+    (withManage ? `<button class="kid kid-edit" data-act="edit" type="button" aria-label="Изменить имя">✏️</button><button class="kid kid-add" data-act="add" type="button">＋ ребёнок</button>` : "");
   el.querySelectorAll(".kid[data-id]").forEach(b=> b.addEventListener("click", ()=> switchChild(b.dataset.id)));
-  document.getElementById("kidAdd").addEventListener("click", ()=> openKidModal(null));
-  document.getElementById("kidEdit").addEventListener("click", ()=> openKidModal(activeChild));
+  const e=el.querySelector('[data-act="edit"]'); if(e) e.addEventListener("click", ()=> openKidModal(activeChild));
+  const a=el.querySelector('[data-act="add"]'); if(a) a.addEventListener("click", ()=> openKidModal(null));
+}
+function renderKids(){
+  const main=document.getElementById("kids"); if(main) renderKidChips(main, true);
+  const dk=document.getElementById("devKids"); if(dk) renderKidChips(dk, false);
+  const yk=document.getElementById("diaryKids"); if(yk) renderKidChips(yk, false);
 }
 function openKidModal(id){
   editingKid = id;
@@ -1043,8 +1128,11 @@ function saveKid(){
     children.push({ id, name });
     saveChildren();
     activeChild = id; saveActive();
-    loadState();
-    closeKidModal(); render(); renderKids(); updateHero();
+    loadState(); dLoad(); dyLoad();
+    closeKidModal(); render();
+    if(currentView==="dev") renderDev();
+    if(currentView==="diary") renderDiary();
+    renderKids(); updateHero();
     toast("Ребёнок добавлен 🎉");
   }
 }
@@ -1055,8 +1143,11 @@ function deleteKid(){
   BASE_KEYS.forEach(base=> localStorage.removeItem(base+"__"+id));
   children = children.filter(c=> c.id !== id);
   saveChildren();
-  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); }
-  closeKidModal(); render(); renderKids(); updateHero();
+  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); }
+  closeKidModal(); render();
+  if(currentView==="dev") renderDev();
+  if(currentView==="diary") renderDiary();
+  renderKids(); updateHero();
   toast("Ребёнок удалён");
 }
 function customKey(stId, id){ return stId+"-c"+id; }
@@ -2148,15 +2239,222 @@ function bCollapseAll(){
   document.getElementById("buyCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
 }
 
+/* ===================== РАЗВИТИЕ ПО МЕСЯЦАМ ===================== */
+const DV_CHECK="prikorm-dev-checked", DV_NOTES="prikorm-dev-notes", DV_OPEN="prikorm-dev-open";
+let dState={}, dNotes={}, dOpen={};
+
+const DEV = [
+  { id:"mo1", m:"1 месяц", emoji:"1️⃣", theme:"sage",
+    skills:["Фокусирует взгляд на лице на расстоянии 20–30 см","Вздрагивает и замирает на резкий звук","Крепко сжимает вложенный в ладонь палец","Лёжа на животе, на секунды приподнимает голову","Успокаивается на руках и от голоса мамы","Издаёт первые горловые звуки"],
+    games:["Разговаривайте и пойте — малыш узнаёт ваш голос","Показывайте лицо близко и меняйте мимику","Выкладывайте на живот по 1–2 минуты несколько раз в день","Показывайте контрастные чёрно-белые картинки","Делайте лёгкие поглаживания ручек и ножек"],
+    flags:["Не реагирует на громкие звуки","Совсем не фиксирует взгляд","Вялое сосание, плохо набирает вес"] },
+  { id:"mo2", m:"2 месяца", emoji:"2️⃣", theme:"sky",
+    skills:["Улыбается в ответ на ваше лицо (социальная улыбка)","Удерживает голову под углом лёжа на животе","Следит взглядом за движущимся предметом","Гулит — тянет гласные «а-а», «гу»","Поворачивает голову на звук","Подолгу рассматривает свои руки и лица"],
+    games:["Улыбайтесь и «разговаривайте» по очереди, делая паузы","Медленно водите яркой погремушкой в стороны — пусть следит","Продолжайте выкладывать на живот","Пойте потешки, меняя интонацию","Носите «столбиком», показывая мир вокруг"],
+    flags:["Не улыбается к 2–3 месяцам","Совсем не удерживает голову","Не следит за предметом"] },
+  { id:"mo3", m:"3 месяца", emoji:"3️⃣", theme:"coral",
+    skills:["Уверенно держит голову вертикально","Лёжа на животе, опирается на предплечья","Тянется рукой к игрушке","Смеётся вслух","Рассматривает и играет со своими руками","Певуче гулит, «отвечает» на разговор"],
+    games:["Повесьте мобиль/игрушки на расстоянии вытянутой руки","Вкладывайте лёгкие погремушки в ручку","«Разговаривайте» с паузами, повторяйте его звуки","Покажите малыша в зеркале","Делайте гимнастику и лёгкий массаж"],
+    flags:["Не держит голову","Не тянется и не реагирует на игрушки","Не гулит и не улыбается"] },
+  { id:"mo4", m:"4 месяца", emoji:"4️⃣", theme:"butter",
+    skills:["Переворачивается со спины на бок/живот (начинает)","Хватает предметы и тянет их в рот","Хорошо держит голову и приподнимает грудь на руках","Громко смеётся, радуется общению","Узнаёт близких людей","Лепечет разные звуки, тянется к игрушке двумя руками"],
+    games:["Дайте прорезыватели и игрушки разной фактуры","Перекликайтесь звуками — «поговорите»","Помогайте переворачиваться, мотивируя игрушкой","Рассматривайте книжки-контрасты","Играйте в потешки с движениями ручек"],
+    flags:["Не переворачивается и не пытается","Не берёт игрушку в руку","Не смеётся, не гулит"] },
+  { id:"mo5", m:"5 месяцев", emoji:"5️⃣", theme:"plum",
+    skills:["Уверенно переворачивается со спины на живот","Перекладывает игрушку из руки в руку","Тянет предметы и свои ноги в рот","Сидит с поддержкой","Различает интонации, отзывается на своё имя (начинает)","Активно лепечет с повторами звуков"],
+    games:["Давайте игрушки разной фактуры и формы","Играйте в «ку-ку» / прятки с платком","Катайте мяч, называйте предметы","Поддерживайте в положении сидя","Читайте книжки с крупными картинками"],
+    flags:["Не переворачивается","Не тянется к предметам","Не реагирует на звуки и своё имя"] },
+  { id:"mo6", m:"6 месяцев", emoji:"6️⃣", theme:"rust",
+    skills:["Сидит с опорой, недолго — самостоятельно","Уверенно берёт и удерживает предметы","Лепечет слоги «ба», «ма», «па»","Точно тянется и хватает игрушку","Настораживается к незнакомцам","Проявляет интерес к еде (готовность к прикорму)"],
+    games:["Кубики, стаканчики-вкладыши, пирамидка","«Ладушки», «сорока-ворона»","Книжки с яркими картинками, зеркало","Давайте безопасные предметы исследовать","Называйте всё, что делаете и показываете"],
+    flags:["Не сидит даже с поддержкой","Не лепечет","Не тянется к игрушкам и не удерживает их"] },
+  { id:"mo7", m:"7 месяцев", emoji:"7️⃣", theme:"wheat",
+    skills:["Сидит самостоятельно без поддержки","Ползает по-пластунски или раскачивается на четвереньках","Перекладывает и стучит предметами друг о друга","Отзывается на имя","Понимает «нельзя» по интонации","Активно лепечет цепочки слогов"],
+    games:["Мотивируйте ползти, отодвигая игрушку","Сортеры, пирамидка, коробочки","Играйте в «дай» и «на»","Читайте книжки, показывая пальцем","Создайте безопасное пространство для движения"],
+    flags:["Не сидит без поддержки","Не лепечет слоги","Не интересуется окружающими и игрушками"] },
+  { id:"mo8", m:"8 месяцев", emoji:"8️⃣", theme:"hazel",
+    skills:["Уверенно ползает","Садится сам и встаёт у опоры","Берёт мелкое «пинцетным» захватом (двумя пальцами)","Ищет спрятанную на глазах игрушку","Машет «пока-пока» (начинает)","Повторяет слоги за взрослым"],
+    games:["Прячьте игрушку под платок — пусть ищет","Учите жестам «пока-пока», «дай»","Крупные пазлы, сортеры","Пальчиковые игры и потешки","Дайте безопасные ящики, чтобы «разбирать»"],
+    flags:["Не ползает и не перемещается","Не сидит самостоятельно","Не берёт мелкие предметы","Не реагирует на имя"] },
+  { id:"mo9", m:"9 месяцев", emoji:"9️⃣", theme:"sage",
+    skills:["Встаёт и стоит у опоры","Переступает вдоль опоры (начинает)","Уверенный пинцетный захват","Понимает простые слова и жесты","Показывает пальцем на предметы (начинает)","Хорошо ест кусочки, пьёт из кружки с помощью"],
+    games:["Толкающие игрушки и каталки","«Где мама?», показывайте части тела","Книжки-потешки, пирамидки, стаканчики","Поощряйте вставать и переступать","Комментируйте действия простыми словами"],
+    flags:["Не встаёт у опоры","Не использует жесты","Не лепечет","Утратил ранее приобретённые навыки"] },
+  { id:"mo10", m:"10 месяцев", emoji:"🔟", theme:"sky",
+    skills:["Уверенно стоит у опоры, переступает","Садится из положения стоя","Понимает «дай», «нельзя»","Говорит «мама/папа» осмысленно (начинает)","Повторяет действия за взрослым («ладушки»)","Складывает предметы в ёмкость"],
+    games:["Каталки и толкалки","«Положи в коробку — достань обратно»","Причинно-следственные игрушки (нажал — звук)","Называйте и показывайте предметы","Читайте вместе, показывайте картинки"],
+    flags:["Не стоит у опоры","Нет жестов и лепета","Не откликается на имя"] },
+  { id:"mo11", m:"11 месяцев", emoji:"👶", theme:"coral",
+    skills:["Стоит без опоры несколько секунд","Ходит за обе руки и вдоль опоры уверенно","Выполняет простые просьбы («дай мяч»)","Произносит несколько лепетных слов","Пьёт из кружки, пытается есть ложкой","Показывает пальцем на желаемое"],
+    games:["Водите за руки, поощряйте шаги","Сортеры, пирамидки, простые ролевые игры","«Покажи, где…» части тела и предметы","Ролевые игры: покормить/уложить куклу","Музыкальные игрушки и танцы"],
+    flags:["Не стоит у опоры","Нет простых слов и указательного жеста","Не понимает простых просьб"] },
+  { id:"mo12", m:"12 месяцев", emoji:"🎂", theme:"plum",
+    skills:["Делает первые самостоятельные шаги (или вот-вот)","Говорит 1–3 простых слова осмысленно","Выполняет простые просьбы","Показывает пальцем на желаемое","Пьёт из кружки, ест ложкой (учится)","Машет «пока», хлопает, знает близких по именам"],
+    games:["Поощряйте самостоятельную ходьбу","Книжки с называнием предметов","Пирамидки, башни из кубиков","Ролевые игры и прогулки-исследования","«Где носик/глазки?», простые поручения"],
+    flags:["Не стоит и не пытается ходить у опоры","Нет ни одного слова и указательного жеста","Не выполняет простых просьб","Утрата ранее приобретённых навыков"] }
+];
+
+function dLoad(){
+  dState={}; dNotes={}; dOpen={};
+  try{ const v=localStorage.getItem(k(DV_CHECK)); if(v) dState=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(k(DV_NOTES)); if(v) dNotes=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(k(DV_OPEN)); if(v) dOpen=JSON.parse(v); }catch(e){}
+}
+function dSaveCheck(){ try{ localStorage.setItem(k(DV_CHECK), JSON.stringify(dState)); }catch(e){} }
+function dSaveNotes(){ try{ localStorage.setItem(k(DV_NOTES), JSON.stringify(dNotes)); }catch(e){} }
+function dSaveOpen(){ try{ localStorage.setItem(k(DV_OPEN), JSON.stringify(dOpen)); }catch(e){} }
+function devCounts(mo){ let t=0,c=0; mo.skills.forEach((_,i)=>{ t++; if(dState[mo.id+"-"+i]) c++; }); return {total:t, checked:c}; }
+function devTotals(){ let t=0,c=0; DEV.forEach(mo=>{ const cc=devCounts(mo); t+=cc.total; c+=cc.checked; }); return {total:t, checked:c}; }
+function updateDevHead(){
+  const {total, checked} = devTotals();
+  const pct = total? Math.round(checked/total*100):0;
+  document.getElementById("devFill").style.width = pct+"%";
+  document.getElementById("devCount").innerHTML = `<b>${checked}</b> из ${total} освоено`;
+}
+function updateDevCat(el, mo){
+  const {total, checked} = devCounts(mo);
+  el.querySelector(".stage-progress-text").textContent = `${checked} из ${total}`;
+  el.querySelector(".stage-bar-fill").style.width = (total? checked/total*100:0)+"%";
+  el.classList.toggle("done", total>0 && checked===total);
+}
+function dBuildRow(mo, name, key){
+  const wrap = document.createElement("div");
+  wrap.className = "s-row"; wrap.dataset.key = key; wrap.dataset.name = name.toLowerCase();
+  const row = document.createElement("div");
+  row.className = "item"; row.setAttribute("role","checkbox"); row.setAttribute("tabindex","0"); row.setAttribute("aria-label", name);
+  row.innerHTML = `<div class="checkbox">✓</div><div class="item-label">${esc(name)}</div><button class="note-btn" aria-label="Заметка" tabindex="-1">✎</button>`;
+  const box=row.querySelector(".checkbox"), label=row.querySelector(".item-label"), nbtn=row.querySelector(".note-btn");
+  const apply=()=>{ const on=!!dState[key]; box.classList.toggle("checked",on); label.classList.toggle("checked",on); row.setAttribute("aria-checked",String(on)); };
+  apply();
+  const toggle=()=>{
+    dState[key]=!dState[key]; apply();
+    updateDevCat(wrap.closest(".stage"), mo); updateDevHead(); dSaveCheck();
+    if(dState[key]){ if(navigator.vibrate) navigator.vibrate(14); const cc=devCounts(mo); if(cc.checked===cc.total){ confetti(false); toast("Все навыки месяца освоены! 🎉"); } }
+  };
+  row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
+  row.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+  const note=document.createElement("div"); note.className="s-note";
+  note.innerHTML = `<textarea placeholder="Например: освоил в 3 месяца">${esc(dNotes[key]||"")}</textarea>`;
+  const ta=note.querySelector("textarea");
+  ta.addEventListener("input", ()=>{ const v=ta.value; if(v.trim()) dNotes[key]=v; else delete dNotes[key]; dSaveNotes(); nbtn.classList.toggle("has", !!dNotes[key]); });
+  nbtn.classList.toggle("has", !!dNotes[key]);
+  nbtn.addEventListener("click", e=>{ e.stopPropagation(); const o=!note.classList.contains("open"); note.classList.toggle("open",o); if(o) setTimeout(()=>ta.focus(),60); });
+  wrap.appendChild(row); wrap.appendChild(note);
+  return wrap;
+}
+function renderDev(){
+  const main = document.getElementById("devMain"); main.innerHTML="";
+  DEV.forEach(mo=>{
+    const el=document.createElement("div"); el.className=`stage theme-${mo.theme}`; el.dataset.cat=mo.id;
+    const head=document.createElement("div"); head.className="stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
+    head.innerHTML=`<div class="stage-emoji">${mo.emoji}</div><div class="stage-title-wrap"><p class="stage-title">${mo.m}</p><div class="stage-progress-text">0</div></div><span class="stage-medal" title="Освоено">🏅</span><div class="stage-chevron">▾</div>`;
+    const toggle=()=>{ const c=el.classList.toggle("collapsed"); head.setAttribute("aria-expanded",String(!c)); dOpen[mo.id]=!c; dSaveOpen(); };
+    head.addEventListener("click", toggle); head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+    el.appendChild(head);
+    const bar=document.createElement("div"); bar.className="stage-bar-track"; bar.innerHTML=`<div class="stage-bar-fill"></div>`; el.appendChild(bar);
+    const body=document.createElement("div"); body.className="stage-body";
+    const sh=document.createElement("div"); sh.className="sub-head"; sh.textContent="✅ Что уже умеет"; body.appendChild(sh);
+    mo.skills.forEach((s,i)=> body.appendChild(dBuildRow(mo, s, mo.id+"-"+i)));
+    if(mo.games&&mo.games.length){ const g=document.createElement("div"); g.className="dev-info"; g.innerHTML=`<h4>🎲 Во что играть и как помочь</h4><ul>${mo.games.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`; body.appendChild(g); }
+    if(mo.flags&&mo.flags.length){ const f=document.createElement("div"); f.className="dev-info flags"; f.innerHTML=`<h4>⚠️ Когда обратиться к врачу</h4><ul>${mo.flags.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`; body.appendChild(f); }
+    el.appendChild(body); main.appendChild(el); updateDevCat(el, mo);
+  });
+  const els=[...main.querySelectorAll(".stage")]; const hasSaved=Object.keys(dOpen).length>0;
+  els.forEach(el=>{ const open=hasSaved?!!dOpen[el.dataset.cat]:false; el.classList.toggle("collapsed",!open); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(open)); });
+  if(!hasSaved){ const fc=DEV.find(m=>{ const cc=devCounts(m); return cc.checked<cc.total; })||DEV[0]; const el=main.querySelector(`.stage[data-cat="${fc.id}"]`); if(el){ el.classList.remove("collapsed"); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded","true"); } }
+  updateDevHead();
+}
+function devApplySearch(){
+  const q=(document.getElementById("devSearch").value||"").trim().toLowerCase();
+  document.getElementById("devSearchClear").classList.toggle("show", q.length>0);
+  let any=false;
+  document.querySelectorAll("#devMain .stage").forEach(el=>{
+    let vis=0; el.querySelectorAll(".s-row").forEach(r=>{ const m=!q||r.dataset.name.includes(q); r.style.display=m?"":"none"; if(m)vis++; });
+    el.querySelectorAll(".sub-head,.dev-info").forEach(x=> x.style.display = q ? "none" : "");
+    const show=!q||vis>0; el.classList.toggle("hide",!show); if(show){ any=true; if(q) el.classList.remove("collapsed"); }
+  });
+  document.getElementById("devNoResults").classList.toggle("show", q.length>0 && !any);
+}
+function devCollapseAll(){
+  const els=[...document.querySelectorAll("#devMain .stage")];
+  const anyOpen=els.some(el=> !el.classList.contains("collapsed"));
+  els.forEach(el=>{ el.classList.toggle("collapsed",anyOpen); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(!anyOpen)); dOpen[el.dataset.cat]=!anyOpen; });
+  dSaveOpen();
+  document.getElementById("devCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
+}
+
+/* ===================== ДНЕВНИК ДНЯ ===================== */
+const DY_KEY="prikorm-diary";
+let dyData={}, dySelDate=new Date();
+const DY_TYPES=[
+  {type:"feed",   ic:"🍼", label:"Кормление"},
+  {type:"sleep",  ic:"😴", label:"Сон"},
+  {type:"diaper", ic:"💧", label:"Подгузник"},
+  {type:"bath",   ic:"🛁", label:"Купание"},
+  {type:"meds",   ic:"💊", label:"Лекарство"}
+];
+function dyLoad(){ dyData={}; try{ const v=localStorage.getItem(k(DY_KEY)); if(v) dyData=JSON.parse(v); }catch(e){} }
+function dySave(){ try{ localStorage.setItem(k(DY_KEY), JSON.stringify(dyData)); }catch(e){} }
+function dyDateKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dyIsToday(d){ return dyDateKey(d)===dyDateKey(new Date()); }
+function dyFmtDate(d){
+  if(dyIsToday(d)) return "Сегодня";
+  const y=new Date(); y.setDate(y.getDate()-1);
+  if(dyDateKey(d)===dyDateKey(y)) return "Вчера";
+  const MM=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  const WD=["вс","пн","вт","ср","чт","пт","сб"][d.getDay()];
+  return `${d.getDate()} ${MM[d.getMonth()]}, ${WD}`;
+}
+function dyFmtTime(iso){ const d=new Date(iso); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function dyAddEntry(type){
+  const key=dyDateKey(dySelDate);
+  if(!dyData[key]) dyData[key]=[];
+  const now=new Date();
+  const dt=new Date(dySelDate); dt.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), 0);
+  dyData[key].push({ id:Date.now().toString(36)+Math.random().toString(36).slice(2,4), time:dt.toISOString(), type });
+  dySave(); renderDiary();
+  if(navigator.vibrate) navigator.vibrate(12);
+  const tt=DY_TYPES.find(x=>x.type===type);
+  if(tt) toast(`${tt.ic} ${tt.label} — записано`);
+}
+function dyChangeDay(delta){
+  const d=new Date(dySelDate); d.setDate(d.getDate()+delta);
+  if(dyDateKey(d) > dyDateKey(new Date())) return; // не уходим в будущее
+  dySelDate=d; renderDiary();
+}
+function renderDiary(){
+  document.getElementById("dyDate").textContent = dyFmtDate(dySelDate);
+  document.getElementById("dyNext").disabled = dyIsToday(dySelDate);
+  const addC=document.getElementById("dyAdd");
+  addC.innerHTML = DY_TYPES.map(t=>`<button data-type="${t.type}" type="button"><span class="qi">${t.ic}</span>${t.label}</button>`).join("");
+  addC.querySelectorAll("button").forEach(b=> b.addEventListener("click", ()=> dyAddEntry(b.dataset.type)));
+  const key=dyDateKey(dySelDate);
+  const entries=(dyData[key]||[]).slice().sort((a,b)=> a.time<b.time?-1:(a.time>b.time?1:0));
+  const counts={}; entries.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);
+  document.getElementById("dySum").innerHTML = DY_TYPES.filter(t=>counts[t.type]).map(t=>`<span>${t.ic} ${counts[t.type]}</span>`).join("") || `<span style="opacity:.55">За день пока пусто</span>`;
+  const list=document.getElementById("dyList");
+  if(!entries.length){ list.innerHTML=`<div class="diary-empty">Пока нет записей за этот день.<br>Нажмите кнопку выше, чтобы добавить.</div>`; return; }
+  list.innerHTML = entries.map(e=>{ const t=DY_TYPES.find(x=>x.type===e.type)||{ic:"•",label:e.type}; return `<li class="diary-entry" data-id="${e.id}"><span class="de-time">${dyFmtTime(e.time)}</span><span class="de-ic">${t.ic}</span><span class="de-label">${esc(t.label)}</span><button class="de-del" aria-label="Удалить">✕</button></li>`; }).join("");
+  list.querySelectorAll(".diary-entry").forEach(li=> li.querySelector(".de-del").addEventListener("click", ()=>{
+    dyData[key]=(dyData[key]||[]).filter(x=> x.id!==li.dataset.id);
+    if(!dyData[key].length) delete dyData[key];
+    dySave(); renderDiary();
+  }));
+}
+
 /* ---------- переключение разделов ---------- */
 function setView(v){
   currentView = v; try{ localStorage.setItem(VIEW_KEY, v); }catch(e){}
   document.getElementById("viewPrikorm").hidden = (v!=="prikorm");
   document.getElementById("viewSumka").hidden = (v!=="sumka");
   document.getElementById("viewBuy").hidden = (v!=="buy");
+  document.getElementById("viewDev").hidden = (v!=="dev");
+  document.getElementById("viewDiary").hidden = (v!=="diary");
   document.querySelectorAll(".drawer-item").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
   if(v==="sumka") renderSumka();
   if(v==="buy") renderBuy();
+  if(v==="dev") renderDev();
+  if(v==="diary") renderDiary();
   window.scrollTo(0,0);
 }
 function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBackdrop").classList.add("open"); }
@@ -2164,6 +2462,8 @@ function closeDrawer(){ document.getElementById("drawer").classList.remove("open
 
 sLoad();
 bLoad();
+dLoad();
+dyLoad();
 document.getElementById("menuBtn").addEventListener("click", openDrawer);
 document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
 document.querySelectorAll(".drawer-item").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
@@ -2181,6 +2481,11 @@ document.getElementById("bAddName").addEventListener("keydown", e=>{ if(e.key===
 document.getElementById("buySearch").addEventListener("input", bApplySearch);
 document.getElementById("buySearchClear").addEventListener("click", ()=>{ const s=document.getElementById("buySearch"); s.value=""; bApplySearch(); s.focus(); });
 document.getElementById("buyCollapseBtn").addEventListener("click", bCollapseAll);
+document.getElementById("devSearch").addEventListener("input", devApplySearch);
+document.getElementById("devSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("devSearch"); s.value=""; devApplySearch(); s.focus(); });
+document.getElementById("devCollapseBtn").addEventListener("click", devCollapseAll);
+document.getElementById("dyPrev").addEventListener("click", ()=> dyChangeDay(-1));
+document.getElementById("dyNext").addEventListener("click", ()=> dyChangeDay(1));
 setView(currentView);
 
 /* ---------- SERVICE WORKER (офлайн) ---------- */
