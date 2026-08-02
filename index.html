@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v20";
+  window.APP_VERSION = "v21";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -604,6 +604,8 @@
   /* ---- развитие: инфо-блоки ---- */
   .dev-intro{ max-width:520px; margin:0 auto 4px; padding:0 14px; }
   .dev-intro div{ background:var(--btn-bg); border-radius:14px; padding:11px 14px; font-size:12.5px; font-weight:700; line-height:1.5; color:var(--ink-soft); }
+  .doc-sub{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-top:3px; line-height:1.45; }
+  .item-label.checked .doc-sub{ opacity:.7; }
   .dev-info{ margin:10px 8px 2px; padding:12px 14px; border-radius:14px; background:var(--accent-l,#eee); }
   .dev-info.flags{ background:var(--warn-l); }
   .dev-info h4{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; margin:0 0 7px; color:var(--ink); }
@@ -659,6 +661,7 @@
   <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>
   <button class="drawer-item" data-view="dev" type="button">👣 Развитие по месяцам</button>
   <button class="drawer-item" data-view="diary" type="button">😴 Дневник дня</button>
+  <button class="drawer-item" data-view="docs" type="button">📄 Документы и выплаты</button>
 </nav>
 
 <div id="viewPrikorm">
@@ -779,6 +782,28 @@
     <div class="diary-hint">Нажмите на кнопку — событие запишется с текущим временем. Затем нажмите на запись в списке, чтобы поправить время или добавить детали (мл, грудь, температуру).</div>
     <div class="qadd" id="dyAdd"></div>
     <ul class="diary-list" id="dyList"></ul>
+  </div>
+</div>
+
+<div id="viewDocs" hidden>
+  <div class="hero">
+    <div class="hero-plant">📄</div>
+    <h1>📄 Документы и выплаты</h1>
+    <p class="hero-sub">Что оформить после рождения малыша</p>
+    <div class="stem-wrap"><div class="stem-fill" id="docFill"></div></div>
+    <div class="hero-count" id="docCount">0 из 0 оформлено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <input id="docsSearch" type="search" placeholder="Поиск документа…" aria-label="Поиск документа" autocomplete="off">
+      <button class="search-clear" id="docsSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="docsKids"></div>
+  </div>
+  <div class="dev-intro"><div>Справочная информация на 2026 год. Суммы индексируются, правила зависят от региона и могут меняться. Это ориентир, а не юридическая консультация — уточняйте на Госуслугах, в СФР и соцзащите.</div></div>
+  <main id="docsMain" class="sumka-main"></main>
+  <div class="no-results" id="docsNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="docsCollapseBtn" type="button">🔽 Свернуть всё</button>
   </div>
 </div>
 
@@ -1102,9 +1127,11 @@ function switchChild(id){
   loadState();
   if(typeof dLoad==="function") dLoad();
   if(typeof dyLoad==="function") dyLoad();
+  if(typeof dcLoad==="function") dcLoad();
   render();
   if(currentView==="dev") renderDev();
   if(currentView==="diary") renderDiary();
+  if(currentView==="docs") renderDocs();
   renderKids(); updateHero();
 }
 function renderKidChips(el, withManage){
@@ -1119,6 +1146,7 @@ function renderKids(){
   const main=document.getElementById("kids"); if(main) renderKidChips(main, true);
   const dk=document.getElementById("devKids"); if(dk) renderKidChips(dk, false);
   const yk=document.getElementById("diaryKids"); if(yk) renderKidChips(yk, false);
+  const ck=document.getElementById("docsKids"); if(ck) renderKidChips(ck, false);
 }
 function openKidModal(id){
   editingKid = id;
@@ -1148,10 +1176,11 @@ function saveKid(){
     children.push({ id, name });
     saveChildren();
     activeChild = id; saveActive();
-    loadState(); dLoad(); dyLoad();
+    loadState(); dLoad(); dyLoad(); dcLoad();
     closeKidModal(); render();
     if(currentView==="dev") renderDev();
     if(currentView==="diary") renderDiary();
+    if(currentView==="docs") renderDocs();
     renderKids(); updateHero();
     toast("Ребёнок добавлен 🎉");
   }
@@ -1163,10 +1192,11 @@ function deleteKid(){
   BASE_KEYS.forEach(base=> localStorage.removeItem(base+"__"+id));
   children = children.filter(c=> c.id !== id);
   saveChildren();
-  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); }
+  if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); dcLoad(); }
   closeKidModal(); render();
   if(currentView==="dev") renderDev();
   if(currentView==="diary") renderDiary();
+  if(currentView==="docs") renderDocs();
   renderKids(); updateHero();
   toast("Ребёнок удалён");
 }
@@ -2498,6 +2528,130 @@ function delDyEdit(){
   dySave(); closeDyEdit(); renderDiary();
 }
 
+/* ===================== ДОКУМЕНТЫ И ВЫПЛАТЫ ===================== */
+const DOC_CHECK="prikorm-docs-checked", DOC_NOTES="prikorm-docs-notes", DOC_OPEN="prikorm-docs-open";
+let dcState={}, dcNotes={}, dcOpen={};
+
+const DOCS = [
+  { id:"papers", emoji:"📄", name:"Документы малышу", theme:"sky",
+    tip:"Многое оформляется автоматически: после регистрации рождения СНИЛС создаётся сам, а полис ОМС и маткапитал часто приходят проактивно на Госуслуги.",
+    items:[
+      { n:"Свидетельство о рождении", info:"Срок: желательно в течение 1 месяца. Где: ЗАГС или Госуслуги (сервис «Рождение ребёнка»). Нужно: паспорта родителей, справка из роддома, свид. о браке (при наличии)." },
+      { n:"Регистрация по месту жительства (прописка)", info:"Где: МВД / Госуслуги / МФЦ. Нужно: свид. о рождении, паспорт родителя, документы на жильё. Часто требуется для пособий и прикрепления к поликлинике." },
+      { n:"СНИЛС", info:"Оформляется автоматически после регистрации рождения — данные передаёт ЗАГС в СФР. Проверить и скачать можно на Госуслугах." },
+      { n:"Полис ОМС", info:"Где: страховая медицинская организация или Госуслуги. Нужен для педиатра, прививок и бесплатной медпомощи. Часто оформляется проактивно." },
+      { n:"Отметка о гражданстве РФ", info:"Понадобится для загранпаспорта и некоторых выплат. Проставляется в МВД по вопросам миграции по обращению." },
+      { n:"ИНН (по необходимости)", info:"Нужен не всем и не сразу. Оформить можно в ФНС или на Госуслугах." }
+    ]},
+  { id:"med", emoji:"🏥", name:"Медицина и прикрепление", theme:"sage",
+    items:[
+      { n:"Прикрепление к детской поликлинике", info:"По месту жительства или фактического проживания. Нужно: полис ОМС, свид. о рождении, СНИЛС." },
+      { n:"Первый патронаж (педиатр и медсестра)", info:"Врач и медсестра приходят на дом в первые дни после выписки — по данным из роддома, отдельно вызывать не нужно." },
+      { n:"Плановые осмотры и скрининги 1-го месяца", info:"Аудиоскрининг, неонатальный скрининг, первые осмотры специалистов. Запись — через Госуслуги или регистратуру." }
+    ]},
+  { id:"pay", emoji:"💰", name:"Выплаты и пособия", theme:"coral",
+    tip:"Суммы индексируются 1 февраля каждого года. Актуальные размеры и условия — на Госуслугах и в СФР.",
+    items:[
+      { n:"Единовременное пособие при рождении", info:"28 450,45 ₽ (с 1 февраля 2026; зависит от даты рождения). Срок подачи: в течение 6 месяцев. Работающим — через работодателя/СФР, неработающим — СФР или Госуслуги." },
+      { n:"Материнский (семейный) капитал", info:"Сертификат оформляется проактивно и приходит на Госуслуги. 2026: на 1-го ребёнка — 728 921,90 ₽; на 2-го — 963 243,17 ₽ (или доплата 234 321,17 ₽, если уже получали на первого)." },
+      { n:"Единое пособие (по нуждаемости)", info:"Семьям с детьми до 17 лет и беременным, если среднедушевой доход ≤ прожиточного минимума в регионе. Размер: 50 / 75 / 100% детского ПМ региона. Подать: СФР или Госуслуги." },
+      { n:"Пособие по уходу за ребёнком до 1,5 лет", info:"40% среднего заработка (в 2026 мин ≈ 10 837 ₽, макс ≈ 83 021 ₽ в месяц). Работающим — через работодателя, остальным — единое пособие/СФР." },
+      { n:"Пособие по беременности и родам (декретные)", info:"Работающим — 100% среднего заработка за отпуск по БиР, по больничному листу. Оформляется через работодателя/СФР." },
+      { n:"Региональные и губернаторские выплаты", info:"Зависят от региона (например, выплата при рождении, поддержка молодых семей). Уточните в соцзащите или на региональном портале." }
+    ]},
+  { id:"extra", emoji:"🏦", name:"Полезное и сервисы", theme:"wheat",
+    items:[
+      { n:"Суперсервис «Рождение ребёнка» на Госуслугах", info:"Свидетельство о рождении, СНИЛС, прописка, полис ОМС и маткапитал во многом оформляются онлайн и проактивно." },
+      { n:"Детская карта / счёт для выплат (по желанию)", info:"Удобно для зачисления пособий. Оформляется в банке." },
+      { n:"Загранпаспорт ребёнку (по необходимости)", info:"Для поездок за границу. Через Госуслуги или МВД. Нужна отметка о гражданстве." }
+    ]}
+];
+
+function dcLoad(){
+  dcState={}; dcNotes={}; dcOpen={};
+  try{ const v=localStorage.getItem(k(DOC_CHECK)); if(v) dcState=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(k(DOC_NOTES)); if(v) dcNotes=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(k(DOC_OPEN)); if(v) dcOpen=JSON.parse(v); }catch(e){}
+}
+function dcSaveCheck(){ try{ localStorage.setItem(k(DOC_CHECK), JSON.stringify(dcState)); }catch(e){} }
+function dcSaveNotes(){ try{ localStorage.setItem(k(DOC_NOTES), JSON.stringify(dcNotes)); }catch(e){} }
+function dcSaveOpen(){ try{ localStorage.setItem(k(DOC_OPEN), JSON.stringify(dcOpen)); }catch(e){} }
+function docCounts(cat){ let t=0,c=0; cat.items.forEach((_,i)=>{ t++; if(dcState[cat.id+"-"+i]) c++; }); return {total:t, checked:c}; }
+function docTotals(){ let t=0,c=0; DOCS.forEach(cat=>{ const cc=docCounts(cat); t+=cc.total; c+=cc.checked; }); return {total:t, checked:c}; }
+function updateDocsHead(){
+  const {total, checked} = docTotals();
+  const pct = total? Math.round(checked/total*100):0;
+  document.getElementById("docFill").style.width = pct+"%";
+  document.getElementById("docCount").innerHTML = `<b>${checked}</b> из ${total} оформлено`;
+}
+function updateDocsCat(el, cat){
+  const {total, checked} = docCounts(cat);
+  el.querySelector(".stage-progress-text").textContent = `${checked} из ${total}`;
+  el.querySelector(".stage-bar-fill").style.width = (total? checked/total*100:0)+"%";
+  el.classList.toggle("done", total>0 && checked===total);
+}
+function docsBuildRow(cat, item, key){
+  const wrap=document.createElement("div"); wrap.className="s-row"; wrap.dataset.key=key; wrap.dataset.name=(item.n+" "+(item.info||"")).toLowerCase();
+  const row=document.createElement("div"); row.className="item"; row.setAttribute("role","checkbox"); row.setAttribute("tabindex","0"); row.setAttribute("aria-label",item.n);
+  row.innerHTML=`<div class="checkbox">✓</div><div class="item-label">${esc(item.n)}${item.info?`<span class="doc-sub">${esc(item.info)}</span>`:''}</div><button class="note-btn" aria-label="Заметка" tabindex="-1">✎</button>`;
+  const box=row.querySelector(".checkbox"), label=row.querySelector(".item-label"), nbtn=row.querySelector(".note-btn");
+  const apply=()=>{ const on=!!dcState[key]; box.classList.toggle("checked",on); label.classList.toggle("checked",on); row.setAttribute("aria-checked",String(on)); };
+  apply();
+  const toggle=()=>{
+    dcState[key]=!dcState[key]; apply();
+    updateDocsCat(wrap.closest(".stage"), cat); updateDocsHead(); dcSaveCheck();
+    if(dcState[key]){ if(navigator.vibrate) navigator.vibrate(14); const cc=docCounts(cat); if(cc.checked===cc.total){ confetti(false); } }
+  };
+  row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
+  row.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+  const note=document.createElement("div"); note.className="s-note";
+  note.innerHTML=`<textarea placeholder="Например: подали 5 июля, готово 12-го">${esc(dcNotes[key]||"")}</textarea>`;
+  const ta=note.querySelector("textarea");
+  ta.addEventListener("input", ()=>{ const v=ta.value; if(v.trim()) dcNotes[key]=v; else delete dcNotes[key]; dcSaveNotes(); nbtn.classList.toggle("has", !!dcNotes[key]); });
+  nbtn.classList.toggle("has", !!dcNotes[key]);
+  nbtn.addEventListener("click", e=>{ e.stopPropagation(); const o=!note.classList.contains("open"); note.classList.toggle("open",o); if(o) setTimeout(()=>ta.focus(),60); });
+  wrap.appendChild(row); wrap.appendChild(note);
+  return wrap;
+}
+function renderDocs(){
+  const main=document.getElementById("docsMain"); main.innerHTML="";
+  DOCS.forEach(cat=>{
+    const el=document.createElement("div"); el.className=`stage theme-${cat.theme}`; el.dataset.cat=cat.id;
+    const head=document.createElement("div"); head.className="stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
+    head.innerHTML=`<div class="stage-emoji">${cat.emoji}</div><div class="stage-title-wrap"><p class="stage-title">${cat.name}</p><div class="stage-progress-text">0</div></div><span class="stage-medal" title="Готово">🏅</span><div class="stage-chevron">▾</div>`;
+    const toggle=()=>{ const c=el.classList.toggle("collapsed"); head.setAttribute("aria-expanded",String(!c)); dcOpen[cat.id]=!c; dcSaveOpen(); };
+    head.addEventListener("click", toggle); head.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
+    el.appendChild(head);
+    const bar=document.createElement("div"); bar.className="stage-bar-track"; bar.innerHTML=`<div class="stage-bar-fill"></div>`; el.appendChild(bar);
+    const body=document.createElement("div"); body.className="stage-body";
+    cat.items.forEach((it,i)=> body.appendChild(docsBuildRow(cat, it, cat.id+"-"+i)));
+    if(cat.tip){ const t=document.createElement("div"); t.className="goal-note"; t.innerHTML=`<span class="ic">💡</span><span>${esc(cat.tip)}</span>`; body.appendChild(t); }
+    el.appendChild(body); main.appendChild(el); updateDocsCat(el, cat);
+  });
+  const els=[...main.querySelectorAll(".stage")]; const hasSaved=Object.keys(dcOpen).length>0;
+  els.forEach(el=>{ const open=hasSaved?!!dcOpen[el.dataset.cat]:false; el.classList.toggle("collapsed",!open); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(open)); });
+  if(!hasSaved){ const fc=DOCS.find(c=>{ const cc=docCounts(c); return cc.checked<cc.total; })||DOCS[0]; const el=main.querySelector(`.stage[data-cat="${fc.id}"]`); if(el){ el.classList.remove("collapsed"); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded","true"); } }
+  updateDocsHead();
+}
+function docsApplySearch(){
+  const q=(document.getElementById("docsSearch").value||"").trim().toLowerCase();
+  document.getElementById("docsSearchClear").classList.toggle("show", q.length>0);
+  let any=false;
+  document.querySelectorAll("#docsMain .stage").forEach(el=>{
+    let vis=0; el.querySelectorAll(".s-row").forEach(r=>{ const m=!q||r.dataset.name.includes(q); r.style.display=m?"":"none"; if(m)vis++; });
+    el.querySelectorAll(".goal-note").forEach(x=> x.style.display = q ? "none" : "");
+    const show=!q||vis>0; el.classList.toggle("hide",!show); if(show){ any=true; if(q) el.classList.remove("collapsed"); }
+  });
+  document.getElementById("docsNoResults").classList.toggle("show", q.length>0 && !any);
+}
+function docsCollapseAll(){
+  const els=[...document.querySelectorAll("#docsMain .stage")];
+  const anyOpen=els.some(el=> !el.classList.contains("collapsed"));
+  els.forEach(el=>{ el.classList.toggle("collapsed",anyOpen); const h=el.querySelector(".stage-head"); if(h) h.setAttribute("aria-expanded",String(!anyOpen)); dcOpen[el.dataset.cat]=!anyOpen; });
+  dcSaveOpen();
+  document.getElementById("docsCollapseBtn").textContent = anyOpen ? "🔼 Развернуть всё" : "🔽 Свернуть всё";
+}
+
 /* ---------- переключение разделов ---------- */
 function setView(v){
   currentView = v; try{ localStorage.setItem(VIEW_KEY, v); }catch(e){}
@@ -2506,11 +2660,13 @@ function setView(v){
   document.getElementById("viewBuy").hidden = (v!=="buy");
   document.getElementById("viewDev").hidden = (v!=="dev");
   document.getElementById("viewDiary").hidden = (v!=="diary");
+  document.getElementById("viewDocs").hidden = (v!=="docs");
   document.querySelectorAll(".drawer-item").forEach(b=> b.classList.toggle("active", b.dataset.view===v));
   if(v==="sumka") renderSumka();
   if(v==="buy") renderBuy();
   if(v==="dev") renderDev();
   if(v==="diary") renderDiary();
+  if(v==="docs") renderDocs();
   window.scrollTo(0,0);
 }
 function openDrawer(){ document.getElementById("drawer").classList.add("open"); document.getElementById("drawerBackdrop").classList.add("open"); }
@@ -2520,6 +2676,7 @@ sLoad();
 bLoad();
 dLoad();
 dyLoad();
+dcLoad();
 document.getElementById("menuBtn").addEventListener("click", openDrawer);
 document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
 document.querySelectorAll(".drawer-item").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
@@ -2546,6 +2703,9 @@ document.getElementById("dyEditClose").addEventListener("click", closeDyEdit);
 document.getElementById("dyEditBackdrop").addEventListener("click", closeDyEdit);
 document.getElementById("dyEditSave").addEventListener("click", saveDyEdit);
 document.getElementById("dyEditDel").addEventListener("click", delDyEdit);
+document.getElementById("docsSearch").addEventListener("input", docsApplySearch);
+document.getElementById("docsSearchClear").addEventListener("click", ()=>{ const s=document.getElementById("docsSearch"); s.value=""; docsApplySearch(); s.focus(); });
+document.getElementById("docsCollapseBtn").addEventListener("click", docsCollapseAll);
 setView(currentView);
 
 /* ---------- SERVICE WORKER (офлайн) ---------- */
