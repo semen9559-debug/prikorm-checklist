@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v25";
+  window.APP_VERSION = "v26";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -64,7 +64,7 @@
     --text-dim:#B4A98F;  --text-mid:#5C554A;  --text-tip:#4C463C;
     --glow:.16;
 
-    --glass:rgba(255,249,240,0.62);
+    --glass:rgba(255,249,240,0.55);
     --glass-brd:rgba(255,255,255,0.55);
     --glass-hi:rgba(255,255,255,0.55);
     --glass-sh:0 8px 30px rgba(58,52,44,0.14);
@@ -85,7 +85,7 @@
     --text-dim:#8C8271;  --text-mid:#C9C0AE;  --text-tip:#DAD1BF;
     --glow:.26;
 
-    --glass:rgba(28,25,20,0.60);
+    --glass:rgba(28,25,20,0.44);
     --glass-brd:rgba(255,255,255,0.10);
     --glass-hi:rgba(255,255,255,0.10);
     --glass-sh:0 10px 34px rgba(0,0,0,0.45);
@@ -673,6 +673,21 @@
     *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
     .stem-fill, .stage-bar-fill{ transition-duration:.3s !important; }
   }
+</style>
+<style>
+  /* ambient color field so frosted glass has something to blur */
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(46rem 46rem at 10% 6%, rgba(255,180,90,0.22), transparent 58%),
+      radial-gradient(44rem 44rem at 92% 12%, rgba(255,120,120,0.16), transparent 58%),
+      radial-gradient(50rem 50rem at 82% 90%, rgba(120,180,255,0.16), transparent 60%),
+      radial-gradient(46rem 46rem at 14% 94%, rgba(120,220,170,0.16), transparent 60%);}
+  html[data-theme="dark"] body::before{
+    background:
+      radial-gradient(46rem 46rem at 10% 6%, rgba(255,170,70,0.30), transparent 58%),
+      radial-gradient(44rem 44rem at 92% 12%, rgba(255,80,90,0.22), transparent 58%),
+      radial-gradient(50rem 50rem at 82% 90%, rgba(90,170,255,0.20), transparent 60%),
+      radial-gradient(46rem 46rem at 14% 94%, rgba(120,255,180,0.18), transparent 60%);}
 </style>
 </head>
 <body>
