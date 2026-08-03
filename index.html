@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v27";
+  window.APP_VERSION = "v28";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -711,8 +711,8 @@
 <div id="viewPrikorm">
 <div class="hero">
   <div class="hero-plant" id="heroPlant">🌱</div>
-  <h1>🌸 Трекер прикорма 5,5–12 месяцев</h1>
-  <p class="hero-sub">Отмечайте продукты и открывайте советы по каждому</p>
+  <h1>Прикорм без паники</h1>
+  <p class="hero-sub">Что и когда вводить — по шагам, с советом на каждый продукт</p>
   <div class="stem-wrap"><div class="stem-fill" id="stemFill"></div></div>
   <div class="hero-count" id="heroCount">0 из 0 продуктов</div>
   <div class="search-wrap">
@@ -749,8 +749,8 @@
 <div id="viewSumka" hidden>
   <div class="hero">
     <div class="hero-plant">👜</div>
-    <h1>👜 Сумка в роддом</h1>
-    <p class="hero-sub">Отмечайте, что уже собрано ✅</p>
+    <h1>Собери сумку — и ничего не забудь</h1>
+    <p class="hero-sub">Всё нужное для тебя и малыша в одном списке ✅</p>
     <div class="stem-wrap"><div class="stem-fill" id="sumkaFill"></div></div>
     <div class="hero-count" id="sumkaCount">0 из 0 собрано</div>
     <div class="search-wrap">
@@ -769,8 +769,8 @@
 <div id="viewBuy" hidden>
   <div class="hero">
     <div class="hero-plant">🛒</div>
-    <h1>🛒 Покупки к рождению</h1>
-    <p class="hero-sub">Отмечайте, что уже куплено 🛍️</p>
+    <h1>Готовимся к встрече</h1>
+    <p class="hero-sub">Что купить до рождения — без лишнего и в спокойном темпе</p>
     <div class="stem-wrap"><div class="stem-fill" id="buyFill"></div></div>
     <div class="hero-count" id="buyCount">0 из 0 куплено</div>
     <div class="search-wrap">
@@ -789,8 +789,8 @@
 <div id="viewDev" hidden>
   <div class="hero">
     <div class="hero-plant">👣</div>
-    <h1>👣 Развитие по месяцам</h1>
-    <p class="hero-sub">Отмечайте, что малыш уже умеет 🌟</p>
+    <h1>Смотри, как растёт малыш</h1>
+    <p class="hero-sub">Новые умения месяц за месяцем — отмечай первые победы</p>
     <div class="stem-wrap"><div class="stem-fill" id="devFill"></div></div>
     <div class="hero-count" id="devCount">0 из 0 освоено</div>
     <div class="search-wrap">
@@ -800,7 +800,7 @@
     </div>
     <div class="kids" id="devKids"></div>
   </div>
-  <div class="dev-intro"><div>Сроки ориентировочные — каждый малыш развивается в своём темпе. Это опора, а не диагноз. При сомнениях покажитесь педиатру или неврологу.</div></div>
+  <div class="dev-intro"><div>Сроки примерные — каждый малыш растёт в своём темпе. Это опора, а не диагноз. Сомневаешься — покажись педиатру или неврологу.</div></div>
   <main id="devMain" class="sumka-main"></main>
   <div class="no-results" id="devNoResults">Ничего не найдено 🙈</div>
   <div class="tools">
@@ -811,8 +811,8 @@
 <div id="viewDiary" hidden>
   <div class="hero">
     <div class="hero-plant">😴</div>
-    <h1>😴 Дневник дня</h1>
-    <p class="hero-sub">Кормления, сон и подгузники за день</p>
+    <h1>День малыша — как на ладони</h1>
+    <p class="hero-sub">Кормления, сон и подгузники в одном месте</p>
     <div class="kids" id="diaryKids"></div>
   </div>
   <div class="diary-wrap">
@@ -832,8 +832,8 @@
 <div id="viewDocs" hidden>
   <div class="hero">
     <div class="hero-plant">📄</div>
-    <h1>📄 Документы и выплаты</h1>
-    <p class="hero-sub">Что оформить после рождения малыша</p>
+    <h1>Документы без беготни</h1>
+    <p class="hero-sub">Что оформить после родов и какие выплаты не пропустить</p>
     <div class="stem-wrap"><div class="stem-fill" id="docFill"></div></div>
     <div class="hero-count" id="docCount">0 из 0 оформлено</div>
     <div class="search-wrap">
@@ -854,8 +854,8 @@
 <div id="viewVac" hidden>
   <div class="hero">
     <div class="hero-plant">💉</div>
-    <h1>💉 Календарь прививок</h1>
-    <p class="hero-sub">Национальный календарь РФ по возрасту</p>
+    <h1>Прививки под контролем</h1>
+    <p class="hero-sub">Национальный календарь РФ — по возрасту, без путаницы</p>
     <div class="stem-wrap"><div class="stem-fill" id="vacFill"></div></div>
     <div class="hero-count" id="vacCount">0 из 0 сделано</div>
     <div class="search-wrap">
@@ -876,8 +876,8 @@
 <div id="viewPreg" hidden>
   <div class="hero">
     <div class="hero-plant">🤰</div>
-    <h1>🤰 До родов по триместрам</h1>
-    <p class="hero-sub">Учёт, скрининги, анализы и подготовка</p>
+    <h1>Спокойная беременность по неделям</h1>
+    <p class="hero-sub">Скрининги, анализы и подготовка — вовремя и по порядку</p>
     <div class="stem-wrap"><div class="stem-fill" id="pregFill"></div></div>
     <div class="hero-count" id="pregCount">0 из 0 выполнено</div>
     <div class="search-wrap">
@@ -1264,7 +1264,7 @@ function saveKid(){
     const c = children.find(c=> c.id===editingKid);
     if(c) c.name = name;
     saveChildren();
-    closeKidModal(); renderKids(); toast("Имя обновлено");
+    closeKidModal(); renderKids(); toast("Имя сохранили ✅");
   } else {
     const id = "c" + Date.now().toString(36);
     children.push({ id, name });
@@ -1278,7 +1278,7 @@ function saveKid(){
     if(currentView==="vac") vacMod.render();
     if(currentView==="preg") pregMod.render();
     renderKids(); updateHero();
-    toast("Ребёнок добавлен 🎉");
+    toast("Профиль добавлен 🎉");
   }
 }
 function deleteKid(){
@@ -1296,7 +1296,7 @@ function deleteKid(){
   if(currentView==="vac") vacMod.render();
   if(currentView==="preg") pregMod.render();
   renderKids(); updateHero();
-  toast("Ребёнок удалён");
+  toast("Профиль удалили");
 }
 function customKey(stId, id){ return stId+"-c"+id; }
 function stageCounts(st){
@@ -1356,7 +1356,7 @@ function guideDefaultHTML(){
       <li data-ic="👀">Наблюдайте за реакцией кожи и животика</li>
     </ul>
     <div class="guide-motivate">${motivateLine()}<br><span style="font-weight:700;opacity:.75">Отмечено ${checked} из ${total}</span></div>
-    <div class="guide-disclaimer"><span>ℹ️</span><span>Это ориентир, а не медицинская инструкция. Схему прикорма согласуйте с педиатром.</span></div>
+    <div class="guide-disclaimer"><span>ℹ️</span><span>Это ориентир, а не назначение. Схему прикорма согласуй с педиатром.</span></div>
     <div class="guide-hint">👆 Наведите на продукт, чтобы увидеть совет</div>`;
 }
 function productCardHTML(st, item, key){
@@ -1426,7 +1426,7 @@ function deleteCustom(stId, id){
   const gc = document.getElementById("guideCard");
   if(gc){ delete gc.dataset.locked; }
   render();
-  toast("Продукт удалён");
+  toast("Убрали из списка");
 }
 function openAddProduct(st){
   addStage = st;
@@ -1463,7 +1463,7 @@ function submitAddProduct(){
   render();
   const el = document.querySelector(`#main .stage[data-stage="${stId}"]`);
   if(el){ el.classList.remove("collapsed"); openState[stId] = true; saveOpen(); el.scrollIntoView({behavior:"smooth", block:"center"}); }
-  toast("Продукт добавлен 🎉");
+  toast("Добавили в список");
 }
 function updateRowReact(key){
   const el = document.querySelector(`.item[data-key="${CSS.escape(key)}"] .row-react`);
@@ -1668,7 +1668,7 @@ function render(){
           if(stageAllDone(st)){
             confetti(false);
             const {total,checked}=totalCounts();
-            if(total===checked){ setTimeout(()=>confetti(true),150); toast("Все продукты введены! 🎉🏆"); }
+            if(total===checked){ setTimeout(()=>confetti(true),150); toast("Весь список пройден — вы большие молодцы 🏆"); }
           }
         } else {
           delete dates[key]; saveDates();
@@ -1925,7 +1925,7 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
   const text = `🌱 Мой прогресс прикорма: ${checked} из ${total} (${pct}%)\n\n` + lines.join("\n") + `\n\nprikorm.dverizapeli.ru`;
   try{
     if(navigator.share){ await navigator.share({title:"Трекер прикорма", text}); }
-    else { await navigator.clipboard.writeText(text); toast("Скопировано в буфер 📋"); }
+    else { await navigator.clipboard.writeText(text); toast("Скопировали 📋"); }
   }catch(e){}
 });
 
@@ -1941,7 +1941,7 @@ document.getElementById("exportBtn").addEventListener("click", ()=>{
   const a = document.createElement("a");
   a.href = url; a.download = "prikorm-backup.json"; a.click();
   setTimeout(()=> URL.revokeObjectURL(url), 1000);
-  toast("Копия сохранена 💾");
+  toast("Резервная копия готова 💾");
 });
 document.getElementById("importBtn").addEventListener("click", ()=> document.getElementById("importFile").click());
 document.getElementById("importFile").addEventListener("change", e=>{
@@ -1952,9 +1952,9 @@ document.getElementById("importFile").addEventListener("change", e=>{
       const parsed = JSON.parse(r.result);
       const data = parsed.data || parsed;
       Object.keys(data).forEach(key=>{ if(key.indexOf("prikorm-")===0) localStorage.setItem(key, data[key]); });
-      toast("Восстановлено ✅");
+      toast("Данные восстановили ✅");
       setTimeout(()=> location.reload(), 600);
-    }catch(err){ toast("Не удалось прочитать файл 😕"); }
+    }catch(err){ toast("Не смогли открыть файл. Проверь формат и попробуй снова"); }
   };
   r.readAsText(file);
   e.target.value = "";
@@ -2060,7 +2060,7 @@ function sBuildRow(cat, name, key, isCustom, sk, customId){
     if(sState[key]){
       if(navigator.vibrate) navigator.vibrate(14);
       const cc = catCounts(cat);
-      if(cc.checked===cc.total){ confetti(false); const t=sTotals(); if(t.checked===t.total){ setTimeout(()=>confetti(true),150); toast("Сумка собрана! 🎉🧳"); } }
+      if(cc.checked===cc.total){ confetti(false); const t=sTotals(); if(t.checked===t.total){ setTimeout(()=>confetti(true),150); toast("Сумка собрана — можно выдохнуть 🧳"); } }
     }
   };
   row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
@@ -2149,7 +2149,7 @@ function sSaveAdd(){
   sSaveCustom(); sCloseAdd(); renderSumka();
   const el = document.querySelector(`#sumkaMain .stage[data-cat="${sAddCtx.catId}"]`);
   if(el){ el.classList.remove("collapsed"); sOpen[sAddCtx.catId]=true; sSaveOpen(); el.scrollIntoView({behavior:"smooth", block:"center"}); }
-  toast("Добавлено 🎉");
+  toast("Добавили 🎉");
 }
 function sApplySearch(){
   const q = (document.getElementById("sumkaSearch").value||"").trim().toLowerCase();
@@ -2277,7 +2277,7 @@ function bBuildRow(cat, name, key, isCustom, sk, customId){
     if(bState[key]){
       if(navigator.vibrate) navigator.vibrate(14);
       const cc = bCatCounts(cat);
-      if(cc.checked===cc.total){ confetti(false); const t=bTotals(); if(t.checked===t.total){ setTimeout(()=>confetti(true),150); toast("Всё куплено! 🎉🛍️"); } }
+      if(cc.checked===cc.total){ confetti(false); const t=bTotals(); if(t.checked===t.total){ setTimeout(()=>confetti(true),150); toast("Всё куплено — к встрече готовы 🛍️"); } }
     }
   };
   row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
@@ -2363,7 +2363,7 @@ function bSaveAdd(){
   bSaveCustom(); bCloseAdd(); renderBuy();
   const el = document.querySelector(`#buyMain .stage[data-cat="${bAddCtx.catId}"]`);
   if(el){ el.classList.remove("collapsed"); bOpen[bAddCtx.catId]=true; bSaveOpen(); el.scrollIntoView({behavior:"smooth", block:"center"}); }
-  toast("Добавлено 🎉");
+  toast("Добавили 🎉");
 }
 function bApplySearch(){
   const q = (document.getElementById("buySearch").value||"").trim().toLowerCase();
@@ -2477,7 +2477,7 @@ function dBuildRow(mo, name, key){
   const toggle=()=>{
     dState[key]=!dState[key]; apply();
     updateDevCat(wrap.closest(".stage"), mo); updateDevHead(); dSaveCheck();
-    if(dState[key]){ if(navigator.vibrate) navigator.vibrate(14); const cc=devCounts(mo); if(cc.checked===cc.total){ confetti(false); toast("Все навыки месяца освоены! 🎉"); } }
+    if(dState[key]){ if(navigator.vibrate) navigator.vibrate(14); const cc=devCounts(mo); if(cc.checked===cc.total){ confetti(false); toast("Все умения месяца освоены 🎉"); } }
   };
   row.addEventListener("click", e=>{ if(e.target.closest(".note-btn")) return; toggle(); });
   row.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
@@ -2581,7 +2581,7 @@ function renderDiary(){
   const counts={}; entries.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);
   document.getElementById("dySum").innerHTML = DY_TYPES.filter(t=>counts[t.type]).map(t=>`<span>${t.ic} ${counts[t.type]}</span>`).join("") || `<span style="opacity:.55">За день пока пусто</span>`;
   const list=document.getElementById("dyList");
-  if(!entries.length){ list.innerHTML=`<div class="diary-empty">Пока нет записей за этот день.<br>Нажмите кнопку выше, чтобы добавить.</div>`; return; }
+  if(!entries.length){ list.innerHTML=`<div class="diary-empty">Пока тихо. Отметь первое кормление или сон — и день начнёт собираться 🌙<br>Нажмите кнопку выше, чтобы добавить.</div>`; return; }
   list.innerHTML = entries.map(e=>{ const t=DY_TYPES.find(x=>x.type===e.type)||{ic:"•",label:e.type}; return `<li class="diary-entry" data-id="${e.id}"><span class="de-time">${dyFmtTime(e.time)}</span><span class="de-ic">${t.ic}</span><span class="de-label">${esc(t.label)}${e.note?`<span class="de-note">${esc(e.note)}</span>`:''}</span><button class="de-del" aria-label="Удалить">✕</button></li>`; }).join("");
   list.querySelectorAll(".diary-entry").forEach(li=>{
     li.addEventListener("click", ()=> openDyEdit(key, li.dataset.id));
@@ -2616,7 +2616,7 @@ function saveDyEdit(){
   if(tv){ const p=tv.split(":"); const d=new Date(e.time); d.setHours(+p[0]||0, +p[1]||0, 0, 0); e.time=d.toISOString(); }
   const nv=document.getElementById("dyEditNote").value.trim();
   if(nv) e.note=nv; else delete e.note;
-  dySave(); closeDyEdit(); renderDiary(); toast("Сохранено ✅");
+  dySave(); closeDyEdit(); renderDiary(); toast("Сохранили ✅");
 }
 function delDyEdit(){
   if(!dyEditCtx) return;
