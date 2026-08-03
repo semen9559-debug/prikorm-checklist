@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v29";
+  window.APP_VERSION = "v30";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3026,6 +3026,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run); else run();
 })();
 </script>
+
 <script>
 /* ============================================================
    Motion layer — Apple-style springs & gestures (v29)
@@ -3108,8 +3109,9 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     /* ===== SECTION transitions (fade + translateY) ===== */
     var views=[].slice.call(document.querySelectorAll('[id^="view"]')).filter(function(v){ return v.querySelector && v.querySelector('.hero-sub'); });
     function playEnter(v){ if(reduced()) return; spring({from:0,to:1,damping:1.0,response:0.4,onUpdate:function(p){ v.style.opacity=String(p); v.style.transform='translateY('+((1-p)*8)+'px)'; }, onComplete:function(){ v.style.opacity=''; v.style.transform=''; }}); }
+    function relayoutPillsIn(v){ requestAnimationFrame(function(){ [].forEach.call(v.querySelectorAll('.chips,.kids'), function(gr){ if(gr.__relayout) gr.__relayout(false); }); }); }
     views.forEach(function(v){ var shown=getComputedStyle(v).display!=='none';
-      new MutationObserver(function(){ var now=getComputedStyle(v).display!=='none'; if(now&&!shown){ playEnter(v); } shown=now; }).observe(v,{attributes:true,attributeFilter:['style','class']}); });
+      new MutationObserver(function(){ var now=getComputedStyle(v).display!=='none'; if(now&&!shown){ playEnter(v); relayoutPillsIn(v); } shown=now; }).observe(v,{attributes:true,attributeFilter:['style','class']}); });
 
     /* ===== 4. GLASS materialize (sheet / drawer) ===== */
     function materialize(el, blurPx){ if(reduced()) return; blurPx=blurPx||26;
@@ -3127,8 +3129,8 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
         var dragging=false,startY=0,curY=0,hist=[],hh=sheetH();
         function vel(){ if(hist.length<2) return 0; var a=hist[0],b=hist[hist.length-1],dt=(b.t-a.t)/1000; return dt>0?(b.y-a.y)/dt:0; }
         grip.style.touchAction='none';
-        grip.addEventListener('pointerdown',function(e){ dragging=true;hh=sheetH();startY=e.clientY;curY=0;hist=[{ y:0,t:performance.now()}]; sheet.style.transition='none'; try{grip.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); });
-        grip.addEventListener('pointermove',function(e){ if(!dragging) return; var dy=e.clientY-startY; if(dy<0){ dy=-(function(x,d,c){c=c||0.55;return (x*d*c)/(d+c*Math.abs(x));})(-dy,hh); } curY=dy; setY(dy); hist.push({ y:dy,t:performance.now()}); if(hist.length>6)hist.shift(); e.preventDefault(); });
+        grip.addEventListener('pointerdown',function(e){ dragging=true;hh=sheetH();startY=e.clientY;curY=0;hist=[{y:0,t:performance.now()}]; sheet.style.transition='none'; try{grip.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); });
+        grip.addEventListener('pointermove',function(e){ if(!dragging) return; var dy=e.clientY-startY; if(dy<0){ dy=-(function(x,d,c){c=c||0.55;return (x*d*c)/(d+c*Math.abs(x));})(-dy,hh); } curY=dy; setY(dy); hist.push({y:dy,t:performance.now()}); if(hist.length>6)hist.shift(); e.preventDefault(); });
         function settle(target, close){
           sheet.style.transition='transform .32s cubic-bezier(0.34,1.1,0.5,1)';
           setY(target);
