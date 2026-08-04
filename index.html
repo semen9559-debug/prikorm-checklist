@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v33";
+  window.APP_VERSION = "v34";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3246,7 +3246,7 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 .m-toast-ico svg{ width:100%; height:100%; }
 
 /* --- accordion: animate real measured height with a spring-like curve --- */
-.stage-body{ transition:max-height .44s cubic-bezier(.22,.9,.28,1), opacity .3s ease !important; }
+
 
 /* --- search: softer focus ring + clear-button motion --- */
 .search-wrap{ transition:box-shadow .25s ease; }
@@ -3260,7 +3260,7 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 
 @media (prefers-reduced-motion: reduce){
   .checkbox.m-just-checked, .checkbox.m-just-checked .svgi svg path{ animation:none !important; stroke-dashoffset:0 !important; }
-  .stage-body{ transition:none !important; }
+  
 }
 </style>
 <script>
@@ -3322,11 +3322,11 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
       }).observe(stage,{attributes:true,attributeFilter:['class']});
     }
     function scanStages(){ [].forEach.call(document.querySelectorAll('.stage'), watchStage); }
-    scanStages();
+    
 
     /* rescan on new content */
     new MutationObserver(function(muts){ var need=false; muts.forEach(function(m){ if(m.addedNodes&&m.addedNodes.length) need=true; });
-      if(need){ scanCb(); scanStages(); [].forEach.call(document.querySelectorAll('.toast'), watchToast); }
+      if(need){ scanCb();  [].forEach.call(document.querySelectorAll('.toast'), watchToast); }
     }).observe(document.body,{childList:true,subtree:true});
   });
 })();
