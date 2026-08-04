@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v31";
+  window.APP_VERSION = "v32";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3225,6 +3225,109 @@ html[data-theme="dark"] .hero-aurora{ opacity:.8; filter:blur(52px) saturate(1.4
   ready(function(){
     scan();
     new MutationObserver(function(){ scan(); }).observe(document.body,{childList:true,subtree:true});
+  });
+})();
+</script>
+
+<style id="__polish_css">
+/* Polish layer (v32): checkbox stroke-draw, glass toasts, accordion spring, search focus, hero tracking */
+
+/* --- checkbox: stroke-draw check + bounce (only on real toggle) --- */
+.checkbox .svgi svg path{ stroke-dasharray:30; stroke-dashoffset:0; }
+.checkbox.m-just-checked .svgi svg path{ stroke-dashoffset:30; animation:cbDraw .42s cubic-bezier(.6,.15,.25,1) forwards; }
+@keyframes cbDraw{ to{ stroke-dashoffset:0; } }
+.checkbox.m-just-checked{ animation:cbBounce .36s cubic-bezier(.34,1.5,.5,1); }
+@keyframes cbBounce{ 0%{transform:scale(.82)} 55%{transform:scale(1.13)} 100%{transform:scale(1)} }
+
+/* --- glass toasts + type icon --- */
+.toast{ background:rgba(44,39,33,.72) !important; backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid rgba(255,255,255,.12); box-shadow:0 12px 34px rgba(0,0,0,.32); display:flex !important; align-items:center; gap:9px; }
+html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !important; border-color:rgba(0,0,0,.06); box-shadow:0 12px 34px rgba(60,50,30,.16); }
+.m-toast-ico{ flex:0 0 auto; width:20px; height:20px; display:inline-flex; }
+.m-toast-ico svg{ width:100%; height:100%; }
+
+/* --- accordion: animate real measured height with a spring-like curve --- */
+.stage-body{ transition:max-height .44s cubic-bezier(.22,.9,.28,1), opacity .3s ease !important; }
+
+/* --- search: softer focus ring + clear-button motion --- */
+.search-wrap{ transition:box-shadow .25s ease; }
+.search-wrap:focus-within{ box-shadow:0 0 0 3px rgba(62,143,196,.18); }
+.search-clear{ transition:transform .2s ease, opacity .2s ease; }
+.search-clear:active{ transform:scale(.85) rotate(90deg); }
+
+/* --- hero typography: tighter tracking on the big display title --- */
+.hero h1{ letter-spacing:-.02em; }
+.hero .hero-sub{ letter-spacing:.004em; }
+
+@media (prefers-reduced-motion: reduce){
+  .checkbox.m-just-checked, .checkbox.m-just-checked .svgi svg path{ animation:none !important; stroke-dashoffset:0 !important; }
+  .stage-body{ transition:none !important; }
+}
+</style>
+<script>
+(function(){
+  "use strict";
+  function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
+  ready(function(){
+
+    /* checkbox draw+bounce only when it actually becomes checked */
+    function watchCb(cb){
+      if(cb.__pw) return; cb.__pw=true;
+      var was=cb.classList.contains('checked');
+      new MutationObserver(function(){
+        var now=cb.classList.contains('checked');
+        if(now&&!was){ cb.classList.add('m-just-checked'); setTimeout(function(){ cb.classList.remove('m-just-checked'); }, 480); }
+        was=now;
+      }).observe(cb,{attributes:true,attributeFilter:['class']});
+    }
+    function scanCb(){ [].forEach.call(document.querySelectorAll('.checkbox'), watchCb); }
+    scanCb();
+
+    /* glass toast: prepend a type icon based on message text */
+    var SW='fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+    var ICO={
+      ok:'<svg viewBox="0 0 24 24" '+SW+' stroke="#5fae5f"><circle cx="12" cy="12" r="9" stroke-opacity=".35"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>',
+      err:'<svg viewBox="0 0 24 24" '+SW+' stroke="#e0a33a"><circle cx="12" cy="12" r="9" stroke-opacity=".35"/><path d="M12 7v6M12 16.5v.01"/></svg>',
+      info:'<svg viewBox="0 0 24 24" '+SW+' stroke="#3e8fc4"><circle cx="12" cy="12" r="9" stroke-opacity=".35"/><path d="M12 11v5M12 7.5v.01"/></svg>'
+    };
+    function decorate(toast){
+      if(toast.querySelector('.m-toast-ico')) return;
+      var txt=toast.textContent||'';
+      var t=/не удал|ошибк|не смог|не получ|неверн/i.test(txt) ? 'err' : (/ориентир|уточн|инфо/i.test(txt) ? 'info' : 'ok');
+      var ic=document.createElement('span'); ic.className='m-toast-ico'; ic.innerHTML=ICO[t];
+      toast.insertBefore(ic, toast.firstChild);
+    }
+    function watchToast(toast){
+      if(toast.__pw) return; toast.__pw=true;
+      new MutationObserver(function(){
+        if(toast.classList.contains('show')) decorate(toast);
+        else { var i=toast.querySelector('.m-toast-ico'); if(i) i.remove(); }
+      }).observe(toast,{attributes:true,attributeFilter:['class']});
+      if(toast.classList.contains('show')) decorate(toast);
+    }
+    [].forEach.call(document.querySelectorAll('.toast'), watchToast);
+
+    /* accordion: cooperative measured max-height (node persists across collapse) */
+    function watchStage(stage){
+      if(stage.__pw) return; stage.__pw=true;
+      var b=stage.querySelector('.stage-body'); if(!b) return;
+      var was=stage.classList.contains('collapsed');
+      b.style.maxHeight = was ? '0px' : 'none'; if(was) b.style.opacity='0';
+      new MutationObserver(function(){
+        var isCol=stage.classList.contains('collapsed');
+        if(isCol===was) return; was=isCol;
+        if(isCol){ b.style.maxHeight=b.scrollHeight+'px'; b.offsetHeight; requestAnimationFrame(function(){ b.style.maxHeight='0px'; b.style.opacity='0'; }); }
+        else { b.style.opacity='1'; b.style.maxHeight=b.scrollHeight+'px';
+          var done=function(){ if(!stage.classList.contains('collapsed')) b.style.maxHeight='none'; b.removeEventListener('transitionend',done); };
+          b.addEventListener('transitionend',done); setTimeout(done,520); }
+      }).observe(stage,{attributes:true,attributeFilter:['class']});
+    }
+    function scanStages(){ [].forEach.call(document.querySelectorAll('.stage'), watchStage); }
+    scanStages();
+
+    /* rescan on new content */
+    new MutationObserver(function(muts){ var need=false; muts.forEach(function(m){ if(m.addedNodes&&m.addedNodes.length) need=true; });
+      if(need){ scanCb(); scanStages(); [].forEach.call(document.querySelectorAll('.toast'), watchToast); }
+    }).observe(document.body,{childList:true,subtree:true});
   });
 })();
 </script>
