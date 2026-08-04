@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v34";
+  window.APP_VERSION = "v35";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3328,6 +3328,102 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
     new MutationObserver(function(muts){ var need=false; muts.forEach(function(m){ if(m.addedNodes&&m.addedNodes.length) need=true; });
       if(need){ scanCb();  [].forEach.call(document.querySelectorAll('.toast'), watchToast); }
     }).observe(document.body,{childList:true,subtree:true});
+  });
+})();
+</script>
+
+<style id="__hub_css">
+/* Home hub (v35) — tile launcher, default landing. Auto-themes via app CSS vars. */
+#homeHub{position:fixed; inset:0; z-index:200; background:var(--cream); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(26px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom));}
+#homeHub .wrap{max-width:1060px; margin:0 auto;}
+#homeHub .hhead{display:flex; align-items:center; gap:13px; margin:6px 2px 20px;}
+#homeHub .hsprout{width:46px;height:46px;border-radius:15px;background:color-mix(in srgb, var(--sage) 20%, transparent);color:var(--sage);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+#homeHub .hsprout svg{width:26px;height:26px;}
+#homeHub .hgreet{font-size:21px;font-weight:800;color:var(--ink);line-height:1.1;}
+#homeHub .hsub{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+#homeHub .hbrand{margin-left:auto;font-weight:800;color:var(--ink-soft);font-size:14px;white-space:nowrap;}
+#homeHub .hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+#homeHub .tile{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:var(--ink);transition:transform .12s ease, border-color .2s;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+#homeHub .tile:active{transform:scale(.975);}
+#homeHub .tile .ic{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+#homeHub .tile .ic svg{width:23px;height:23px;}
+#homeHub .tile .n{font-size:16px;font-weight:800;line-height:1.12;}
+#homeHub .tile .d{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+#homeHub .feat{grid-column:1 / -1;background:linear-gradient(140deg, color-mix(in srgb, var(--sage) 22%, var(--paper)), color-mix(in srgb, var(--sky) 20%, var(--paper)));min-height:150px;}
+#homeHub .feat .k{font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--sage);}
+#homeHub .feat .n{font-size:22px;margin-top:5px;}
+#homeHub .feat .d{max-width:320px;}
+#homeHub .feat .cta{margin-top:auto;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--sage);color:#fff;font-weight:800;font-size:13.5px;padding:10px 17px;border-radius:99px;}
+#homeHub .feat .prog{font-size:12.5px;color:var(--ink-soft);font-weight:700;margin-left:10px;}
+@media(min-width:820px){
+  #homeHub{padding:38px 30px;}
+  #homeHub .hgrid{grid-template-columns:repeat(4,1fr);grid-auto-rows:132px;}
+  #homeHub .feat{grid-column:span 2;grid-row:span 2;min-height:0;}
+  #homeHub .feat .n{font-size:26px;}
+}
+@media(max-width:520px){ #homeHub .hbrand{display:none;} }
+.hub-homebtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:64px;z-index:120;width:42px;height:42px;border-radius:13px;background:var(--paper);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.hub-homebtn svg{width:21px;height:21px;}
+@media (prefers-reduced-motion: reduce){ #homeHub .tile:active{transform:none;} }
+</style>
+<script>
+(function(){
+  "use strict";
+  var A='fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"';
+  function svg(i){return '<svg viewBox="0 0 24 24" '+A+'>'+i+'</svg>';}
+  var IC={
+    sprout:svg('<path d="M12 21V11"/><path d="M12 11c0-3 2.4-5.2 5.4-5.2C17.4 8.8 15 11 12 11z"/><path d="M12 12.5C12 9.8 9.7 7.7 6.8 7.7 6.8 10.5 9 12.5 12 12.5z"/>'),
+    moon:svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+    shield:svg('<path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+    steps:svg('<path d="M4 19h4v-4H4zM10 15h4v-4h-4zM16 11h4V7h-4z"/>'),
+    doc:svg('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/>'),
+    cart:svg('<circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/><path d="M3 4h2l2.4 11.5h10L20 7H6.4"/>'),
+    bag:svg('<path d="M6 8h12l1 12.5H5z"/><path d="M9 8V6.2a3 3 0 0 1 6 0V8"/>'),
+    heart:svg('<path d="M12 20s-6.8-4.4-6.8-9.3A3.4 3.4 0 0 1 12 7.2a3.4 3.4 0 0 1 6.8 3.5C18.8 15.6 12 20 12 20z"/>'),
+    home:svg('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>'),
+    arrow:svg('<path d="M5 12h13M13 6l6 6-6 6"/>')
+  };
+  var MODS=[
+    {v:'prikorm', n:'Прикорм', d:'что и когда вводить', ic:'sprout', c:'--sage', feat:true},
+    {v:'diary', n:'Дневник дня', d:'кормления, сон, уход', ic:'moon', c:'--sky'},
+    {v:'vac', n:'Прививки', d:'нацкалендарь РФ', ic:'shield', c:'--butter'},
+    {v:'dev', n:'Развитие', d:'навыки по месяцам', ic:'steps', c:'--sage'},
+    {v:'docs', n:'Документы', d:'и выплаты', ic:'doc', c:'--rust'},
+    {v:'buy', n:'Покупки', d:'к рождению', ic:'cart', c:'--sky'},
+    {v:'sumka', n:'Сумка в роддом', d:'ничего не забыть', ic:'bag', c:'--sage'},
+    {v:'preg', n:'Беременность', d:'по триместрам', ic:'heart', c:'--butter'}
+  ];
+  function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
+  ready(function(){
+    if(document.getElementById('homeHub')) return;
+    var kid=document.querySelector('.kids .kid.active'); var kidName=kid?kid.textContent.trim():'малыш';
+    var h=new Date().getHours(); var greet=h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';
+    var prikCount=((document.querySelector('#viewPrikorm .hero-count')||{}).textContent||'').replace(/\s+/g,' ').trim();
+    var hub=document.createElement('div'); hub.id='homeHub';
+    var tiles=MODS.map(function(m){
+      if(m.feat){
+        return '<div class="tile feat" data-v="'+m.v+'"><div><div class="k">Фокус сегодня</div><div class="n">Прикорм без паники</div><div class="d">Отмечай продукты и открывай совет по каждому.</div></div><div style="display:flex;align-items:center"><span class="cta">Открыть '+IC.arrow+'</span><span class="prog">'+prikCount+'</span></div></div>';
+      }
+      return '<div class="tile" data-v="'+m.v+'"><div class="ic" style="background:color-mix(in srgb, var('+m.c+') 18%, transparent);color:var('+m.c+')">'+IC[m.ic]+'</div><div><div class="n">'+m.n+'</div><div class="d">'+m.d+'</div></div></div>';
+    }).join('');
+    hub.innerHTML='<div class="wrap"><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">Всё для беременности и первого года · для «'+kidName+'»</div></div><div class="hbrand">Мама рядом</div></div><div class="hgrid">'+tiles+'</div></div>';
+    document.body.appendChild(hub);
+
+    function hideHub(){ hub.style.display='none'; }
+    function showHub(){ hub.style.display='block'; window.scrollTo(0,0); }
+    window.__showHub=showHub;
+    hub.addEventListener('click',function(e){ var t=e.target.closest('[data-v]'); if(!t) return; var v=t.getAttribute('data-v'); hideHub(); try{ window.setView(v); }catch(_){} });
+
+    var hb=document.createElement('button'); hb.className='hub-homebtn'; hb.setAttribute('aria-label','На главную'); hb.innerHTML=IC.home;
+    hb.addEventListener('click',showHub); document.body.appendChild(hb);
+
+    var dr=document.querySelector('.drawer');
+    if(dr && !dr.querySelector('.m-home-row')){
+      var row=document.createElement('button'); row.type='button'; row.className='drawer-item m-home-row'; row.style.marginBottom='6px'; row.textContent='🏠 Главная';
+      row.addEventListener('click',function(e){ e.stopPropagation(); dr.classList.remove('open'); var bd=document.querySelector('.drawer-backdrop'); if(bd) bd.classList.remove('show','open'); showHub(); });
+      var first=dr.querySelector('.drawer-item'); if(first) dr.insertBefore(row, first); else dr.appendChild(row);
+    }
+    showHub();
   });
 })();
 </script>
