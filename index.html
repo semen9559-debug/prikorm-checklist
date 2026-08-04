@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v32";
+  window.APP_VERSION = "v33";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3315,7 +3315,7 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
       new MutationObserver(function(){
         var isCol=stage.classList.contains('collapsed');
         if(isCol===was) return; was=isCol;
-        if(isCol){ b.style.maxHeight=b.scrollHeight+'px'; b.offsetHeight; requestAnimationFrame(function(){ b.style.maxHeight='0px'; b.style.opacity='0'; }); }
+        if(isCol){ b.style.maxHeight=b.scrollHeight+'px'; b.offsetHeight; b.style.maxHeight='0px'; b.style.opacity='0'; }
         else { b.style.opacity='1'; b.style.maxHeight=b.scrollHeight+'px';
           var done=function(){ if(!stage.classList.contains('collapsed')) b.style.maxHeight='none'; b.removeEventListener('transitionend',done); };
           b.addEventListener('transitionend',done); setTimeout(done,520); }
