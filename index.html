@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v37";
+  window.APP_VERSION = "v38";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3332,6 +3332,195 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 })();
 </script>
 
+<style id="__diary_css">
+/* Day-diary enhancements (v38): sleep/feed timer, structured entry fields, trust strip. */
+.dy-timer{margin:14px 0;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:14px 15px;display:flex;flex-direction:column;gap:12px;}
+.dy-timer.run{background:linear-gradient(135deg, color-mix(in srgb, var(--sky) 18%, var(--paper)), color-mix(in srgb, var(--sage) 14%, var(--paper)));border-color:color-mix(in srgb, var(--sky) 40%, var(--line));}
+.dy-timer .dt-idle{display:flex;align-items:center;gap:10px;}
+.dy-timer .dt-ic{font-size:22px;}
+.dy-timer .dt-t{font-weight:800;color:var(--ink);font-size:15px;}
+.dy-timer .dt-start{display:flex;gap:10px;flex-wrap:wrap;}
+.dy-timer .dt-start button{flex:1;min-width:150px;border:1px solid var(--line);background:var(--cream);color:var(--ink);font:inherit;font-weight:800;font-size:14px;padding:12px;border-radius:13px;cursor:pointer;}
+.dy-timer .dt-start button:active{transform:scale(.98);}
+.dy-timer.run{flex-direction:row;align-items:center;justify-content:space-between;}
+.dy-timer .dt-l{display:flex;align-items:center;gap:12px;}
+.dy-timer .dt-time{font-size:26px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1;margin-top:2px;}
+.dy-timer .dt-stop{background:var(--rust);color:#fff;border:none;font:inherit;font-weight:800;font-size:16px;padding:13px 26px;border-radius:99px;cursor:pointer;}
+.dy-timer .dt-stop:active{transform:scale(.97);}
+#dyAdd button .tmr-b{font-size:11px;margin-left:5px;opacity:.7;}
+/* structured modal */
+#dyStruct{position:fixed;inset:0;z-index:270;display:none;align-items:flex-end;justify-content:center;}
+#dyStruct.open{display:flex;}
+#dyStruct .ds-back{position:absolute;inset:0;background:color-mix(in srgb, var(--ink) 45%, transparent);}
+#dyStruct .ds-card{position:relative;width:100%;max-width:460px;background:var(--cream);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;box-shadow:0 -8px 30px rgba(0,0,0,.2);}
+@media(min-width:560px){ #dyStruct{align-items:center;} #dyStruct .ds-card{border-radius:22px;} }
+#dyStruct .ds-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+#dyStruct .ds-h h3{font-size:19px;font-weight:800;color:var(--ink);margin:0;}
+#dyStruct .ds-x{background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:4px;}
+#dyStruct .ds-fl{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:14px 2px 6px;}
+#dyStruct input,#dyStruct textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);}
+#dyStruct textarea{min-height:64px;resize:vertical;}
+#dyStruct input:focus,#dyStruct textarea:focus{outline:none;border-color:var(--sky);}
+#dyStruct .ds-two{display:flex;gap:10px;}
+#dyStruct .ds-two>div{flex:1;}
+#dyStruct .ds-chips{display:flex;flex-wrap:wrap;gap:8px;}
+#dyStruct .ds-chip{font:inherit;font-size:13.5px;font-weight:700;padding:9px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+#dyStruct .ds-chip.on{border-color:var(--sage);background:color-mix(in srgb, var(--sage) 16%, var(--paper));color:var(--sage);}
+#dyStruct .ds-hint{font-size:12.5px;color:var(--ink-soft);margin-top:8px;font-weight:700;}
+#dyStruct .ds-foot{display:flex;gap:10px;margin-top:20px;}
+#dyStruct .ds-del{background:none;border:1.5px solid var(--line);color:var(--rust);font:inherit;font-weight:800;font-size:14px;padding:12px 16px;border-radius:99px;cursor:pointer;}
+#dyStruct .ds-save{flex:1;background:var(--sage);color:#fff;border:none;font:inherit;font-weight:800;font-size:16px;padding:13px;border-radius:99px;cursor:pointer;}
+/* trust strip (hub) */
+.hub-trust{grid-column:1 / -1;margin-top:4px;display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb, var(--sage) 8%, var(--paper));border:1px solid var(--line);border-radius:16px;padding:13px 15px;}
+.hub-trust .ht-ic{flex:0 0 auto;color:var(--sage);margin-top:1px;}
+.hub-trust .ht-ic svg{width:22px;height:22px;}
+.hub-trust .ht-tx{font-size:12px;line-height:1.5;color:var(--ink-soft);}
+.hub-trust .ht-tx b{color:var(--ink);font-weight:800;}
+</style>
+<script>
+(function(){
+  "use strict";
+  function has(n){ try{ return typeof window[n]==='function' || typeof eval(n)!=='undefined'; }catch(e){ return false; } }
+  var TKEY='prikorm-diary-timer';
+  function kk(key){ try{ return (typeof k==='function')?k(key):key; }catch(e){ return key; } }
+  function getTimer(){ try{ return JSON.parse(localStorage.getItem(kk(TKEY))||'null'); }catch(e){ return null; } }
+  function setTimer(o){ try{ if(o) localStorage.setItem(kk(TKEY),JSON.stringify(o)); else localStorage.removeItem(kk(TKEY)); }catch(e){} }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function liveDur(ms){ var s=Math.max(0,Math.floor(ms/1000)); var h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60; return (h? h+':':'')+pad(m)+':'+pad(ss); }
+  function durText(ms){ var mins=Math.round(ms/60000); if(mins<1) return 'меньше минуты'; if(mins<60) return mins+' мин'; var h=Math.floor(mins/60), m=mins%60; return h+' ч'+(m? ' '+m+' мин':''); }
+  function toMin(t){ var p=(t||'').split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  function hhmm(iso){ if(!iso) return ''; var d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+  function E(s){ return (typeof esc==='function')? esc(s) : String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function say(m){ if(typeof toast==='function') toast(m); }
+  var TYPE_LABEL={feed:'Кормление',sleep:'Сон',diaper:'Подгузник',bath:'Купание',meds:'Лекарство'};
+  var TYPE_IC={feed:'🍼',sleep:'😴',diaper:'💧',bath:'🛁',meds:'💊'};
+  function srcLabel(s){ return {left:'левая грудь',right:'правая грудь',both:'обе груди',formula:'смесь',expressed:'сцеженное'}[s]||''; }
+  function diaperLabel(d){ return {wet:'пописал',dirty:'покакал',both:'и то, и другое'}[d]||''; }
+  function computeNote(e){
+    var parts=[];
+    if(e.type==='sleep'){ if(e.end){ parts.push(durText(new Date(e.end)-new Date(e.time))); parts.push(hhmm(e.time)+'–'+hhmm(e.end)); } }
+    else if(e.type==='feed'){ if(e.src) parts.push(srcLabel(e.src)); if(e.vol) parts.push(e.vol+' мл'); if(e.durMin) parts.push(e.durMin+' мин'); }
+    else if(e.type==='diaper'){ if(e.diaper) parts.push(diaperLabel(e.diaper)); }
+    else if(e.type==='meds'){ if(e.medName) parts.push(e.medName); if(e.medDose) parts.push(e.medDose); }
+    if(e.freeNote) parts.push(e.freeNote);
+    return parts.join(' · ');
+  }
+
+  var tick=null;
+  function startTimer(type){
+    if(getTimer()){ say('Уже идёт таймер — сначала остановите его'); return; }
+    setTimer({type:type,start:new Date().toISOString()});
+    if(navigator.vibrate) navigator.vibrate(12);
+    if(typeof renderDiary==='function') renderDiary();
+  }
+  function stopTimer(){
+    var t=getTimer(); if(!t) return;
+    var start=new Date(t.start), end=new Date();
+    if(typeof dyData==='undefined') return;
+    var key=dyDateKey(start);
+    if(!dyData[key]) dyData[key]=[];
+    var e={ id:Date.now().toString(36)+Math.random().toString(36).slice(2,4), time:start.toISOString(), end:end.toISOString(), type:t.type, durMin:Math.max(0,Math.round((end-start)/60000)) };
+    e.note=computeNote(e);
+    dyData[key].push(e);
+    if(typeof dySave==='function') dySave();
+    setTimer(null);
+    if(navigator.vibrate) navigator.vibrate([10,40,10]);
+    if(typeof renderDiary==='function') renderDiary();
+    if(t.type==='feed') openStruct(key,e.id); else say('😴 Сон записан: '+durText(end-start));
+  }
+
+  function enhance(){
+    var vd=document.getElementById('viewDiary'); if(!vd) return;
+    var card=document.getElementById('dyTimerCard');
+    if(!card){
+      card=document.createElement('div'); card.id='dyTimerCard'; card.className='dy-timer';
+      var sum=document.getElementById('dySum');
+      if(sum&&sum.parentNode){ sum.parentNode.insertBefore(card, sum.nextSibling); }
+      else { var wrap=vd.querySelector('.diary-wrap'); if(wrap) wrap.insertBefore(card, wrap.firstChild); else return; }
+    }
+    renderCard(card);
+    var add=document.getElementById('dyAdd');
+    if(add){ ['sleep','feed'].forEach(function(tp){ var b=add.querySelector('button[data-type="'+tp+'"]'); if(b && !b.querySelector('.tmr-b')){ var s=document.createElement('span'); s.className='tmr-b'; s.textContent='⏱'; b.appendChild(s); } }); }
+  }
+  function renderCard(card){
+    var t=getTimer();
+    if(tick){ clearInterval(tick); tick=null; }
+    if(t){
+      card.classList.add('run');
+      card.innerHTML='<div class="dt-l"><span class="dt-ic">'+TYPE_IC[t.type]+'</span><div><div class="dt-t">Идёт: '+TYPE_LABEL[t.type]+'</div><div class="dt-time" id="dtLive">00:00</div></div></div><button class="dt-stop" type="button">Стоп</button>';
+      card.querySelector('.dt-stop').addEventListener('click', stopTimer);
+      var upd=function(){ var el=document.getElementById('dtLive'); if(!el){ if(tick){clearInterval(tick);tick=null;} return; } el.textContent=liveDur(new Date()-new Date(t.start)); };
+      upd(); tick=setInterval(upd,1000);
+    } else {
+      card.classList.remove('run');
+      card.innerHTML='<div class="dt-idle"><span class="dt-ic">⏱</span><div class="dt-t">Таймер сна и кормления</div></div><div class="dt-start"><button type="button" data-start="sleep">😴 Начать сон</button><button type="button" data-start="feed">🍼 Начать кормление</button></div>';
+      card.querySelectorAll('[data-start]').forEach(function(b){ b.addEventListener('click', function(){ startTimer(b.getAttribute('data-start')); }); });
+    }
+  }
+
+  /* structured modal */
+  var modal=null, ctx=null;
+  function ensureModal(){
+    if(modal) return;
+    modal=document.createElement('div'); modal.id='dyStruct';
+    modal.innerHTML='<div class="ds-back"></div><div class="ds-card"><div class="ds-h"><h3 id="dsTitle"></h3><button class="ds-x" type="button" aria-label="Закрыть">✕</button></div><div class="ds-body" id="dsBody"></div><div class="ds-foot"><button class="ds-del" type="button">Удалить</button><button class="ds-save" type="button">Сохранить</button></div></div>';
+    document.body.appendChild(modal);
+    modal.querySelector('.ds-back').addEventListener('click', closeStruct);
+    modal.querySelector('.ds-x').addEventListener('click', closeStruct);
+    modal.querySelector('.ds-save').addEventListener('click', saveStruct);
+    modal.querySelector('.ds-del').addEventListener('click', delStruct);
+  }
+  function chip(g,v,label,cur){ return '<button type="button" class="ds-chip'+(cur===v?' on':'')+'" data-g="'+g+'" data-v="'+v+'">'+label+'</button>'; }
+  function tf(id,label,val){ return '<label class="ds-fl">'+label+'</label><input type="time" id="'+id+'" value="'+(val||'')+'">'; }
+  function openStruct(dateKey,id){
+    if(typeof dyData==='undefined') return;
+    var arr=dyData[dateKey]||[]; var e=arr.find(function(x){return x.id===id;}); if(!e) return;
+    ensureModal(); ctx={dateKey:dateKey,id:id};
+    document.getElementById('dsTitle').textContent=(TYPE_IC[e.type]||'•')+' '+(TYPE_LABEL[e.type]||e.type);
+    var h='';
+    h+=tf('dsTime','Время'+(e.type==='sleep'?' начала':''),hhmm(e.time));
+    if(e.type==='sleep'){ h+=tf('dsEnd','Время конца',hhmm(e.end)); h+='<div class="ds-hint" id="dsDur"></div>'; }
+    if(e.type==='feed'){
+      h+='<label class="ds-fl">Чем кормили</label><div class="ds-chips">'+chip('src','left','Левая грудь',e.src)+chip('src','right','Правая грудь',e.src)+chip('src','both','Обе',e.src)+chip('src','formula','Смесь',e.src)+chip('src','expressed','Сцеженное',e.src)+'</div>';
+      h+='<div class="ds-two"><div><label class="ds-fl">Объём, мл</label><input type="number" id="dsVol" inputmode="numeric" value="'+(e.vol||'')+'" placeholder="120"></div><div><label class="ds-fl">Длительность, мин</label><input type="number" id="dsDurMin" inputmode="numeric" value="'+(e.durMin||'')+'" placeholder="15"></div></div>';
+    }
+    if(e.type==='diaper'){ h+='<label class="ds-fl">Что было</label><div class="ds-chips">'+chip('diaper','wet','💧 Пописал',e.diaper)+chip('diaper','dirty','💩 Покакал',e.diaper)+chip('diaper','both','И то, и другое',e.diaper)+'</div>'; }
+    if(e.type==='meds'){ h+='<div class="ds-two"><div><label class="ds-fl">Название</label><input type="text" id="dsMedName" value="'+E(e.medName||'')+'" placeholder="Витамин D"></div><div><label class="ds-fl">Доза</label><input type="text" id="dsMedDose" value="'+E(e.medDose||'')+'" placeholder="1 капля"></div></div>'; }
+    h+='<label class="ds-fl">Заметка</label><textarea id="dsNote" placeholder="любые детали">'+E(e.freeNote||'')+'</textarea>';
+    document.getElementById('dsBody').innerHTML=h;
+    document.getElementById('dsBody').querySelectorAll('.ds-chip').forEach(function(c){ c.addEventListener('click',function(){ var g=c.getAttribute('data-g'); modal.querySelectorAll('.ds-chip[data-g="'+g+'"]').forEach(function(x){x.classList.remove('on');}); c.classList.add('on'); }); });
+    if(e.type==='sleep'){ var updDur=function(){ var a=document.getElementById('dsTime').value, b=document.getElementById('dsEnd').value, el=document.getElementById('dsDur'); if(a&&b){ var mm=toMin(b)-toMin(a); if(mm<0)mm+=1440; el.textContent='Длительность: '+durText(mm*60000); } else el.textContent=''; }; document.getElementById('dsTime').addEventListener('input',updDur); document.getElementById('dsEnd').addEventListener('input',updDur); updDur(); }
+    modal.classList.add('open');
+  }
+  function selChip(g){ var el=modal.querySelector('.ds-chip.on[data-g="'+g+'"]'); return el?el.getAttribute('data-v'):''; }
+  function saveStruct(){
+    if(!ctx || typeof dyData==='undefined') return;
+    var arr=dyData[ctx.dateKey]||[]; var e=arr.find(function(x){return x.id===ctx.id;}); if(!e){ closeStruct(); return; }
+    var tv=document.getElementById('dsTime').value; if(tv){ var d=new Date(e.time); var p=tv.split(':'); d.setHours(+p[0]||0,+p[1]||0,0,0); e.time=d.toISOString(); }
+    if(e.type==='sleep'){ var ev=document.getElementById('dsEnd').value; if(ev){ var d2=new Date(e.time); var p2=ev.split(':'); d2.setHours(+p2[0]||0,+p2[1]||0,0,0); if(d2<new Date(e.time)) d2.setDate(d2.getDate()+1); e.end=d2.toISOString(); e.durMin=Math.round((new Date(e.end)-new Date(e.time))/60000); } else { delete e.end; delete e.durMin; } }
+    if(e.type==='feed'){ var s=selChip('src'); if(s)e.src=s; else delete e.src; var vol=parseInt(document.getElementById('dsVol').value,10); if(vol>0)e.vol=vol; else delete e.vol; var dm=parseInt(document.getElementById('dsDurMin').value,10); if(dm>0)e.durMin=dm; else delete e.durMin; }
+    if(e.type==='diaper'){ var dp=selChip('diaper'); if(dp)e.diaper=dp; else delete e.diaper; }
+    if(e.type==='meds'){ var mn=document.getElementById('dsMedName').value.trim(); if(mn)e.medName=mn; else delete e.medName; var md=document.getElementById('dsMedDose').value.trim(); if(md)e.medDose=md; else delete e.medDose; }
+    var fn=document.getElementById('dsNote').value.trim(); if(fn)e.freeNote=fn; else delete e.freeNote;
+    e.note=computeNote(e);
+    if(typeof dySave==='function') dySave();
+    closeStruct();
+    if(typeof renderDiary==='function') renderDiary();
+    say('Сохранено ✅');
+  }
+  function delStruct(){ if(!ctx || typeof dyData==='undefined') return; dyData[ctx.dateKey]=(dyData[ctx.dateKey]||[]).filter(function(x){return x.id!==ctx.id;}); if(!dyData[ctx.dateKey].length) delete dyData[ctx.dateKey]; if(typeof dySave==='function') dySave(); closeStruct(); if(typeof renderDiary==='function') renderDiary(); }
+  function closeStruct(){ if(modal) modal.classList.remove('open'); ctx=null; }
+  window.__dyOpenStruct=openStruct;
+
+  function wrapAll(){
+    if(typeof renderDiary==='function' && !renderDiary.__w){ var r=renderDiary; window.renderDiary=function(){ var out=r.apply(this,arguments); try{ enhance(); }catch(e){} return out; }; window.renderDiary.__w=1; }
+    if(typeof dyAddEntry==='function' && !dyAddEntry.__w){ var a=dyAddEntry; window.dyAddEntry=function(type){ if(type==='sleep'){ startTimer('sleep'); return; } a.call(this,type); if(type==='feed'||type==='meds'||type==='diaper'){ try{ var key=dyDateKey(dySelDate); var arr=dyData[key]||[]; var last=arr[arr.length-1]; if(last && last.type===type && !last.note) openStruct(key,last.id); }catch(e){} } }; window.dyAddEntry.__w=1; }
+    if(typeof openDyEdit==='function' && !openDyEdit.__w){ window.openDyEdit=function(dateKey,id){ openStruct(dateKey,id); }; window.openDyEdit.__w=1; }
+  }
+  function init(){ wrapAll(); try{ enhance(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
 <style id="__hub_css">
 /* Home hub v3 (v37) — onboarding + personalized focus + top bar + bottom tab bar. */
 body{ padding-bottom:76px; }
@@ -3444,7 +3633,7 @@ body{ padding-bottom:76px; }
   };
   var MODS={
     prikorm:{v:'prikorm', n:'Прикорм', d:'что и когда вводить', ic:'sprout', c:'--sage'},
-    diary:{v:'diary', n:'Дневник дня', d:'кормления, сон, уход', ic:'moon', c:'--sky'},
+    diary:{v:'diary', n:'Дневник дня', d:'кормления, сон, уход', ic:'journal', c:'--sky'},
     vac:{v:'vac', n:'Прививки', d:'нацкалендарь РФ', ic:'shield', c:'--butter'},
     dev:{v:'dev', n:'Развитие', d:'навыки по месяцам', ic:'steps', c:'--sage'},
     docs:{v:'docs', n:'Документы', d:'и выплаты', ic:'doc', c:'--rust'},
@@ -3495,7 +3684,7 @@ body{ padding-bottom:76px; }
       var rest=ORDER.filter(function(k){return k!==f.v && hidden.indexOf(k)<0;}).map(function(k){return tileHTML(MODS[k]);}).join('');
       var addTile='<button class="tile tile-add" data-customize="1"><div class="ic">'+IC.gear+'</div><div><div class="n">Настроить плитки</div><div class="d">выбрать, что показывать</div></div></button>';
       var editLink=info?'<span class="edit" data-edit="1">изменить</span>':'';
-      hub.innerHTML='<div class="wrap"><div class="htop"><button class="tbtn" data-menu aria-label="Разделы">'+IC.list+'</button><div class="brand">Мама рядом</div><button class="tbtn" data-theme aria-label="Тема">'+themeIcon()+'</button></div><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">'+greetSub(info,kidName)+editLink+'</div></div></div><div class="hgrid">'+feat+rest+addTile+'</div></div>';
+      hub.innerHTML='<div class="wrap"><div class="htop"><button class="tbtn" data-menu aria-label="Разделы">'+IC.list+'</button><div class="brand">Мама рядом</div><button class="tbtn" data-theme aria-label="Тема">'+themeIcon()+'</button></div><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">'+greetSub(info,kidName)+editLink+'</div></div></div><div class="hgrid">'+feat+rest+addTile+'</div>'+'<div class="hub-trust"><span class="ht-ic">'+IC.shield+'</span><span class="ht-tx"><b>Проверенная информация.</b> Опираемся на нацкалендарь РФ, рекомендации ВОЗ и Минздрава РФ. Это справочник — он не заменяет консультацию врача. Регион: Россия · Обновлено: 2026.</span></div>'+'</div>';
     }
     function hideHub(){ hub.style.display='none'; syncTabs(); }
     function showHub(){ renderHub(); hub.style.display='block'; window.scrollTo(0,0); syncTabs(); }
