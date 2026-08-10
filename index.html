@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v36";
+  window.APP_VERSION = "v37";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3333,16 +3333,20 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 </script>
 
 <style id="__hub_css">
-/* Home hub v2 (v36) — onboarding + personalized focus. Auto-themes via app CSS vars. */
-#homeHub{position:fixed; inset:0; z-index:200; background:var(--cream); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(26px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom));}
+/* Home hub v3 (v37) — onboarding + personalized focus + top bar + bottom tab bar. */
+body{ padding-bottom:76px; }
+#homeHub{position:fixed; inset:0; z-index:200; background:var(--cream); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(16px + env(safe-area-inset-top)) 18px calc(94px + env(safe-area-inset-bottom));}
 #homeHub .wrap{max-width:1060px; margin:0 auto;}
-#homeHub .hhead{display:flex; align-items:center; gap:13px; margin:6px 2px 20px;}
+#homeHub .htop{display:flex; align-items:center; justify-content:space-between; margin:2px 0 16px;}
+#homeHub .htop .tbtn{width:42px;height:42px;border-radius:13px;background:var(--paper);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#homeHub .htop .tbtn svg{width:21px;height:21px;}
+#homeHub .htop .brand{font-weight:800;color:var(--ink);font-size:16px;}
+#homeHub .hhead{display:flex; align-items:center; gap:13px; margin:0 2px 20px;}
 #homeHub .hsprout{width:46px;height:46px;border-radius:15px;background:color-mix(in srgb, var(--sage) 20%, transparent);color:var(--sage);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 #homeHub .hsprout svg{width:26px;height:26px;}
 #homeHub .hgreet{font-size:21px;font-weight:800;color:var(--ink);line-height:1.1;}
 #homeHub .hsub{font-size:13px;color:var(--ink-soft);margin-top:2px;}
 #homeHub .hsub .edit{color:var(--sage);font-weight:700;cursor:pointer;margin-left:7px;}
-#homeHub .hbrand{margin-left:auto;font-weight:800;color:var(--ink-soft);font-size:14px;white-space:nowrap;}
 #homeHub .hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
 #homeHub .tile{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:var(--ink);transition:transform .12s ease, border-color .2s;overflow:hidden;-webkit-tap-highlight-color:transparent;}
 #homeHub .tile:active{transform:scale(.975);}
@@ -3357,24 +3361,27 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 #homeHub .feat .cta{margin-top:auto;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--sage);color:#fff;font-weight:800;font-size:13.5px;padding:10px 17px;border-radius:99px;}
 #homeHub .feat .prog{font-size:12.5px;color:var(--ink-soft);font-weight:700;margin-left:10px;}
 @media(min-width:820px){
-  #homeHub{padding:38px 30px;}
   #homeHub .hgrid{grid-template-columns:repeat(4,1fr);grid-auto-rows:132px;}
   #homeHub .feat{grid-column:span 2;grid-row:span 2;min-height:0;}
   #homeHub .feat .n{font-size:26px;}
 }
-@media(max-width:520px){ #homeHub .hbrand{display:none;} }
-.hub-homebtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:64px;z-index:120;width:42px;height:42px;border-radius:13px;background:var(--paper);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.hub-homebtn svg{width:21px;height:21px;}
+/* bottom tab bar (global) */
+#mamaTabs{position:fixed;left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:250;display:flex;justify-content:space-around;background:color-mix(in srgb, var(--paper) 82%, transparent);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--line);border-radius:20px;padding:8px 4px;box-shadow:0 8px 26px rgba(0,0,0,.14);}
+#mamaTabs .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;color:var(--ink-soft);font-weight:700;font-size:10.5px;padding:2px 0;}
+#mamaTabs .tab svg{width:21px;height:21px;}
+#mamaTabs .tab.on{color:var(--sage);}
+#mamaTabs.hidden{display:none;}
+@media(min-width:820px){ #mamaTabs{max-width:520px;margin:0 auto;} }
+.hub-homebtn{display:none !important;}
 /* onboarding */
-#onbOverlay{position:fixed;inset:0;z-index:210;background:var(--cream);display:flex;align-items:center;justify-content:center;padding:24px calc(20px + env(safe-area-inset-left));}
+#onbOverlay{position:fixed;inset:0;z-index:260;background:var(--cream);display:flex;align-items:center;justify-content:center;padding:24px calc(20px + env(safe-area-inset-left));}
 #onbOverlay .card{width:100%;max-width:440px;}
 #onbOverlay .osprout{width:56px;height:56px;border-radius:18px;background:color-mix(in srgb, var(--sage) 20%, transparent);color:var(--sage);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
 #onbOverlay .osprout svg{width:32px;height:32px;}
 #onbOverlay h2{font-size:23px;font-weight:800;color:var(--ink);text-align:center;line-height:1.15;}
 #onbOverlay p.osub{font-size:14px;color:var(--ink-soft);text-align:center;margin:6px 0 22px;}
 #onbOverlay .opt{display:flex;flex-direction:column;gap:12px;}
-#onbOverlay .obtn{display:flex;align-items:center;gap:13px;background:var(--paper);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;cursor:pointer;color:var(--ink);text-align:left;transition:border-color .2s, transform .1s;}
-#onbOverlay .obtn:active{transform:scale(.98);}
+#onbOverlay .obtn{display:flex;align-items:center;gap:13px;background:var(--paper);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;cursor:pointer;color:var(--ink);text-align:left;transition:border-color .2s;}
 #onbOverlay .obtn.sel{border-color:var(--sage);}
 #onbOverlay .obtn .oi{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 #onbOverlay .obtn .oi svg{width:24px;height:24px;}
@@ -3385,7 +3392,29 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 #onbOverlay input:focus{outline:none;border-color:var(--sky);}
 #onbOverlay .odone{margin-top:22px;width:100%;background:var(--sage);color:#fff;font-weight:800;font-size:16px;padding:14px;border:none;border-radius:99px;cursor:pointer;}
 #onbOverlay .oskip{display:block;margin:14px auto 0;background:none;border:none;color:var(--ink-soft);font-weight:700;font-size:13.5px;cursor:pointer;}
-@media (prefers-reduced-motion: reduce){ #homeHub .tile:active,#onbOverlay .obtn:active{transform:none;} }
+#homeHub .tile-add{background:transparent;border:1.5px dashed color-mix(in srgb, var(--ink-soft) 45%, transparent);color:var(--ink-soft);min-height:120px;font:inherit;text-align:left;}
+#homeHub .tile-add .ic{background:color-mix(in srgb, var(--ink-soft) 12%, transparent);color:var(--ink-soft);}
+#homeHub .tile-add .n{color:var(--ink);font-size:15px;}
+/* customize overlay */
+#tilesOverlay{position:fixed;inset:0;z-index:265;background:color-mix(in srgb, var(--ink) 42%, transparent);display:flex;align-items:flex-end;justify-content:center;}
+#tilesOverlay .card{width:100%;max-width:460px;background:var(--cream);border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));max-height:86vh;overflow-y:auto;}
+@media(min-width:560px){ #tilesOverlay{align-items:center;} #tilesOverlay .card{border-radius:24px;} }
+#tilesOverlay h2{font-size:19px;font-weight:800;color:var(--ink);}
+#tilesOverlay .csub{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+#tilesOverlay .tlist{margin:16px 0 4px;display:flex;flex-direction:column;gap:9px;}
+#tilesOverlay .trow{display:flex;align-items:center;gap:12px;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:11px 13px;cursor:pointer;color:var(--ink);text-align:left;font:inherit;}
+#tilesOverlay .trow .ti{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+#tilesOverlay .trow .ti svg{width:21px;height:21px;}
+#tilesOverlay .trow .tt{flex:1;}
+#tilesOverlay .trow .tn{font-size:15px;font-weight:800;}
+#tilesOverlay .trow .td{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+#tilesOverlay .trow .tsw{width:44px;height:26px;border-radius:99px;background:color-mix(in srgb, var(--ink-soft) 30%, transparent);flex:0 0 auto;position:relative;transition:background .18s;}
+#tilesOverlay .trow .tsw .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+#tilesOverlay .trow.on .tsw{background:var(--sage);}
+#tilesOverlay .trow.on .tsw .knob{left:21px;}
+#tilesOverlay .trow:not(.on){opacity:.62;}
+#tilesOverlay .tdone{margin-top:16px;width:100%;background:var(--sage);color:#fff;font-weight:800;font-size:16px;padding:14px;border:none;border-radius:99px;cursor:pointer;}
+@media (prefers-reduced-motion: reduce){ #homeHub .tile:active{transform:none;} }
 </style>
 <script>
 (function(){
@@ -3395,6 +3424,7 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
   var IC={
     sprout:svg('<path d="M12 21V11"/><path d="M12 11c0-3 2.4-5.2 5.4-5.2C17.4 8.8 15 11 12 11z"/><path d="M12 12.5C12 9.8 9.7 7.7 6.8 7.7 6.8 10.5 9 12.5 12 12.5z"/>'),
     moon:svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+    sun:svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/>'),
     shield:svg('<path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>'),
     steps:svg('<path d="M4 19h4v-4H4zM10 15h4v-4h-4zM16 11h4V7h-4z"/>'),
     doc:svg('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/>'),
@@ -3403,7 +3433,14 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
     heart:svg('<path d="M12 20s-6.8-4.4-6.8-9.3A3.4 3.4 0 0 1 12 7.2a3.4 3.4 0 0 1 6.8 3.5C18.8 15.6 12 20 12 20z"/>'),
     home:svg('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>'),
     arrow:svg('<path d="M5 12h13M13 6l6 6-6 6"/>'),
-    baby:svg('<circle cx="12" cy="7" r="3"/><path d="M6 21c0-4 2.7-7 6-7s6 3 6 7"/>')
+    baby:svg('<circle cx="12" cy="7" r="3"/><path d="M6 21c0-4 2.7-7 6-7s6 3 6 7"/>'),
+    list:svg('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+    journal:svg('<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/>'),
+    check:svg('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/>'),
+    face:svg('<circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14.5c1 1 2.4 1.5 3.5 1.5s2.5-.5 3.5-1.5"/>'),
+    dots:svg('<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>'),
+    gear:svg('<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2l-.4-2.6H8.9l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 4 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h4.2l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6A7 7 0 0 0 19 12z"/>'),
+    plus:svg('<path d="M12 5v14M5 12h14"/>')
   };
   var MODS={
     prikorm:{v:'prikorm', n:'Прикорм', d:'что и когда вводить', ic:'sprout', c:'--sage'},
@@ -3419,71 +3456,83 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
   var ONB_KEY='mama-onb';
   function getOnb(){ try{ return JSON.parse(localStorage.getItem(ONB_KEY)||'null'); }catch(_){ return null; } }
   function setOnb(o){ try{ localStorage.setItem(ONB_KEY, JSON.stringify(o)); }catch(_){} }
+  var TILES_KEY='mama-tiles-hidden';
+  function getHidden(){ try{ var a=JSON.parse(localStorage.getItem(TILES_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(_){ return []; } }
+  function setHidden(a){ try{ localStorage.setItem(TILES_KEY, JSON.stringify(a)); }catch(_){} }
   function monthsBetween(d1,d2){ var m=(d2.getFullYear()-d1.getFullYear())*12+(d2.getMonth()-d1.getMonth()); if(d2.getDate()<d1.getDate()) m--; return m; }
-  function ageInfo(o){
-    if(!o||o.mode==='skip'||!o.date) return null;
-    var now=new Date(); var d=new Date(o.date+'T00:00:00');
-    if(o.mode==='preg'){
-      var daysToDue=Math.round((d-now)/86400000); var gest=280-daysToDue; var week=Math.max(1,Math.min(42,Math.floor(gest/7)));
-      return {mode:'preg', week:week, label:week+'-я неделя'};
-    }
-    var days=Math.floor((now-d)/86400000); if(days<0) days=0;
-    var months=Math.max(0,monthsBetween(d,now));
-    var label = days<14 ? days+' дн' : (months<2 ? Math.floor(days/7)+' нед' : months+' мес');
-    return {mode:'baby', months:months, days:days, label:label};
-  }
-  function focusOf(info){
-    if(!info) return {v:'prikorm', title:'Прикорм без паники', d:'Отмечай продукты и открывай совет по каждому.'};
-    if(info.mode==='preg'){
-      if(info.week>=36) return {v:'sumka', title:'Собери сумку в роддом', d:'Роды близко — проверь, что всё готово к встрече.'};
-      return {v:'preg', title:'Беременность по неделям', d:'Скрининги, анализы и подготовка по твоему сроку.'};
-    }
-    var m=info.months;
-    if(info.days<45) return {v:'docs', title:'Оформить документы', d:'После рождения: свидетельство, полис ОМС и выплаты.'};
-    if(m<4) return {v:'diary', title:'Дневник дня', d:'Кормления, сон и подгузники — всё под рукой.'};
-    if(m<5) return {v:'dev', title:'Развитие по месяцам', d:'Скоро прикорм — а пока следим за новыми навыками.'};
-    if(m<=12) return {v:'prikorm', title:'Прикорм без паники', d:'Что и когда вводить — по шагам, с советом на каждый продукт.'};
-    return {v:'dev', title:'Развитие по месяцам', d:'Новые умения месяц за месяцем.'};
-  }
-  function greetSub(info, name){
-    if(!info) return 'Всё для беременности и первого года · для «'+name+'»';
-    if(info.mode==='preg') return 'Беременность · '+info.label;
-    return name+' · '+info.label;
-  }
+  function ageInfo(o){ if(!o||o.mode==='skip'||!o.date) return null; var now=new Date(); var d=new Date(o.date+'T00:00:00');
+    if(o.mode==='preg'){ var dt=Math.round((d-now)/86400000); var g=280-dt; var w=Math.max(1,Math.min(42,Math.floor(g/7))); return {mode:'preg',week:w,label:w+'-я неделя'}; }
+    var days=Math.floor((now-d)/86400000); if(days<0)days=0; var months=Math.max(0,monthsBetween(d,now));
+    var label=days<14?days+' дн':(months<2?Math.floor(days/7)+' нед':months+' мес'); return {mode:'baby',months:months,days:days,label:label}; }
+  function focusOf(info){ if(!info) return {v:'prikorm',title:'Прикорм без паники',d:'Отмечай продукты и открывай совет по каждому.'};
+    if(info.mode==='preg'){ if(info.week>=36) return {v:'sumka',title:'Собери сумку в роддом',d:'Роды близко — проверь, что всё готово к встрече.'}; return {v:'preg',title:'Беременность по неделям',d:'Скрининги, анализы и подготовка по твоему сроку.'}; }
+    var m=info.months; if(info.days<45) return {v:'docs',title:'Оформить документы',d:'После рождения: свидетельство, полис ОМС и выплаты.'};
+    if(m<4) return {v:'diary',title:'Дневник дня',d:'Кормления, сон и подгузники — всё под рукой.'};
+    if(m<5) return {v:'dev',title:'Развитие по месяцам',d:'Скоро прикорм — а пока следим за новыми навыками.'};
+    if(m<=12) return {v:'prikorm',title:'Прикорм без паники',d:'Что и когда вводить — по шагам, с советом на каждый продукт.'};
+    return {v:'dev',title:'Развитие по месяцам',d:'Новые умения месяц за месяцем.'}; }
+  function greetSub(info,name){ if(!info) return 'Всё для беременности и первого года · для «'+name+'»'; if(info.mode==='preg') return 'Беременность · '+info.label; return name+' · '+info.label; }
 
   function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
   ready(function(){
     if(document.getElementById('homeHub')) return;
     var hub=document.createElement('div'); hub.id='homeHub'; document.body.appendChild(hub);
+    var curFocusV='prikorm';
+
+    function appMenu(){ var b=document.querySelector('.menu-btn'); if(b) b.click(); }
+    function appTheme(){ var b=document.querySelector('.theme-toggle'); if(b) b.click(); }
+    function themeIcon(){ return (document.documentElement.getAttribute('data-theme')==='dark') ? IC.sun : IC.moon; }
 
     function tileHTML(m){ return '<div class="tile" data-v="'+m.v+'"><div class="ic" style="background:color-mix(in srgb, var('+m.c+') 18%, transparent);color:var('+m.c+')">'+IC[m.ic]+'</div><div><div class="n">'+m.n+'</div><div class="d">'+m.d+'</div></div></div>'; }
     function renderHub(){
       var onb=getOnb(); var info=ageInfo(onb);
       var kid=document.querySelector('.kids .kid.active'); var kidName=(onb&&onb.name)||(kid?kid.textContent.trim():'малыш');
       var h=new Date().getHours(); var greet=h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';
-      var f=focusOf(info); var featMod=MODS[f.v];
+      var f=focusOf(info); curFocusV=f.v;
       var prog=''; if(f.v==='prikorm'){ prog=((document.querySelector('#viewPrikorm .hero-count')||{}).textContent||'').replace(/\s+/g,' ').trim(); }
       var feat='<div class="tile feat" data-v="'+f.v+'"><div><div class="k">Фокус сегодня</div><div class="n">'+f.title+'</div><div class="d">'+f.d+'</div></div><div style="display:flex;align-items:center"><span class="cta">Открыть '+IC.arrow+'</span><span class="prog">'+prog+'</span></div></div>';
-      var rest=ORDER.filter(function(k){return k!==f.v;}).map(function(k){return tileHTML(MODS[k]);}).join('');
-      var editLink = info ? '<span class="edit" data-edit="1">изменить</span>' : '';
-      hub.innerHTML='<div class="wrap"><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">'+greetSub(info,kidName)+editLink+'</div></div><div class="hbrand">Мама рядом</div></div><div class="hgrid">'+feat+rest+'</div></div>';
+      var hidden=getHidden();
+      var rest=ORDER.filter(function(k){return k!==f.v && hidden.indexOf(k)<0;}).map(function(k){return tileHTML(MODS[k]);}).join('');
+      var addTile='<button class="tile tile-add" data-customize="1"><div class="ic">'+IC.gear+'</div><div><div class="n">Настроить плитки</div><div class="d">выбрать, что показывать</div></div></button>';
+      var editLink=info?'<span class="edit" data-edit="1">изменить</span>':'';
+      hub.innerHTML='<div class="wrap"><div class="htop"><button class="tbtn" data-menu aria-label="Разделы">'+IC.list+'</button><div class="brand">Мама рядом</div><button class="tbtn" data-theme aria-label="Тема">'+themeIcon()+'</button></div><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">'+greetSub(info,kidName)+editLink+'</div></div></div><div class="hgrid">'+feat+rest+addTile+'</div></div>';
     }
-    function hideHub(){ hub.style.display='none'; }
-    function showHub(){ hub.style.display='block'; window.scrollTo(0,0); }
+    function hideHub(){ hub.style.display='none'; syncTabs(); }
+    function showHub(){ renderHub(); hub.style.display='block'; window.scrollTo(0,0); syncTabs(); }
     window.__showHub=showHub;
     renderHub();
 
     hub.addEventListener('click',function(e){
+      if(e.target.closest('[data-menu]')){ hideHub(); appMenu(); return; }
+      if(e.target.closest('[data-theme]')){ appTheme(); setTimeout(function(){ var b=hub.querySelector('[data-theme]'); if(b) b.innerHTML=themeIcon(); },30); return; }
       if(e.target.closest('[data-edit]')){ openOnb(); return; }
+      if(e.target.closest('[data-customize]')){ openTiles(); return; }
       var t=e.target.closest('[data-v]'); if(!t) return; var v=t.getAttribute('data-v'); hideHub(); try{ window.setView(v); }catch(_){}
     });
+
+    /* customize tiles */
+    var tilesEl=null;
+    function openTiles(){
+      if(tilesEl) tilesEl.remove();
+      var hidden=getHidden();
+      tilesEl=document.createElement('div'); tilesEl.id='tilesOverlay';
+      var rows=ORDER.map(function(k){ var m=MODS[k]; var on=hidden.indexOf(k)<0;
+        return '<button class="trow'+(on?' on':'')+'" data-k="'+k+'"><div class="ti" style="background:color-mix(in srgb, var('+m.c+') 16%, transparent);color:var('+m.c+')">'+IC[m.ic]+'</div><div class="tt"><div class="tn">'+m.n+'</div><div class="td">'+m.d+'</div></div><div class="tsw"><div class="knob"></div></div></button>';
+      }).join('');
+      tilesEl.innerHTML='<div class="card"><div class="chead"><div><h2>Настроить плитки</h2><p class="csub">Оставьте только то, что важно вам сейчас.</p></div></div><div class="tlist">'+rows+'</div><button class="tdone">Готово</button></div>';
+      document.body.appendChild(tilesEl);
+      tilesEl.querySelectorAll('.trow').forEach(function(b){ b.addEventListener('click',function(){ b.classList.toggle('on'); }); });
+      tilesEl.querySelector('.tdone').addEventListener('click',function(){
+        var hid=[]; tilesEl.querySelectorAll('.trow').forEach(function(b){ if(!b.classList.contains('on')) hid.push(b.getAttribute('data-k')); });
+        setHidden(hid); tilesEl.remove(); tilesEl=null; renderHub();
+      });
+    }
 
     /* onboarding */
     var onbEl=null;
     function openOnb(){
       if(onbEl) onbEl.remove();
-      var cur=getOnb()||{};
-      var mode=(cur.mode==='preg')?'preg':'baby';
+      var cur=getOnb()||{}; var mode=(cur.mode==='preg')?'preg':'baby';
       onbEl=document.createElement('div'); onbEl.id='onbOverlay';
       onbEl.innerHTML='<div class="card">'+
         '<div class="osprout">'+IC.sprout+'</div>'+
@@ -3505,18 +3554,12 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
       function syncLbl(){ document.getElementById('onbDateLbl').textContent = sel==='preg'?'Предполагаемая дата родов':'Дата рождения'; }
       syncLbl();
       onbEl.querySelectorAll('.obtn').forEach(function(b){ b.addEventListener('click',function(){ sel=b.getAttribute('data-mode'); onbEl.querySelectorAll('.obtn').forEach(function(x){x.classList.remove('sel');}); b.classList.add('sel'); syncLbl(); }); });
-      onbEl.querySelector('#onbDone').addEventListener('click',function(){
-        var date=document.getElementById('onbDate').value; var name=document.getElementById('onbName').value.trim();
-        if(!date){ document.getElementById('onbDate').focus(); return; }
-        setOnb({mode:sel, date:date, name:name||undefined});
-        onbEl.remove(); onbEl=null; renderHub(); showHub();
-      });
-      onbEl.querySelector('#onbSkip').addEventListener('click',function(){ setOnb({mode:'skip'}); onbEl.remove(); onbEl=null; renderHub(); showHub(); });
+      onbEl.querySelector('#onbDone').addEventListener('click',function(){ var date=document.getElementById('onbDate').value; var name=document.getElementById('onbName').value.trim(); if(!date){document.getElementById('onbDate').focus();return;} setOnb({mode:sel,date:date,name:name||undefined}); onbEl.remove(); onbEl=null; showHub(); });
+      onbEl.querySelector('#onbSkip').addEventListener('click',function(){ setOnb({mode:'skip'}); onbEl.remove(); onbEl=null; showHub(); });
     }
+    window.__openOnb=openOnb;
 
-    /* home button + drawer item */
-    var hb=document.createElement('button'); hb.className='hub-homebtn'; hb.setAttribute('aria-label','На главную'); hb.innerHTML=IC.home;
-    hb.addEventListener('click',showHub); document.body.appendChild(hb);
+    /* drawer "home" item */
     var dr=document.querySelector('.drawer');
     if(dr && !dr.querySelector('.m-home-row')){
       var row=document.createElement('button'); row.type='button'; row.className='drawer-item m-home-row'; row.style.marginBottom='6px'; row.textContent='🏠 Главная';
@@ -3524,11 +3567,40 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
       var first=dr.querySelector('.drawer-item'); if(first) dr.insertBefore(row, first); else dr.appendChild(row);
     }
 
+    /* bottom tab bar */
+    var TABS=[
+      {k:'home', ic:'home', l:'Сегодня'},
+      {k:'diary', ic:'journal', l:'Дневник'},
+      {k:'plan', ic:'check', l:'План'},
+      {k:'child', ic:'face', l:'Ребёнок'},
+      {k:'more', ic:'dots', l:'Ещё'}
+    ];
+    var tabsEl=document.createElement('div'); tabsEl.id='mamaTabs';
+    tabsEl.innerHTML=TABS.map(function(t){ return '<button class="tab" data-tab="'+t.k+'">'+IC[t.ic]+'<span>'+t.l+'</span></button>'; }).join('');
+    document.body.appendChild(tabsEl);
+    function hubVisible(){ return getComputedStyle(hub).display!=='none'; }
+    function syncTabs(){
+      var active = hubVisible() ? 'home' : (tabsEl.__last||'home');
+      tabsEl.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===active); });
+    }
+    tabsEl.addEventListener('click',function(e){ var b=e.target.closest('[data-tab]'); if(!b) return; var k=b.getAttribute('data-tab'); tabsEl.__last=k;
+      if(k==='home'){ showHub(); }
+      else if(k==='diary'){ hideHub(); try{ window.setView('diary'); }catch(_){} }
+      else if(k==='plan'){ hideHub(); try{ window.setView(curFocusV); }catch(_){} }
+      else if(k==='child'){ openOnb(); }
+      else if(k==='more'){ hideHub(); appMenu(); }
+      syncTabs();
+    });
+    /* hide tabs while an overlay (sheet/drawer/modal) is open */
+    function overlayOpen(){ var s=document.querySelector('.sheet.open'), d=document.querySelector('.drawer.open'), m=document.querySelector('.modal'); return !!(s||d||(m&&getComputedStyle(m).display!=='none'&&getComputedStyle(m).opacity!=='0'&&m.offsetParent!==null)); }
+    function syncTabsVis(){ var want=overlayOpen(); if(tabsEl.classList.contains('hidden')!==want) tabsEl.classList.toggle('hidden', want); }
+    new MutationObserver(syncTabsVis).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','style']});
+    syncTabsVis();
+
     showHub();
     if(getOnb()==null) openOnb();
   });
 })();
 </script>
-
 </body>
 </html>
