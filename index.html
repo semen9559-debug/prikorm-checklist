@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v38";
+  window.APP_VERSION = "v39";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3518,6 +3518,174 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
     if(typeof openDyEdit==='function' && !openDyEdit.__w){ window.openDyEdit=function(dateKey,id){ openStruct(dateKey,id); }; window.openDyEdit.__w=1; }
   }
   function init(){ wrapAll(); try{ enhance(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+<style id="__diary2_css">
+/* Day summary + doctor export (v39) */
+.dy-sum2{margin:0 0 14px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:15px 16px;}
+.dy-sum2 .s2-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px;}
+.dy-sum2 .s2-cell{display:flex;flex-direction:column;gap:2px;}
+.dy-sum2 .s2-k{font-size:11.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+.dy-sum2 .s2-v{font-size:17px;font-weight:800;color:var(--ink);line-height:1.1;}
+.dy-sum2 .s2-sub{font-size:12px;color:var(--ink-soft);}
+.dy-sum2 .s2-last{margin-top:12px;font-size:13px;color:var(--ink);background:color-mix(in srgb, var(--sky) 12%, var(--paper));border-radius:12px;padding:9px 12px;font-weight:700;}
+.dy-sum2 .s2-tl{margin-top:14px;}
+.dy-sum2 .s2-tl-lab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
+.dy-sum2 .s2-export{margin-top:14px;width:100%;background:color-mix(in srgb, var(--sage) 14%, var(--paper));color:var(--sage);border:1px solid color-mix(in srgb, var(--sage) 40%, var(--line));font:inherit;font-weight:800;font-size:14px;padding:12px;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.dy-sum2 .s2-empty{font-size:13px;color:var(--ink-soft);text-align:center;padding:6px 0;}
+/* report overlay */
+#dyReport{position:fixed;inset:0;z-index:280;display:none;align-items:center;justify-content:center;background:color-mix(in srgb, var(--ink) 55%, transparent);padding:16px;}
+#dyReport.open{display:flex;}
+#dyReport .rp-card{position:relative;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;background:var(--cream);border-radius:20px;padding:16px;}
+#dyReport .rp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+#dyReport .rp-head h3{margin:0;font-size:18px;font-weight:800;color:var(--ink);}
+#dyReport .rp-x{background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;padding:4px;}
+#dyReport .rp-preview{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;}
+#dyReport .rp-preview svg{display:block;width:100%;height:auto;}
+#dyReport .rp-actions{display:flex;gap:10px;margin-top:14px;}
+#dyReport .rp-btn{flex:1;font:inherit;font-weight:800;font-size:15px;padding:13px;border-radius:99px;cursor:pointer;border:none;}
+#dyReport .rp-png{background:var(--sage);color:#fff;}
+#dyReport .rp-print{background:var(--paper);color:var(--ink);border:1.5px solid var(--line);}
+</style>
+<script>
+(function(){
+  "use strict";
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function durText(min){ if(!min||min<1) return '0 мин'; if(min<60) return min+' мин'; var h=Math.floor(min/60), m=min%60; return h+' ч'+(m? ' '+m+' мин':''); }
+  function hhmm(iso){ if(!iso) return ''; var d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+  function sleepMinOf(e){ if(e.durMin) return e.durMin; if(e.end) return Math.round((new Date(e.end)-new Date(e.time))/60000); return 0; }
+  function dayStats(entries){
+    var s={sleepMin:0,sleepCount:0,feedCount:0,feedMl:0,diaperCount:0,wet:0,dirty:0,medsCount:0,lastFeed:null};
+    (entries||[]).forEach(function(e){
+      if(e.type==='sleep'){ s.sleepCount++; s.sleepMin+=sleepMinOf(e); }
+      else if(e.type==='feed'){ s.feedCount++; if(e.vol) s.feedMl+=e.vol; if(!s.lastFeed || e.time>s.lastFeed) s.lastFeed=e.time; }
+      else if(e.type==='diaper'){ s.diaperCount++; if(e.diaper==='wet') s.wet++; else if(e.diaper==='dirty') s.dirty++; else if(e.diaper==='both'){ s.wet++; s.dirty++; } }
+      else if(e.type==='meds'){ s.medsCount++; }
+    });
+    return s;
+  }
+  function timelineSvg(entries){
+    var W=100, H=26;
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="width:100%;height:26px">';
+    svg+='<rect x="0" y="9" width="'+W+'" height="8" rx="4" fill="rgba(0,0,0,.06)"/>';
+    for(var hh=0;hh<=24;hh+=6){ var x=hh/24*W; svg+='<line x1="'+x+'" y1="7" x2="'+x+'" y2="19" stroke="rgba(0,0,0,.12)" stroke-width="0.4"/>'; }
+    (entries||[]).forEach(function(e){
+      var d=new Date(e.time); var startH=d.getHours()+d.getMinutes()/60;
+      if(e.type==='sleep'){ var mins=sleepMinOf(e); var x=startH/24*W; var w=Math.max(0.6,(mins/60)/24*W); svg+='<rect x="'+x.toFixed(2)+'" y="9" width="'+w.toFixed(2)+'" height="8" rx="3" fill="#3E8FC4"/>'; }
+      else if(e.type==='feed'){ var xf=startH/24*W; svg+='<circle cx="'+xf.toFixed(2)+'" cy="13" r="1.6" fill="#6FA25C"/>'; }
+      else if(e.type==='diaper'){ var xd=startH/24*W; svg+='<line x1="'+xd.toFixed(2)+'" y1="17" x2="'+xd.toFixed(2)+'" y2="20.5" stroke="#E8AC2E" stroke-width="0.9"/>'; }
+    });
+    svg+='</svg>';
+    return svg;
+  }
+  function renderSummary(){
+    var wrap=document.querySelector('#viewDiary .diary-wrap'); if(!wrap) return;
+    var card=document.getElementById('dySummary2');
+    if(!card){ card=document.createElement('div'); card.id='dySummary2'; card.className='dy-sum2';
+      var tc=document.getElementById('dyTimerCard');
+      if(tc && tc.parentNode){ tc.parentNode.insertBefore(card, tc.nextSibling); } else { wrap.insertBefore(card, wrap.firstChild); }
+    }
+    var key, entries;
+    try{ key=dyDateKey(dySelDate); entries=(dyData[key]||[]).slice(); }catch(e){ entries=[]; }
+    if(!entries.length){ card.innerHTML='<div class="s2-empty">Итоги дня появятся, когда добавите записи.</div>'; return; }
+    var s=dayStats(entries);
+    var cells='';
+    cells+='<div class="s2-cell"><span class="s2-k">Сон</span><span class="s2-v">'+durText(s.sleepMin)+'</span><span class="s2-sub">'+s.sleepCount+' '+plural(s.sleepCount,'раз','раза','раз')+'</span></div>';
+    cells+='<div class="s2-cell"><span class="s2-k">Кормления</span><span class="s2-v">'+s.feedCount+'</span><span class="s2-sub">'+(s.feedMl? s.feedMl+' мл':'&nbsp;')+'</span></div>';
+    cells+='<div class="s2-cell"><span class="s2-k">Подгузники</span><span class="s2-v">'+s.diaperCount+'</span><span class="s2-sub">'+(s.diaperCount? ('💧 '+s.wet+' · 💩 '+s.dirty):'&nbsp;')+'</span></div>';
+    cells+='<div class="s2-cell"><span class="s2-k">Лекарства</span><span class="s2-v">'+s.medsCount+'</span><span class="s2-sub">&nbsp;</span></div>';
+    var last='';
+    var isToday=false; try{ isToday=dyIsToday(dySelDate); }catch(e){}
+    if(isToday && s.lastFeed){ var mins=Math.round((Date.now()-new Date(s.lastFeed))/60000); last='<div class="s2-last">С последнего кормления: '+durText(mins)+' (в '+hhmm(s.lastFeed)+')</div>'; }
+    var tl='<div class="s2-tl">'+timelineSvg(entries)+'<div class="s2-tl-lab"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>';
+    card.innerHTML='<div class="s2-grid">'+cells+'</div>'+last+tl+'<button class="s2-export" type="button" id="dyExportBtn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg>Показать врачу</button>';
+    var b=document.getElementById('dyExportBtn'); if(b) b.addEventListener('click', openReport);
+  }
+  function plural(n,a,b,c){ n=Math.abs(n)%100; var n1=n%10; if(n>10&&n<20) return c; if(n1>1&&n1<5) return b; if(n1===1) return a; return c; }
+
+  /* ---- doctor export report ---- */
+  function lastDays(count){
+    var out=[]; var d=new Date(); try{ d=new Date(dySelDate); }catch(e){}
+    for(var i=0;i<count;i++){ var dd=new Date(d); dd.setDate(dd.getDate()-i); out.push(dd); }
+    return out;
+  }
+  function fmtRuDate(d){ var MM=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек']; var WD=['вс','пн','вт','ср','чт','пт','сб'][d.getDay()]; return d.getDate()+' '+MM[d.getMonth()]+', '+WD; }
+  function esc2(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function childLabel(){
+    try{ var onb=JSON.parse(localStorage.getItem('mama-onb')||'null'); var kid=document.querySelector('.kids .kid.active'); var name=(onb&&onb.name)||(kid?kid.textContent.trim():'Малыш'); return name; }catch(e){ return 'Малыш'; }
+  }
+  function buildReportSvg(){
+    var days=lastDays(7);
+    var W=680, pad=28, rowH=34, headH=118, footH=54;
+    var H=headH+rowH*(days.length+1)+footH;
+    var A='font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif"';
+    var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">';
+    s+='<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#FDF8EF"/>';
+    s+='<text x="'+pad+'" y="42" '+A+' font-size="22" font-weight="700" fill="#2A2620">Дневник малыша — для врача</text>';
+    s+='<text x="'+pad+'" y="68" '+A+' font-size="14" fill="#6b6355">'+esc2(childLabel())+' · за последние 7 дней</text>';
+    var gen=new Date(); s+='<text x="'+pad+'" y="88" '+A+' font-size="12" fill="#8a8073">Сформировано: '+pad(gen.getDate())+'.'+pad(gen.getMonth()+1)+'.'+gen.getFullYear()+'</text>';
+    var cols=[pad, 190, 320, 430, 545];
+    var heads=['Дата','Сон','Кормления','Подгузники','Лекарства'];
+    var y=headH;
+    s+='<line x1="'+pad+'" y1="'+(y-8)+'" x2="'+(W-pad)+'" y2="'+(y-8)+'" stroke="#EDE4D5" stroke-width="1"/>';
+    heads.forEach(function(h,i){ s+='<text x="'+cols[i]+'" y="'+(y+14)+'" '+A+' font-size="12" font-weight="700" fill="#8a8073">'+h+'</text>'; });
+    y+=rowH;
+    days.forEach(function(d){
+      var key; try{ key=dyDateKey(d); }catch(e){ key=''; }
+      var st=dayStats(dyData[key]||[]);
+      s+='<line x1="'+pad+'" y1="'+(y-rowH+8)+'" x2="'+(W-pad)+'" y2="'+(y-rowH+8)+'" stroke="#F2EBDD" stroke-width="1"/>';
+      s+='<text x="'+cols[0]+'" y="'+y+'" '+A+' font-size="13" fill="#2A2620">'+esc2(fmtRuDate(d))+'</text>';
+      s+='<text x="'+cols[1]+'" y="'+y+'" '+A+' font-size="13" fill="#2A2620">'+esc2(st.sleepCount? durText(st.sleepMin):'—')+'</text>';
+      s+='<text x="'+cols[2]+'" y="'+y+'" '+A+' font-size="13" fill="#2A2620">'+(st.feedCount? (st.feedCount+(st.feedMl? ' · '+st.feedMl+' мл':'')):'—')+'</text>';
+      s+='<text x="'+cols[3]+'" y="'+y+'" '+A+' font-size="13" fill="#2A2620">'+(st.diaperCount? st.diaperCount:'—')+'</text>';
+      s+='<text x="'+cols[4]+'" y="'+y+'" '+A+' font-size="13" fill="#2A2620">'+(st.medsCount? st.medsCount:'—')+'</text>';
+      y+=rowH;
+    });
+    s+='<text x="'+pad+'" y="'+(y+22)+'" '+A+' font-size="10.5" fill="#8a8073">Данные внесены родителем в приложении «Мама рядом». Справочно, не является мед. документом.</text>';
+    s+='</svg>';
+    return {svg:s, w:W, h:H};
+  }
+  var reportEl=null, curSvg=null;
+  function ensureReport(){
+    if(reportEl) return;
+    reportEl=document.createElement('div'); reportEl.id='dyReport';
+    reportEl.innerHTML='<div class="rp-card"><div class="rp-head"><h3>Отчёт для врача</h3><button class="rp-x" type="button" aria-label="Закрыть">✕</button></div><div class="rp-preview" id="rpPreview"></div><div class="rp-actions"><button class="rp-btn rp-png" type="button">Скачать картинку</button><button class="rp-btn rp-print" type="button">Печать / PDF</button></div></div>';
+    document.body.appendChild(reportEl);
+    reportEl.querySelector('.rp-x').addEventListener('click', closeReport);
+    reportEl.addEventListener('click', function(e){ if(e.target===reportEl) closeReport(); });
+    reportEl.querySelector('.rp-png').addEventListener('click', downloadPng);
+    reportEl.querySelector('.rp-print').addEventListener('click', printReport);
+  }
+  function openReport(){ ensureReport(); var r=buildReportSvg(); curSvg=r; document.getElementById('rpPreview').innerHTML=r.svg; reportEl.classList.add('open'); }
+  function closeReport(){ if(reportEl) reportEl.classList.remove('open'); }
+  function downloadPng(){
+    if(!curSvg) return;
+    var img=new Image();
+    var blob=new Blob([curSvg.svg],{type:'image/svg+xml;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    img.onload=function(){
+      var sc=2; var c=document.createElement('canvas'); c.width=curSvg.w*sc; c.height=curSvg.h*sc;
+      var ctx=c.getContext('2d'); ctx.fillStyle='#FDF8EF'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      try{ c.toBlob(function(b){ var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='dnevnik-dlya-vracha.png'; document.body.appendChild(a); a.click(); a.remove(); if(typeof toast==='function') toast('Картинка сохранена 📷'); }); }
+      catch(e){ var a2=document.createElement('a'); a2.href=c.toDataURL('image/png'); a2.download='dnevnik-dlya-vracha.png'; a2.click(); }
+    };
+    img.onerror=function(){ if(typeof toast==='function') toast('Не удалось сделать картинку'); };
+    img.src=url;
+  }
+  function printReport(){
+    if(!curSvg) return;
+    var w=window.open('','_blank');
+    if(!w){ if(typeof toast==='function') toast('Разрешите всплывающие окна для печати'); return; }
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Дневник для врача</title><style>body{margin:0;padding:16px;background:#fff}svg{width:100%;height:auto}</style></head><body>'+curSvg.svg+'<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>');
+    w.document.close();
+  }
+
+  function wrapSummary(){
+    if(typeof renderDiary==='function' && !renderDiary.__w2){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ renderSummary(); }catch(e){} return o; }; window.renderDiary.__w2=1; }
+  }
+  function init(){ wrapSummary(); try{ if(document.getElementById('viewDiary')) renderSummary(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
