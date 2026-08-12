@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v39";
+  window.APP_VERSION = "v40";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3686,6 +3686,249 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
     if(typeof renderDiary==='function' && !renderDiary.__w2){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ renderSummary(); }catch(e){} return o; }; window.renderDiary.__w2=1; }
   }
   function init(){ wrapSummary(); try{ if(document.getElementById('viewDiary')) renderSummary(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+<style id="__diary3_css">
+/* Batch 1 (v40): full event catalog + structured forms */
+#viewDiary .qadd-title, #viewDiary .diary-hint, #dyAdd{display:none !important;}
+.dy-addbtn{width:100%;margin:0 0 14px;background:var(--sage);color:#fff;border:none;font:inherit;font-weight:800;font-size:16px;padding:15px;border-radius:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.dy-addbtn:active{transform:scale(.99);}
+/* picker */
+#dyPicker{position:fixed;inset:0;z-index:275;display:none;align-items:flex-end;justify-content:center;background:color-mix(in srgb,var(--ink) 45%,transparent);}
+#dyPicker.open{display:flex;}
+#dyPicker .pk-card{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--cream);border-radius:24px 24px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));}
+@media(min-width:560px){#dyPicker{align-items:center;} #dyPicker .pk-card{border-radius:24px;}}
+#dyPicker .pk-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+#dyPicker .pk-h h3{margin:0;font-size:19px;font-weight:800;color:var(--ink);}
+#dyPicker .pk-x{background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;padding:4px;}
+#dyPicker .pk-cat{font-size:12px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin:16px 2px 11px;}
+#dyPicker .pk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 6px;}
+@media(max-width:400px){#dyPicker .pk-grid{grid-template-columns:repeat(3,1fr);}}
+#dyPicker .pk-item{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0;}
+#dyPicker .pk-ic{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;}
+#dyPicker .pk-item:active .pk-ic{transform:scale(.93);}
+#dyPicker .pk-lab{font-size:11.5px;font-weight:700;color:var(--ink);text-align:center;line-height:1.15;}
+/* struct modal 3 */
+#dyStruct3{position:fixed;inset:0;z-index:279;display:none;align-items:flex-end;justify-content:center;}
+#dyStruct3.open{display:flex;}
+#dyStruct3 .d3-back{position:absolute;inset:0;background:color-mix(in srgb, var(--ink) 45%, transparent);}
+#dyStruct3 .d3-card{position:relative;width:100%;max-width:460px;background:var(--cream);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;box-shadow:0 -8px 30px rgba(0,0,0,.2);}
+@media(min-width:560px){#dyStruct3{align-items:center;} #dyStruct3 .d3-card{border-radius:22px;}}
+#dyStruct3 .d3-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+#dyStruct3 .d3-h h3{margin:0;font-size:19px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px;}
+#dyStruct3 .d3-x{background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;padding:4px;}
+#dyStruct3 .d3-fl{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:14px 2px 6px;}
+#dyStruct3 input,#dyStruct3 textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);}
+#dyStruct3 textarea{min-height:64px;resize:vertical;}
+#dyStruct3 input:focus,#dyStruct3 textarea:focus{outline:none;border-color:var(--sky);}
+#dyStruct3 .d3-two{display:flex;gap:10px;}
+#dyStruct3 .d3-two>div{flex:1;}
+#dyStruct3 .d3-chips{display:flex;flex-wrap:wrap;gap:8px;}
+#dyStruct3 .d3-chip{font:inherit;font-size:13.5px;font-weight:700;padding:9px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+#dyStruct3 .d3-chip.on{border-color:var(--sage);background:color-mix(in srgb, var(--sage) 16%, var(--paper));color:var(--sage);}
+#dyStruct3 .d3-hint{font-size:12.5px;color:var(--ink-soft);margin-top:8px;font-weight:700;}
+#dyStruct3 .d3-foot{display:flex;gap:10px;margin-top:20px;}
+#dyStruct3 .d3-del{background:none;border:1.5px solid var(--line);color:var(--rust);font:inherit;font-weight:800;font-size:14px;padding:12px 16px;border-radius:99px;cursor:pointer;}
+#dyStruct3 .d3-save{flex:1;background:var(--sage);color:#fff;border:none;font:inherit;font-weight:800;font-size:16px;padding:13px;border-radius:99px;cursor:pointer;}
+</style>
+<script>
+(function(){
+  "use strict";
+  var T={
+    feed:{ic:'🤱',label:'Кормление грудью',c:'--sage'},
+    bottle:{ic:'🍼',label:'Бутылочка',c:'--sage'},
+    solids:{ic:'🥣',label:'Прикорм',c:'--sage'},
+    pump:{ic:'🥛',label:'Сцеживание',c:'--sage'},
+    diaper:{ic:'💧',label:'Подгузник',c:'--sky'},
+    sleep:{ic:'😴',label:'Сон',c:'--sky'},
+    walk:{ic:'🚼',label:'Прогулка',c:'--sky'},
+    bath:{ic:'🛁',label:'Купание',c:'--sky'},
+    doctor:{ic:'🩺',label:'Визит врача',c:'--sage'},
+    vaccine:{ic:'💉',label:'Прививка',c:'--sage'},
+    temp:{ic:'🌡',label:'Температура',c:'--rust'},
+    illness:{ic:'🤒',label:'Болезнь',c:'--rust'},
+    meds:{ic:'💊',label:'Лекарство',c:'--sage'},
+    mood:{ic:'🙂',label:'Настроение',c:'--butter'}
+  };
+  var PICK=[
+    {cat:'Еда', c:'--sage', items:[{t:'feed'},{t:'bottle'},{t:'solids'},{t:'pump'}]},
+    {cat:'Активность', c:'--sky', items:[{t:'diaper'},{t:'sleep'},{t:'walk'},{t:'bath'}]},
+    {cat:'Здоровье', c:'--sage', items:[{t:'doctor'},{t:'vaccine'},{t:'temp'},{t:'illness'},{t:'meds'}]},
+    {cat:'Настроение', c:'--butter', items:[
+      {t:'mood',v:'happy',ic:'😄',label:'Весёлый'},
+      {t:'mood',v:'normal',ic:'🙂',label:'Нормальный'},
+      {t:'mood',v:'sad',ic:'😔',label:'Грустный'},
+      {t:'mood',v:'cry',ic:'😭',label:'Плач'}
+    ]}
+  ];
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function hhmm(iso){ if(!iso) return ''; var d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+  function durText(min){ if(!min||min<1) return '0 мин'; if(min<60) return min+' мин'; var h=Math.floor(min/60), m=min%60; return h+' ч'+(m? ' '+m+' мин':''); }
+  function toMin(t){ var p=(t||'').split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  function E(s){ return (typeof esc==='function')? esc(s) : String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function say(m){ if(typeof toast==='function') toast(m); }
+  function sideLabel(s){ return {left:'левая грудь',right:'правая грудь',both:'обе груди',formula:'смесь',expressed:'сцеженное'}[s]||''; }
+  function contentLabel(s){ return {formula:'смесь',expressed:'сцеженное',water:'вода',juice:'сок'}[s]||''; }
+  function moodLabel(s){ return {happy:'весёлый',normal:'нормальный',sad:'грустный',cry:'плач'}[s]||''; }
+  function diaperLabel(d){ return {wet:'пописал',dirty:'покакал',both:'и то, и другое'}[d]||''; }
+  function computeNote(e){
+    var p=[];
+    switch(e.type){
+      case 'feed': if(e.src)p.push(sideLabel(e.src)); if(e.vol)p.push(e.vol+' мл'); if(e.durMin)p.push(e.durMin+' мин'); break;
+      case 'bottle': if(e.content)p.push(contentLabel(e.content)); if(e.vol)p.push(e.vol+' мл'); break;
+      case 'solids': if(e.product)p.push(e.product); break;
+      case 'pump': if(e.src)p.push(sideLabel(e.src)); if(e.vol)p.push(e.vol+' мл'); if(e.durMin)p.push(e.durMin+' мин'); break;
+      case 'sleep': if(e.end){ p.push(durText(Math.round((new Date(e.end)-new Date(e.time))/60000))); p.push(hhmm(e.time)+'–'+hhmm(e.end)); } break;
+      case 'walk': if(e.durMin)p.push(e.durMin+' мин'); break;
+      case 'diaper': if(e.diaper)p.push(diaperLabel(e.diaper)); break;
+      case 'vaccine': if(e.vname)p.push(e.vname); break;
+      case 'temp': if(e.temp)p.push(e.temp+' °'); break;
+      case 'meds': if(e.medName)p.push(e.medName); if(e.medDose)p.push(e.medDose); break;
+      case 'mood': if(e.mood)p.push(moodLabel(e.mood)); break;
+    }
+    if(e.freeNote) p.push(e.freeNote);
+    return p.join(' · ');
+  }
+
+  /* ---- picker ---- */
+  var picker=null;
+  function ensurePicker(){
+    if(picker) return;
+    picker=document.createElement('div'); picker.id='dyPicker';
+    var body='<div class="pk-card"><div class="pk-h"><h3>Добавить событие</h3><button class="pk-x" type="button" aria-label="Закрыть">✕</button></div>';
+    PICK.forEach(function(g){
+      body+='<div class="pk-cat">'+g.cat+'</div><div class="pk-grid">';
+      g.items.forEach(function(it,idx){
+        var ic=it.ic||T[it.t].ic; var lab=it.label||T[it.t].label; var col=g.c;
+        body+='<button class="pk-item" type="button" data-cat="'+PICK.indexOf(g)+'" data-idx="'+idx+'"><span class="pk-ic" style="background:color-mix(in srgb, var('+col+') 20%, transparent)">'+ic+'</span><span class="pk-lab">'+lab+'</span></button>';
+      });
+      body+='</div>';
+    });
+    body+='</div>';
+    picker.innerHTML=body;
+    document.body.appendChild(picker);
+    picker.querySelector('.pk-x').addEventListener('click', closePicker);
+    picker.addEventListener('click', function(e){ if(e.target===picker) closePicker(); });
+    picker.querySelectorAll('.pk-item').forEach(function(b){
+      b.addEventListener('click', function(){ var g=PICK[+b.getAttribute('data-cat')]; var it=g.items[+b.getAttribute('data-idx')]; addEvent(it); });
+    });
+  }
+  function openPicker(){ ensurePicker(); picker.classList.add('open'); }
+  function closePicker(){ if(picker) picker.classList.remove('open'); }
+
+  function addEvent(it){
+    if(typeof dyData==='undefined') return;
+    var key=dyDateKey(dySelDate); if(!dyData[key]) dyData[key]=[];
+    var now=new Date(); var dt=new Date(dySelDate); dt.setHours(now.getHours(),now.getMinutes(),0,0);
+    var e={ id:Date.now().toString(36)+Math.random().toString(36).slice(2,4), time:dt.toISOString(), type:it.t };
+    if(it.v) e.mood=it.v;
+    e.note=computeNote(e);
+    dyData[key].push(e);
+    if(typeof dySave==='function') dySave();
+    if(navigator.vibrate) navigator.vibrate(12);
+    closePicker();
+    if(typeof renderDiary==='function') renderDiary();
+    if(it.t==='mood'){ say((T.mood.ic)+' Настроение записано'); }
+    else openStruct(key, e.id);
+  }
+
+  /* ---- struct modal (all types) ---- */
+  var modal=null, ctx=null;
+  function ensureModal(){
+    if(modal) return;
+    modal=document.createElement('div'); modal.id='dyStruct3';
+    modal.innerHTML='<div class="d3-back"></div><div class="d3-card"><div class="d3-h"><h3 id="d3Title"></h3><button class="d3-x" type="button" aria-label="Закрыть">✕</button></div><div class="d3-body" id="d3Body"></div><div class="d3-foot"><button class="d3-del" type="button">Удалить</button><button class="d3-save" type="button">Сохранить</button></div></div>';
+    document.body.appendChild(modal);
+    modal.querySelector('.d3-back').addEventListener('click', closeStruct);
+    modal.querySelector('.d3-x').addEventListener('click', closeStruct);
+    modal.querySelector('.d3-save').addEventListener('click', saveStruct);
+    modal.querySelector('.d3-del').addEventListener('click', delStruct);
+  }
+  function chip(g,v,label,cur){ return '<button type="button" class="d3-chip'+(cur===v?' on':'')+'" data-g="'+g+'" data-v="'+v+'">'+label+'</button>'; }
+  function tf(id,label,val){ return '<label class="d3-fl">'+label+'</label><input type="time" id="'+id+'" value="'+(val||'')+'">'; }
+  function chips(g,arr,cur){ var h='<div class="d3-chips">'; arr.forEach(function(o){ h+=chip(g,o[0],o[1],cur); }); return h+'</div>'; }
+  function openStruct(dateKey,id){
+    if(typeof dyData==='undefined') return;
+    var arr=dyData[dateKey]||[]; var e=arr.find(function(x){return x.id===id;}); if(!e) return;
+    ensureModal(); ctx={dateKey:dateKey,id:id};
+    var t=T[e.type]||{ic:'•',label:e.type};
+    document.getElementById('d3Title').innerHTML='<span>'+t.ic+'</span> '+t.label;
+    var h='';
+    h+=tf('d3Time','Время'+(e.type==='sleep'?' начала':''),hhmm(e.time));
+    if(e.type==='sleep'){ h+=tf('d3End','Время конца',hhmm(e.end)); h+='<div class="d3-hint" id="d3Dur"></div>'; }
+    if(e.type==='feed'){ h+='<label class="d3-fl">Грудь</label>'+chips('side',[['left','Левая'],['right','Правая'],['both','Обе'],['formula','Смесь'],['expressed','Сцеженное']],e.src);
+      h+='<div class="d3-two"><div><label class="d3-fl">Объём, мл</label><input type="number" id="d3Vol" inputmode="numeric" value="'+(e.vol||'')+'" placeholder="120"></div><div><label class="d3-fl">Длительность, мин</label><input type="number" id="d3Dm" inputmode="numeric" value="'+(e.durMin||'')+'" placeholder="15"></div></div>'; }
+    if(e.type==='bottle'){ h+='<label class="d3-fl">Содержимое</label>'+chips('content',[['formula','Смесь'],['expressed','Сцеженное'],['water','Вода'],['juice','Сок']],e.content);
+      h+='<label class="d3-fl">Объём, мл</label><input type="number" id="d3Vol" inputmode="numeric" value="'+(e.vol||'')+'" placeholder="120">'; }
+    if(e.type==='solids'){ h+='<label class="d3-fl">Продукт</label><input type="text" id="d3Prod" value="'+E(e.product||'')+'" placeholder="напр. брокколи"><div class="d3-hint">Полный дневник прикорма — в разделе «Прикорм».</div>'; }
+    if(e.type==='pump'){ h+='<label class="d3-fl">Грудь</label>'+chips('side',[['left','Левая'],['right','Правая'],['both','Обе']],e.src);
+      h+='<div class="d3-two"><div><label class="d3-fl">Объём, мл</label><input type="number" id="d3Vol" inputmode="numeric" value="'+(e.vol||'')+'" placeholder="80"></div><div><label class="d3-fl">Длительность, мин</label><input type="number" id="d3Dm" inputmode="numeric" value="'+(e.durMin||'')+'" placeholder="15"></div></div>'; }
+    if(e.type==='diaper'){ h+='<label class="d3-fl">Что было</label>'+chips('diaper',[['wet','💧 Пописал'],['dirty','💩 Покакал'],['both','И то, и другое']],e.diaper); }
+    if(e.type==='walk'){ h+='<label class="d3-fl">Длительность, мин</label><input type="number" id="d3Dm" inputmode="numeric" value="'+(e.durMin||'')+'" placeholder="40">'; }
+    if(e.type==='vaccine'){ h+='<label class="d3-fl">Название</label><input type="text" id="d3Vn" value="'+E(e.vname||'')+'" placeholder="напр. АКДС"><div class="d3-hint">Календарь прививок — в разделе «Прививки».</div>'; }
+    if(e.type==='temp'){ h+='<label class="d3-fl">Температура, °C</label><input type="number" id="d3Tv" inputmode="decimal" step="0.1" value="'+(e.temp||'')+'" placeholder="37.2">'; }
+    if(e.type==='meds'){ h+='<div class="d3-two"><div><label class="d3-fl">Название</label><input type="text" id="d3Mn" value="'+E(e.medName||'')+'" placeholder="Витамин D"></div><div><label class="d3-fl">Доза</label><input type="text" id="d3Md" value="'+E(e.medDose||'')+'" placeholder="1 капля"></div></div>'; }
+    if(e.type==='mood'){ h+='<label class="d3-fl">Настроение</label>'+chips('mood',[['happy','😄 Весёлый'],['normal','🙂 Нормальный'],['sad','😔 Грустный'],['cry','😭 Плач']],e.mood); }
+    h+='<label class="d3-fl">Заметка</label><textarea id="d3Note" placeholder="любые детали">'+E(e.freeNote||'')+'</textarea>';
+    document.getElementById('d3Body').innerHTML=h;
+    document.getElementById('d3Body').querySelectorAll('.d3-chip').forEach(function(c){ c.addEventListener('click',function(){ var g=c.getAttribute('data-g'); modal.querySelectorAll('.d3-chip[data-g="'+g+'"]').forEach(function(x){x.classList.remove('on');}); c.classList.add('on'); }); });
+    if(e.type==='sleep'){ var upd=function(){ var a=document.getElementById('d3Time').value,b=document.getElementById('d3End').value,el=document.getElementById('d3Dur'); if(a&&b){ var mm=toMin(b)-toMin(a); if(mm<0)mm+=1440; el.textContent='Длительность: '+durText(mm); } else el.textContent=''; }; document.getElementById('d3Time').addEventListener('input',upd); document.getElementById('d3End').addEventListener('input',upd); upd(); }
+    modal.classList.add('open');
+  }
+  function selChip(g){ var el=modal.querySelector('.d3-chip.on[data-g="'+g+'"]'); return el?el.getAttribute('data-v'):''; }
+  function val(id){ var el=document.getElementById(id); return el?el.value:''; }
+  function numOf(id){ var n=parseFloat(val(id)); return isNaN(n)?0:n; }
+  function saveStruct(){
+    if(!ctx || typeof dyData==='undefined') return;
+    var arr=dyData[ctx.dateKey]||[]; var e=arr.find(function(x){return x.id===ctx.id;}); if(!e){ closeStruct(); return; }
+    var tv=val('d3Time'); if(tv){ var d=new Date(e.time); var p=tv.split(':'); d.setHours(+p[0]||0,+p[1]||0,0,0); e.time=d.toISOString(); }
+    if(e.type==='sleep'){ var ev=val('d3End'); if(ev){ var d2=new Date(e.time); var p2=ev.split(':'); d2.setHours(+p2[0]||0,+p2[1]||0,0,0); if(d2<new Date(e.time)) d2.setDate(d2.getDate()+1); e.end=d2.toISOString(); e.durMin=Math.round((new Date(e.end)-new Date(e.time))/60000); } else { delete e.end; delete e.durMin; } }
+    if(e.type==='feed'||e.type==='pump'){ var s=selChip('side'); if(s)e.src=s; else delete e.src; var v=Math.round(numOf('d3Vol')); if(v>0)e.vol=v; else delete e.vol; var dm=Math.round(numOf('d3Dm')); if(dm>0)e.durMin=dm; else delete e.durMin; }
+    if(e.type==='bottle'){ var ct=selChip('content'); if(ct)e.content=ct; else delete e.content; var v2=Math.round(numOf('d3Vol')); if(v2>0)e.vol=v2; else delete e.vol; }
+    if(e.type==='solids'){ var pr=val('d3Prod').trim(); if(pr)e.product=pr; else delete e.product; }
+    if(e.type==='walk'){ var wd=Math.round(numOf('d3Dm')); if(wd>0)e.durMin=wd; else delete e.durMin; }
+    if(e.type==='diaper'){ var dp=selChip('diaper'); if(dp)e.diaper=dp; else delete e.diaper; }
+    if(e.type==='vaccine'){ var vn=val('d3Vn').trim(); if(vn)e.vname=vn; else delete e.vname; }
+    if(e.type==='temp'){ var tv2=numOf('d3Tv'); if(tv2>0)e.temp=tv2; else delete e.temp; }
+    if(e.type==='meds'){ var mn=val('d3Mn').trim(); if(mn)e.medName=mn; else delete e.medName; var md=val('d3Md').trim(); if(md)e.medDose=md; else delete e.medDose; }
+    if(e.type==='mood'){ var mo=selChip('mood'); if(mo)e.mood=mo; else delete e.mood; }
+    var fn=val('d3Note').trim(); if(fn)e.freeNote=fn; else delete e.freeNote;
+    e.note=computeNote(e);
+    if(typeof dySave==='function') dySave();
+    closeStruct();
+    if(typeof renderDiary==='function') renderDiary();
+    say('Сохранено ✅');
+  }
+  function delStruct(){ if(!ctx||typeof dyData==='undefined') return; dyData[ctx.dateKey]=(dyData[ctx.dateKey]||[]).filter(function(x){return x.id!==ctx.id;}); if(!dyData[ctx.dateKey].length) delete dyData[ctx.dateKey]; if(typeof dySave==='function') dySave(); closeStruct(); if(typeof renderDiary==='function') renderDiary(); }
+  function closeStruct(){ if(modal) modal.classList.remove('open'); ctx=null; }
+
+  /* ---- diary integration ---- */
+  function enhance(){
+    var wrap=document.querySelector('#viewDiary .diary-wrap'); if(!wrap) return;
+    if(!document.getElementById('dyAddBtn2')){
+      var b=document.createElement('button'); b.id='dyAddBtn2'; b.type='button'; b.className='dy-addbtn'; b.textContent='＋ Добавить событие';
+      b.addEventListener('click', openPicker);
+      var list=document.getElementById('dyList');
+      if(list && list.parentNode) list.parentNode.insertBefore(b, list); else wrap.appendChild(b);
+    }
+    fixList();
+  }
+  function fixList(){
+    var key; try{ key=dyDateKey(dySelDate); }catch(e){ return; }
+    var arr=dyData[key]||[]; var map={}; arr.forEach(function(e){ map[e.id]=e; });
+    document.querySelectorAll('#dyList .diary-entry').forEach(function(li){
+      var e=map[li.getAttribute('data-id')]; if(!e) return; var t=T[e.type]; if(!t) return;
+      var icon=(e.type==='mood') ? ({happy:'😄',normal:'🙂',sad:'😔',cry:'😭'}[e.mood]||t.ic) : t.ic;
+      var ic=li.querySelector('.de-ic'); if(ic) ic.textContent=icon;
+      var lab=li.querySelector('.de-label'); if(lab){ lab.innerHTML=E(t.label)+(e.note?'<span class="de-note">'+E(e.note)+'</span>':''); }
+    });
+  }
+  function wrapAll(){
+    if(typeof renderDiary==='function' && !renderDiary.__w3){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); }catch(e){} return o; }; window.renderDiary.__w3=1; }
+    if(typeof openDyEdit==='function' && !openDyEdit.__w3){ window.openDyEdit=function(dateKey,id){ openStruct(dateKey,id); }; window.openDyEdit.__w3=1; }
+  }
+  function init(){ wrapAll(); try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
