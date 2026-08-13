@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v41";
+  window.APP_VERSION = "v42";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -4054,6 +4054,176 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
   }
   window.__openGrowthAdd=openAdd;
   if(typeof renderDiary==='function' && !renderDiary.__wg){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); if(card) render(); }catch(e){} return o; }; window.renderDiary.__wg=1; }
+  function init(){ try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+<style id="__miles_css">
+/* Batch 3 (v42): milestones / memory capsule */
+#dyMiles{margin:0 0 14px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:15px 16px;}
+#dyMiles .m-t{font-weight:800;font-size:15px;color:var(--ink);display:flex;gap:7px;align-items:center;margin-bottom:4px;}
+#dyMiles .m-sub{font-size:12px;color:var(--ink-soft);margin:0 0 12px;}
+#dyMiles .m-empty{font-size:13px;color:var(--ink-soft);text-align:center;padding:14px 4px;line-height:1.5;}
+#dyMiles .m-list{display:flex;flex-direction:column;gap:8px;}
+#dyMiles .m-row{display:flex;align-items:flex-start;gap:11px;background:var(--cream);border-radius:13px;padding:10px 12px;}
+#dyMiles .m-emo{font-size:22px;line-height:1.15;flex-shrink:0;}
+#dyMiles .m-body{flex:1;min-width:0;}
+#dyMiles .m-name{font-size:14px;font-weight:800;color:var(--ink);}
+#dyMiles .m-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;display:flex;flex-wrap:wrap;gap:4px 9px;}
+#dyMiles .m-age{color:var(--butter);font-weight:800;}
+#dyMiles .m-note{font-size:12.5px;color:var(--ink-soft);margin-top:5px;white-space:pre-wrap;word-break:break-word;}
+#dyMiles .m-del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;flex-shrink:0;}
+#dyMiles .m-add{margin-top:13px;width:100%;background:color-mix(in srgb,var(--butter) 16%,var(--paper));color:color-mix(in srgb,var(--butter) 78%,var(--ink));border:1px solid color-mix(in srgb,var(--butter) 48%,var(--line));font:inherit;font-weight:800;font-size:14px;padding:11px;border-radius:12px;cursor:pointer;}
+
+#msAdd{position:fixed;inset:0;z-index:284;display:none;align-items:flex-end;justify-content:center;}
+#msAdd.open{display:flex;}
+#msAdd .ms-back{position:absolute;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);}
+#msAdd .ms-card{position:relative;width:100%;max-width:460px;max-height:88vh;overflow:auto;background:var(--cream);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));}
+@media(min-width:560px){#msAdd{align-items:center;} #msAdd .ms-card{border-radius:22px;}}
+#msAdd h3{margin:0 0 3px;font-size:18px;font-weight:800;color:var(--ink);}
+#msAdd .ms-hint{margin:0 0 12px;font-size:12.5px;color:var(--ink-soft);}
+#msAdd .ms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+#msAdd .ms-chip{display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;font-weight:700;font-size:11px;line-height:1.2;text-align:center;color:var(--ink-soft);padding:10px 5px;border-radius:13px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;}
+#msAdd .ms-chip .e{font-size:21px;}
+#msAdd .ms-chip.on{border-color:var(--butter);background:color-mix(in srgb,var(--butter) 15%,var(--paper));color:color-mix(in srgb,var(--butter) 78%,var(--ink));}
+#msAdd label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:15px 2px 6px;}
+#msAdd input,#msAdd textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);}
+#msAdd textarea{min-height:64px;resize:vertical;}
+#msAdd input:focus,#msAdd textarea:focus{outline:none;border-color:var(--sky);}
+#msAdd .ms-custom{display:none;}
+#msAdd .ms-custom.show{display:block;}
+#msAdd .ms-save{margin-top:18px;width:100%;background:var(--butter);color:#3a2c07;border:none;font:inherit;font-weight:800;font-size:16px;padding:13px;border-radius:99px;cursor:pointer;}
+</style>
+<script>
+(function(){
+  "use strict";
+  var MKEY='mama-milestones';
+  var PRESETS=[
+    {e:'😊', t:'Первая улыбка'},
+    {e:'🙆', t:'Держит голову'},
+    {e:'🔄', t:'Перевернулся'},
+    {e:'🪑', t:'Сел сам'},
+    {e:'🦷', t:'Первый зуб'},
+    {e:'🐛', t:'Пополз'},
+    {e:'🧍', t:'Встал у опоры'},
+    {e:'👏', t:'Хлопает в ладоши'},
+    {e:'🗣️', t:'Первое слово'},
+    {e:'👣', t:'Первый шаг'},
+    {e:'🥄', t:'Первый прикорм'},
+    {e:'🎂', t:'Первый год'}
+  ];
+  function kk(key){ try{ return (typeof k==='function')?k(key):key; }catch(e){ return key; } }
+  function getM(){ try{ var a=JSON.parse(localStorage.getItem(kk(MKEY))||'null'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function setM(a){ try{ localStorage.setItem(kk(MKEY), JSON.stringify(a)); }catch(e){} }
+  function say(m){ if(typeof toast==='function') toast(m); }
+  function ec(s){ try{ return (typeof esc==='function')?esc(s):String(s); }catch(e){ return String(s); } }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  var MM=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+  function fmtD(s){ if(!s) return ''; var p=s.split('-'); if(p.length<3) return s; return (+p[2])+' '+MM[(+p[1])-1]+' '+p[0]; }
+  function parseD(s){ if(!s) return null; var p=s.split('-'); if(p.length<3) return null; return new Date(+p[0], (+p[1])-1, (+p[2])); }
+  function birthDate(){
+    try{ var o=JSON.parse(localStorage.getItem('mama-onb')||'null'); if(o&&o.mode==='baby'&&o.date) return o.date; }catch(e){}
+    return null;
+  }
+  function ageAt(birthStr, evStr){
+    var b=parseD(birthStr), e=parseD(evStr); if(!b||!e||e<b) return '';
+    var months=(e.getFullYear()-b.getFullYear())*12+(e.getMonth()-b.getMonth());
+    var days=e.getDate()-b.getDate();
+    if(days<0){ months--; var pm=new Date(e.getFullYear(), e.getMonth(), 0).getDate(); days+=pm; }
+    if(months<=0){ return days+' дн'; }
+    if(days<=0){ return months+' мес'; }
+    return months+' мес '+days+' дн';
+  }
+
+  var card=null, addEl=null, pick=null;
+  function render(){
+    if(!card) return;
+    var list=getM().slice().sort(function(a,b){ return a.d<b.d?1:(a.d>b.d?-1:0); });
+    var bd=birthDate();
+    var head='<div class="m-t">⭐ Важные события</div><div class="m-sub">Капсула воспоминаний: первый зуб, первое слово, первые шаги…</div>';
+    var body;
+    if(!list.length){
+      body='<div class="m-empty">Пока нет вех.<br>Отметьте первую — например, первую улыбку 😊</div>';
+    } else {
+      body='<div class="m-list">'+list.map(function(m){
+        var age=bd?ageAt(bd, m.d):'';
+        var meta='<span>'+fmtD(m.d)+'</span>'+(age?'<span class="m-age">в '+age+'</span>':'');
+        var note=m.note?'<div class="m-note">'+ec(m.note)+'</div>':'';
+        return '<div class="m-row"><div class="m-emo">'+(m.e||'⭐')+'</div><div class="m-body"><div class="m-name">'+ec(m.t||'Событие')+'</div><div class="m-meta">'+meta+'</div>'+note+'</div><button class="m-del" data-id="'+m.id+'" aria-label="Удалить">✕</button></div>';
+      }).join('')+'</div>';
+    }
+    card.innerHTML=head+body+'<button class="m-add" type="button">＋ Добавить веху</button>';
+    card.querySelector('.m-add').addEventListener('click', openAdd);
+    card.querySelectorAll('.m-del').forEach(function(b){
+      b.addEventListener('click', function(){
+        var id=b.getAttribute('data-id');
+        setM(getM().filter(function(x){ return String(x.id)!==String(id); }));
+        render();
+      });
+    });
+  }
+
+  function buildAdd(){
+    addEl=document.createElement('div'); addEl.id='msAdd';
+    var grid=PRESETS.map(function(p,i){ return '<button class="ms-chip" type="button" data-i="'+i+'"><span class="e">'+p.e+'</span>'+p.t+'</button>'; }).join('')
+      + '<button class="ms-chip" type="button" data-i="custom"><span class="e">✏️</span>Своё</button>';
+    addEl.innerHTML='<div class="ms-back"></div><div class="ms-card">'
+      +'<h3>Новая веха</h3><p class="ms-hint">Выберите событие или добавьте своё.</p>'
+      +'<div class="ms-grid">'+grid+'</div>'
+      +'<div class="ms-custom"><label>Название события</label><input type="text" id="msTitle" placeholder="напр. Впервые засмеялся"></div>'
+      +'<label>Заметка (по желанию)</label><textarea id="msNote" placeholder="Как это было…"></textarea>'
+      +'<label>Дата</label><input type="date" id="msDate">'
+      +'<button class="ms-save" type="button">Сохранить</button></div>';
+    document.body.appendChild(addEl);
+    addEl.querySelector('.ms-back').addEventListener('click', close);
+    addEl.querySelector('.ms-save').addEventListener('click', save);
+    addEl.querySelectorAll('.ms-chip').forEach(function(b){
+      b.addEventListener('click', function(){
+        addEl.querySelectorAll('.ms-chip').forEach(function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+        var i=b.getAttribute('data-i');
+        var cust=addEl.querySelector('.ms-custom');
+        if(i==='custom'){ pick={e:'⭐', custom:true}; cust.classList.add('show'); setTimeout(function(){ addEl.querySelector('#msTitle').focus(); },50); }
+        else { pick={e:PRESETS[+i].e, t:PRESETS[+i].t, custom:false}; cust.classList.remove('show'); }
+      });
+    });
+  }
+  function openAdd(){
+    if(!addEl) buildAdd();
+    pick=null;
+    addEl.querySelectorAll('.ms-chip').forEach(function(x){ x.classList.remove('on'); });
+    addEl.querySelector('.ms-custom').classList.remove('show');
+    addEl.querySelector('#msTitle').value='';
+    addEl.querySelector('#msNote').value='';
+    addEl.querySelector('#msDate').value=todayStr();
+    addEl.classList.add('open');
+  }
+  function close(){ if(addEl) addEl.classList.remove('open'); }
+  function save(){
+    if(!pick){ say('Выберите событие'); return; }
+    var title, emo=pick.e;
+    if(pick.custom){ title=(addEl.querySelector('#msTitle').value||'').trim(); if(!title){ addEl.querySelector('#msTitle').focus(); return; } }
+    else { title=pick.t; }
+    var note=(addEl.querySelector('#msNote').value||'').trim();
+    var d=addEl.querySelector('#msDate').value||todayStr();
+    var arr=getM();
+    arr.push({ id:Date.now()+'-'+Math.random().toString(36).slice(2,6), d:d, e:emo, t:title, note:note });
+    setM(arr);
+    close(); render(); say('Веха сохранена ⭐');
+  }
+
+  function enhance(){
+    var wrap=document.querySelector('#viewDiary .diary-wrap'); if(!wrap) return;
+    if(!card){
+      card=document.createElement('div'); card.id='dyMiles';
+      var anchor=document.getElementById('dyGrowth')||document.getElementById('dySummary2')||document.getElementById('dyTimerCard');
+      if(anchor && anchor.parentNode){ anchor.parentNode.insertBefore(card, anchor.nextSibling); } else { wrap.appendChild(card); }
+      render();
+    }
+  }
+  window.__openMilestoneAdd=openAdd;
+  if(typeof renderDiary==='function' && !renderDiary.__wm){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); if(card) render(); }catch(e){} return o; }; window.renderDiary.__wm=1; }
   function init(){ try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
