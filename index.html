@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v40";
+  window.APP_VERSION = "v41";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -3929,6 +3929,132 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
     if(typeof openDyEdit==='function' && !openDyEdit.__w3){ window.openDyEdit=function(dateKey,id){ openStruct(dateKey,id); }; window.openDyEdit.__w3=1; }
   }
   function init(){ wrapAll(); try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+<style id="__growth_css">
+/* Batch 2 (v41): growth metrics + chart */
+#dyGrowth{margin:0 0 14px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:15px 16px;}
+#dyGrowth .g-t{font-weight:800;font-size:15px;color:var(--ink);display:flex;gap:7px;align-items:center;margin-bottom:12px;}
+#dyGrowth .g-tabs{display:flex;gap:8px;margin-bottom:14px;}
+#dyGrowth .g-tab{flex:1;font:inherit;font-weight:700;font-size:12.5px;padding:9px 6px;border-radius:11px;border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);cursor:pointer;}
+#dyGrowth .g-tab.on{background:color-mix(in srgb,var(--sage) 16%,var(--paper));border-color:var(--sage);color:var(--sage);}
+#dyGrowth .g-cur{display:flex;align-items:baseline;gap:8px;}
+#dyGrowth .g-val{font-size:27px;font-weight:800;color:var(--ink);line-height:1;}
+#dyGrowth .g-unit{font-size:14px;color:var(--ink-soft);font-weight:700;}
+#dyGrowth .g-delta{font-size:12.5px;font-weight:700;}
+#dyGrowth .g-delta.up{color:var(--sage);}
+#dyGrowth .g-delta.down{color:var(--rust);}
+#dyGrowth .g-date{font-size:12px;color:var(--ink-soft);margin-top:3px;}
+#dyGrowth .g-chart{margin:12px 0 3px;}
+#dyGrowth .g-chart svg{width:100%;height:auto;display:block;}
+#dyGrowth .g-xlab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-soft);}
+#dyGrowth .g-empty{font-size:13px;color:var(--ink-soft);text-align:center;padding:14px 0;}
+#dyGrowth .g-add{margin-top:13px;width:100%;background:color-mix(in srgb,var(--sage) 14%,var(--paper));color:var(--sage);border:1px solid color-mix(in srgb,var(--sage) 40%,var(--line));font:inherit;font-weight:800;font-size:14px;padding:11px;border-radius:12px;cursor:pointer;}
+#dyGrowth .g-hist{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+#dyGrowth .g-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--ink);background:var(--cream);border-radius:10px;padding:8px 11px;}
+#dyGrowth .g-row b{font-weight:800;}
+#dyGrowth .g-row .g-del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;}
+#gAdd{position:fixed;inset:0;z-index:282;display:none;align-items:flex-end;justify-content:center;}
+#gAdd.open{display:flex;}
+#gAdd .ga-back{position:absolute;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);}
+#gAdd .ga-card{position:relative;width:100%;max-width:440px;background:var(--cream);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));}
+@media(min-width:560px){#gAdd{align-items:center;} #gAdd .ga-card{border-radius:22px;}}
+#gAdd h3{margin:0 0 4px;font-size:18px;font-weight:800;color:var(--ink);}
+#gAdd label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:14px 2px 6px;}
+#gAdd input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);}
+#gAdd input:focus{outline:none;border-color:var(--sky);}
+#gAdd .ga-save{margin-top:18px;width:100%;background:var(--sage);color:#fff;border:none;font:inherit;font-weight:800;font-size:16px;padding:13px;border-radius:99px;cursor:pointer;}
+</style>
+<script>
+(function(){
+  "use strict";
+  var GKEY='mama-growth';
+  var METRICS=[
+    {k:'weight', label:'Вес', short:'Вес', unit:'кг', step:'0.01'},
+    {k:'height', label:'Рост', short:'Рост', unit:'см', step:'0.1'},
+    {k:'head', label:'Окр. головы', short:'Голова', unit:'см', step:'0.1'}
+  ];
+  function M(k){ for(var i=0;i<METRICS.length;i++) if(METRICS[i].k===k) return METRICS[i]; return METRICS[0]; }
+  function kk(key){ try{ return (typeof k==='function')?k(key):key; }catch(e){ return key; } }
+  function getG(){ try{ var o=JSON.parse(localStorage.getItem(kk(GKEY))||'null'); if(!o||typeof o!=='object') o={}; ['weight','height','head'].forEach(function(m){ if(!Array.isArray(o[m])) o[m]=[]; }); return o; }catch(e){ return {weight:[],height:[],head:[]}; } }
+  function setG(o){ try{ localStorage.setItem(kk(GKEY), JSON.stringify(o)); }catch(e){} }
+  function say(m){ if(typeof toast==='function') toast(m); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function fmtD(s){ if(!s) return ''; var p=s.split('-'); var MM=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек']; return (+p[2])+' '+MM[(+p[1])-1]; }
+  function fmtV(v){ return (Math.round(v*100)/100).toString().replace('.',','); }
+  function sorted(arr){ return (arr||[]).slice().sort(function(a,b){ return a.d<b.d?-1:(a.d>b.d?1:0); }); }
+
+  var cur='weight', card=null;
+  function chartSvg(pts, color){
+    var W=320,H=120,padX=14,padTop=14,padBot=18;
+    if(!pts.length) return '';
+    if(pts.length===1){ return '<svg viewBox="0 0 '+W+' '+H+'"><circle cx="'+(W/2)+'" cy="'+(H/2)+'" r="5" fill="var('+color+')"/><text x="'+(W/2)+'" y="'+(H/2-12)+'" text-anchor="middle" font-size="13" fill="#8a8073" font-family="sans-serif">одно измерение</text></svg>'; }
+    var vals=pts.map(function(p){return p.v;});
+    var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals); var rng=(mx-mn)||1;
+    var n=pts.length;
+    function X(i){ return padX + i/(n-1)*(W-2*padX); }
+    function Y(v){ return padTop + (1-(v-mn)/rng)*(H-padTop-padBot); }
+    var d=''; pts.forEach(function(p,i){ d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1)+' '; });
+    var area='M'+X(0).toFixed(1)+' '+(H-padBot)+' '+pts.map(function(p,i){return 'L'+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ')+' L'+X(n-1).toFixed(1)+' '+(H-padBot)+' Z';
+    var dots=pts.map(function(p,i){ return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="3" fill="var('+color+')"/>'; }).join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'"><path d="'+area+'" fill="var('+color+')" opacity="0.10"/><path d="'+d+'" fill="none" stroke="var('+color+')" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+  }
+  function render(){
+    if(!card) return;
+    var g=getG(); var m=M(cur); var pts=sorted(g[cur]);
+    var tabs=METRICS.map(function(x){ return '<button class="g-tab'+(x.k===cur?' on':'')+'" type="button" data-m="'+x.k+'">'+x.short+'</button>'; }).join('');
+    var head='<div class="g-t">📏 Показатели роста</div><div class="g-tabs">'+tabs+'</div>';
+    var body;
+    if(!pts.length){
+      body='<div class="g-empty">Нет измерений «'+m.label.toLowerCase()+'». Добавьте первое.</div>';
+    } else {
+      var last=pts[pts.length-1]; var prev=pts.length>1?pts[pts.length-2]:null;
+      var delta=''; if(prev){ var dv=last.v-prev.v; var cls=dv>=0?'up':'down'; delta='<span class="g-delta '+cls+'">'+(dv>=0?'+':'−')+fmtV(Math.abs(dv))+' '+m.unit+'</span>'; }
+      var cur1='<div class="g-cur"><span class="g-val">'+fmtV(last.v)+'</span><span class="g-unit">'+m.unit+'</span>'+delta+'</div><div class="g-date">последнее: '+fmtD(last.d)+'</div>';
+      var chart='<div class="g-chart">'+chartSvg(pts, m.k==='weight'?'--rust':(m.k==='height'?'--sky':'--sage'))+'</div><div class="g-xlab"><span>'+fmtD(pts[0].d)+'</span><span>'+fmtD(last.d)+'</span></div>';
+      var hist='<div class="g-hist">'+pts.slice().reverse().slice(0,6).map(function(p){ return '<div class="g-row"><span>'+fmtD(p.d)+'</span><span><b>'+fmtV(p.v)+'</b> '+m.unit+' <button class="g-del" data-d="'+p.d+'" aria-label="Удалить">✕</button></span></div>'; }).join('')+'</div>';
+      body=cur1+chart+hist;
+    }
+    card.innerHTML=head+body+'<button class="g-add" type="button">＋ Добавить измерение</button>';
+    card.querySelectorAll('.g-tab').forEach(function(b){ b.addEventListener('click', function(){ cur=b.getAttribute('data-m'); render(); }); });
+    card.querySelector('.g-add').addEventListener('click', function(){ openAdd(); });
+    card.querySelectorAll('.g-del').forEach(function(b){ b.addEventListener('click', function(){ var dd=b.getAttribute('data-d'); var gg=getG(); gg[cur]=gg[cur].filter(function(p){ return p.d!==dd; }); setG(gg); render(); }); });
+  }
+  var addEl=null;
+  function openAdd(){
+    var m=M(cur);
+    if(!addEl){ addEl=document.createElement('div'); addEl.id='gAdd'; addEl.innerHTML='<div class="ga-back"></div><div class="ga-card"><h3 id="gaTitle"></h3><label id="gaVl"></label><input type="number" id="gaVal" inputmode="decimal"><label>Дата</label><input type="date" id="gaDate"><button class="ga-save" type="button">Сохранить</button></div>'; document.body.appendChild(addEl);
+      addEl.querySelector('.ga-back').addEventListener('click', function(){ addEl.classList.remove('open'); });
+      addEl.querySelector('.ga-save').addEventListener('click', saveAdd);
+    }
+    document.getElementById('gaTitle').textContent=m.label;
+    document.getElementById('gaVl').textContent='Значение, '+m.unit;
+    var vi=document.getElementById('gaVal'); vi.value=''; vi.step=m.step; vi.placeholder=(m.k==='weight'?'напр. 6,2':'напр. 62');
+    document.getElementById('gaDate').value=todayStr();
+    addEl.classList.add('open');
+    setTimeout(function(){ vi.focus(); },50);
+  }
+  function saveAdd(){
+    var raw=(document.getElementById('gaVal').value||'').replace(',','.'); var v=parseFloat(raw); var d=document.getElementById('gaDate').value||todayStr();
+    if(!(v>0)){ document.getElementById('gaVal').focus(); return; }
+    var g=getG(); g[cur]=g[cur].filter(function(p){ return p.d!==d; }); g[cur].push({d:d, v:v}); setG(g);
+    addEl.classList.remove('open'); render(); say('Сохранено ✅');
+  }
+
+  function enhance(){
+    var wrap=document.querySelector('#viewDiary .diary-wrap'); if(!wrap) return;
+    if(!card){
+      card=document.createElement('div'); card.id='dyGrowth';
+      var anchor=document.getElementById('dySummary2')||document.getElementById('dyTimerCard');
+      if(anchor && anchor.parentNode){ anchor.parentNode.insertBefore(card, anchor.nextSibling); } else { wrap.appendChild(card); }
+      render();
+    }
+  }
+  window.__openGrowthAdd=openAdd;
+  if(typeof renderDiary==='function' && !renderDiary.__wg){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); if(card) render(); }catch(e){} return o; }; window.renderDiary.__wg=1; }
+  function init(){ try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
