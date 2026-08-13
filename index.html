@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v42";
+  window.APP_VERSION = "v43";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -4226,6 +4226,103 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
   if(typeof renderDiary==='function' && !renderDiary.__wm){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); if(card) render(); }catch(e){} return o; }; window.renderDiary.__wm=1; }
   function init(){ try{ if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+<style id="__backup_css">
+/* Batch 4 (v43): full backup / restore (all localStorage) */
+#dyBackup{margin:0 0 14px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:15px 16px;}
+#dyBackup .b-t{font-weight:800;font-size:15px;color:var(--ink);display:flex;gap:7px;align-items:center;margin-bottom:4px;}
+#dyBackup .b-sub{font-size:12px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5;}
+#dyBackup .b-row{display:flex;gap:9px;}
+#dyBackup .b-btn{flex:1;font:inherit;font-weight:800;font-size:13px;padding:11px 8px;border-radius:12px;cursor:pointer;border:1px solid;}
+#dyBackup .b-exp{background:color-mix(in srgb,var(--sky) 14%,var(--paper));color:var(--sky);border-color:color-mix(in srgb,var(--sky) 40%,var(--line));}
+#dyBackup .b-imp{background:var(--cream);color:var(--ink);border-color:var(--line);}
+#dyBackup .b-note{font-size:11px;color:var(--ink-soft);margin-top:9px;text-align:center;}
+</style>
+<script>
+(function(){
+  "use strict";
+  function say(m){ if(typeof toast==='function') toast(m); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function dateStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+  // Collect EVERY localStorage key (this origin = this app's data only)
+  function collectAll(){
+    var o={};
+    for(var i=0;i<localStorage.length;i++){ var key=localStorage.key(i); if(key!=null) o[key]=localStorage.getItem(key); }
+    return o;
+  }
+  function doExport(){
+    try{
+      var data=collectAll();
+      var n=Object.keys(data).length;
+      var payload={ app:'mama-ryadom', version:3, exportedAt:new Date().toISOString(), count:n, data:data };
+      var blob=new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a'); a.href=url; a.download='mama-ryadom-backup-'+dateStr()+'.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1200);
+      say('Резервная копия готова 💾 ('+n+' записей)');
+    }catch(e){ say('Не удалось создать копию'); }
+  }
+  function doImportFile(file){
+    if(!file) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var parsed=JSON.parse(r.result);
+        var data=(parsed && typeof parsed==='object' && parsed.data && typeof parsed.data==='object') ? parsed.data : parsed;
+        if(!data || typeof data!=='object' || Array.isArray(data)) throw 0;
+        var keys=Object.keys(data);
+        if(!keys.length) throw 0;
+        if(!window.confirm('Восстановить '+keys.length+' записей из копии?\nТекущие данные с такими же ключами будут заменены.')) return;
+        var ok=0;
+        keys.forEach(function(key){ try{ if(typeof data[key]==='string'){ localStorage.setItem(key, data[key]); ok++; } }catch(e){} });
+        say('Восстановлено ✅ ('+ok+' записей)');
+        setTimeout(function(){ location.reload(); }, 800);
+      }catch(e){ say('Не смогли открыть файл. Проверь формат.'); }
+    };
+    r.readAsText(file);
+  }
+
+  // 1) Upgrade the native "Копия"/"Восстановить" buttons in the prikorm tools bar
+  //    (they previously backed up only prikorm-* keys, losing mama-* data).
+  function rebindNative(){
+    var ex=document.getElementById('exportBtn');
+    if(ex && !ex.__wb){ var n=ex.cloneNode(true); n.__wb=1; ex.parentNode.replaceChild(n, ex); n.addEventListener('click', doExport); }
+    var im=document.getElementById('importBtn'), imf=document.getElementById('importFile');
+    if(im && imf && !im.__wb){
+      var ni=im.cloneNode(true); ni.__wb=1; im.parentNode.replaceChild(ni, im);
+      var nf=imf.cloneNode(true); imf.parentNode.replaceChild(nf, imf);
+      ni.addEventListener('click', function(){ nf.click(); });
+      nf.addEventListener('change', function(e){ var f=e.target.files&&e.target.files[0]; doImportFile(f); e.target.value=''; });
+    }
+  }
+
+  // 2) Compact backup card in the diary, reachable from the daily screen
+  var card=null;
+  function enhance(){
+    var wrap=document.querySelector('#viewDiary .diary-wrap'); if(!wrap) return;
+    if(!card){
+      card=document.createElement('div'); card.id='dyBackup';
+      card.innerHTML='<div class="b-t">💾 Резервная копия</div>'
+        +'<div class="b-sub">Сохрани все данные приложения — прикорм, дневник, рост, вехи, настройки — в один файл на этом устройстве. Пригодится при смене телефона или очистке браузера.</div>'
+        +'<div class="b-row"><button class="b-btn b-exp" type="button">⬇ Скачать копию</button><button class="b-btn b-imp" type="button">⬆ Восстановить</button></div>'
+        +'<input type="file" class="b-file" accept="application/json,.json" hidden>'
+        +'<div class="b-note">Данные хранятся только на устройстве, копия — ваш способ их не потерять.</div>';
+      var f=card.querySelector('.b-file');
+      card.querySelector('.b-exp').addEventListener('click', doExport);
+      card.querySelector('.b-imp').addEventListener('click', function(){ f.click(); });
+      f.addEventListener('change', function(e){ var file=e.target.files&&e.target.files[0]; doImportFile(file); e.target.value=''; });
+      var anchor=document.getElementById('dyMiles')||document.getElementById('dyGrowth')||document.getElementById('dySummary2');
+      if(anchor && anchor.parentNode){ anchor.parentNode.insertBefore(card, anchor.nextSibling); } else { wrap.appendChild(card); }
+    }
+  }
+  window.__mamaExport=doExport;
+
+  if(typeof renderDiary==='function' && !renderDiary.__wb2){ var r=renderDiary; window.renderDiary=function(){ var o=r.apply(this,arguments); try{ enhance(); }catch(e){} return o; }; window.renderDiary.__wb2=1; }
+  function init(){ try{ rebindNative(); if(document.getElementById('viewDiary')) enhance(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 <style id="__hub_css">
