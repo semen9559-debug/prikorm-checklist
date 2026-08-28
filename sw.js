@@ -1,9 +1,11 @@
-const CACHE = "prikorm-v3";
+const CACHE = "prikorm-v5";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles/app.css",
   "./scripts/app.js",
+  "./scripts/family-auth.js",
+  "./scripts/supabase-config.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",

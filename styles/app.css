@@ -999,3 +999,32 @@ body{ padding-bottom:76px; }
 #tilesOverlay .trow:not(.on){opacity:.62;}
 #tilesOverlay .tdone{margin-top:16px;width:100%;background:var(--sage);color:#fff;font-weight:800;font-size:16px;padding:14px;border:none;border-radius:99px;cursor:pointer;}
 @media (prefers-reduced-motion: reduce){ #homeHub .tile:active{transform:none;} }
+
+/* Family account and shared access */
+.family-account-button{font-size:19px;line-height:1;}
+#familyModal{position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;color:var(--ink);}
+.family-modal-backdrop{position:absolute;inset:0;background:rgba(20,18,14,.5);backdrop-filter:blur(3px);}
+.family-modal-card{position:relative;width:100%;max-width:480px;max-height:88vh;overflow:auto;background:var(--cream);border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.2);}
+.family-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.family-modal-head h2{margin:0;font-family:'Fredoka',sans-serif;font-size:21px;}
+.family-close{width:34px;height:34px;border:none;border-radius:50%;background:var(--btn-bg);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;}
+.family-modal-body p{line-height:1.5;}
+.family-form{display:flex;flex-direction:column;gap:13px;}
+.family-form label,#familyInviteResult label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:800;color:var(--ink);}
+.family-form input,#familyInviteResult input{width:100%;border:1.5px solid var(--line2);border-radius:13px;background:var(--paper);padding:12px;font:inherit;color:var(--ink);}
+.family-form input:focus,#familyInviteResult input:focus{outline:3px solid color-mix(in srgb,var(--sky) 30%,transparent);border-color:var(--sky);}
+.family-primary,.family-secondary,.family-danger,.family-actions button,.family-modal-buttons button{border:none;border-radius:13px;padding:12px 14px;font:inherit;font-weight:800;cursor:pointer;}
+.family-primary{width:100%;background:var(--sage);color:#fff;}
+.family-secondary{width:100%;margin-top:10px;background:var(--btn-bg);color:var(--ink);}
+.family-danger{width:100%;margin-top:16px;background:transparent;color:var(--warn);text-decoration:underline;}
+.family-actions,.family-modal-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.family-actions button,.family-modal-buttons button{background:var(--btn-bg);color:var(--ink);font-size:13px;}
+.family-muted{color:var(--ink-soft);font-size:13px;line-height:1.45;}
+.family-note{padding:14px;border:1px solid var(--butter);border-radius:14px;background:var(--butter-l);font-size:13px;line-height:1.45;}
+.family-note code{font-size:11px;word-break:break-all;}
+.family-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper);border:1px solid var(--line);padding:13px;border-radius:14px;}
+.family-status{font-size:11px;font-weight:800;padding:5px 8px;border-radius:99px;background:var(--btn-bg);color:var(--ink-soft);white-space:nowrap;}
+.family-status.ok{background:var(--sage-l);color:var(--sage);}.family-status.error{background:var(--warn-l);color:var(--warn);}
+.family-members{list-style:none;margin:8px 0 14px;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;}.family-members li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;background:var(--paper);border-bottom:1px solid var(--line);font-size:14px;}.family-members li:last-child{border-bottom:0;}.family-members b{font-size:11px;color:var(--ink-soft);}
+#familyInviteResult{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+@media(min-width:560px){#familyModal{align-items:center;padding:18px}.family-modal-card{border-radius:24px;max-height:80vh;padding:22px;}}
