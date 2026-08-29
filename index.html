@@ -8,7 +8,8 @@
 <title>Трекер прикорма 5,5–12 месяцев</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="Прикорм">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -21,7 +22,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v58";
+  window.APP_VERSION = "v59";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})

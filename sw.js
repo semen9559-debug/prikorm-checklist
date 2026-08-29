@@ -1,4 +1,4 @@
-const CACHE = "prikorm-v17";
+const CACHE = "prikorm-v18";
 const ASSETS = [
   "./",
   "./index.html",

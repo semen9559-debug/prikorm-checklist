@@ -881,6 +881,7 @@ function currentTheme(){ return document.documentElement.getAttribute("data-them
 function applyThemeIcon(){
   const b = document.getElementById("themeToggle");
   const dark = currentTheme()==="dark";
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
   if(b){
     b.textContent = dark ? "☀️" : "🌙";
     b.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
