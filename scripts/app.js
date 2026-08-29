@@ -2005,7 +2005,17 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     "\u2191":s('<path d="M12 20V5M6 11l6-6 6 6"/>'),
     "\u25A6":s('<path d="M4 7h16M4 12h16M4 17h16"/>'),
     "\u2600":s('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/>'),
-    "\u{1F319}":s('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>')
+    "\u{1F319}":s('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+    "\u{1F331}":s('<path d="M12 21V11"/><path d="M12 11c0-3 2.4-5.2 5.4-5.2C17.4 8.8 15 11 12 11z"/><path d="M12 12.5C12 9.8 9.7 7.7 6.8 7.7 6.8 10.5 9 12.5 12 12.5z"/>'),
+    "\u{1F6CD}":s('<path d="M6 8h12l1 12.5H5z"/><path d="M9 8V6.2a3 3 0 0 1 6 0V8"/>'),
+    "\u{1F6D2}":s('<circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/><path d="M3 4h2l2.4 11.5h10L20 7H6.4"/>'),
+    "\u{1F463}":s('<path d="M7 4.5c1.8 0 3 1.4 3 3.2 0 1.3-.6 2.4-1.6 3L5 14.3c-1.2 1.2-.4 3.2 1.3 3.2H10"/><path d="M17 19.5c-1.8 0-3-1.4-3-3.2 0-1.3.6-2.4 1.6-3l3.4-3.6c1.2-1.2.4-3.2-1.3-3.2H14"/>'),
+    "\u{1F634}":s('<circle cx="12" cy="12" r="9"/><path d="M7 10h3M14 10h3M8.5 15c1 .8 2.2 1.2 3.5 1.2s2.5-.4 3.5-1.2"/>'),
+    "\u{1F4C4}":s('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/>'),
+    "\u{1F489}":s('<path d="M4 14l6-6 6 6-6 6z"/><path d="M14 8l3-3 3 3-3 3z"/><path d="M6.5 16.5l-2.5 2.5"/>'),
+    "\u{1F930}":s('<circle cx="12" cy="6" r="3"/><path d="M7 21c0-4.2 2.2-7 5-7s5 2.8 5 7"/><path d="M8.5 14.5c1.1 1 2.3 1.5 3.5 1.5s2.4-.5 3.5-1.5"/>'),
+    "\u{1F464}":s('<circle cx="12" cy="8" r="3.3"/><path d="M5.5 20c.4-3.8 3-6.3 6.5-6.3s6.1 2.5 6.5 6.3"/>'),
+    "\u{1F3E0}":s('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>')
   };
   var st=document.createElement("style");
   st.textContent=".svgi{display:inline-flex;width:1em;height:1em;vertical-align:-0.14em;line-height:1;flex:0 0 auto}.svgi>svg{width:100%;height:100%;display:block}";
