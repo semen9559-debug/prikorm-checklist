@@ -454,6 +454,17 @@
     transition:transform .12s ease;
   }
   .theme-toggle:active{ transform:scale(.9); }
+  .profile-btn{
+    position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:64px;
+    width:42px; height:42px; border-radius:50%; z-index:82;
+    border:1px solid var(--glass-brd); background:var(--glass); color:var(--ink);
+    backdrop-filter:blur(18px) saturate(180%); -webkit-backdrop-filter:blur(18px) saturate(180%);
+    font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--glass-sh), inset 0 1px 0 var(--glass-hi); transition:transform .12s ease;
+  }
+  .profile-btn:active{ transform:scale(.9); }
+  .profile-btn-dot{ position:absolute; right:1px; bottom:2px; width:10px; height:10px; border:2px solid var(--paper); border-radius:50%; background:var(--ink-soft); }
+  .profile-btn.is-signed-in .profile-btn-dot{ background:var(--sage); }
 
   /* notes */
   .pcard-notes{ margin-top:14px; }
@@ -566,6 +577,10 @@
   .drawer-title{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px; color:var(--ink-soft); letter-spacing:.6px; text-transform:uppercase; margin:0 0 6px 6px; }
   .drawer-item{ text-align:left; border:1px solid var(--line2); background:var(--cream); color:var(--ink); font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; padding:14px 16px; border-radius:14px; cursor:pointer; transition:all .2s; }
   .drawer-item.active{ background:var(--sage); border-color:var(--sage); color:#fff; }
+  .drawer-account{ display:grid; grid-template-columns:26px 1fr; grid-template-rows:auto auto; column-gap:7px; align-items:center; background:var(--sage-l); border-color:color-mix(in srgb,var(--sage) 30%,var(--line2)); color:var(--ink); }
+  .drawer-account > span:first-child{ grid-row:1 / 3; font-size:22px; color:var(--sage); }
+  .drawer-account small{ font-size:11px; color:var(--ink-soft); font-weight:700; }
+  .drawer-separator{ height:1px; margin:2px 4px 4px; background:var(--line); }
 
   /* ---- сумка в роддом ---- */
   .sumka-main{ max-width:520px; margin:0 auto; padding:18px 14px 6px; }

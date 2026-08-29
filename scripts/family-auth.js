@@ -19,6 +19,36 @@ function setStatus(text, tone = '') {
   document.querySelectorAll('[data-family-status]').forEach(el => { el.textContent = text; el.className = `family-status ${tone}`; });
 }
 
+function updateAccountControls() {
+  const signedIn = Boolean(session);
+  const profile = document.getElementById('profileBtn');
+  if (profile) {
+    profile.classList.toggle('is-signed-in', signedIn);
+    profile.setAttribute('aria-label', signedIn ? 'Профиль и семья' : 'Войти или зарегистрироваться');
+    profile.setAttribute('title', signedIn ? 'Профиль и семья' : 'Войти или зарегистрироваться');
+  }
+  document.querySelectorAll('[data-family-entry]').forEach(button => {
+    const label = button.querySelector('span:not(:first-child)');
+    const hint = button.querySelector('small');
+    if (label) label.textContent = signedIn ? 'Моя семья' : 'Регистрация и вход';
+    if (hint) hint.textContent = signedIn ? 'участники и синхронизация' : 'сохранить данные семьи';
+    button.setAttribute('aria-label', signedIn ? 'Моя семья' : 'Регистрация и вход');
+  });
+}
+
+function openMenuAccount() {
+  document.getElementById('drawer')?.classList.remove('open');
+  document.getElementById('drawerBackdrop')?.classList.remove('open');
+  if (session) return openFamily();
+  openAuth('register');
+}
+
+function bindAccountControls() {
+  document.getElementById('profileBtn')?.addEventListener('click', openAccount);
+  document.querySelectorAll('[data-family-entry]').forEach(button => button.addEventListener('click', openMenuAccount));
+  updateAccountControls();
+}
+
 function addAccountButton() {
   const hub = document.getElementById('homeHub');
   const top = hub?.querySelector('.htop');
@@ -28,9 +58,10 @@ function addAccountButton() {
   button.className = 'tbtn family-account-button';
   button.dataset.familyAccount = '1';
   button.setAttribute('aria-label', 'Аккаунт и семья');
-  button.textContent = session ? '👤' : '◎';
+  button.textContent = '👤';
   button.addEventListener('click', openAccount);
   top.appendChild(button);
+  updateAccountControls();
 }
 
 function observeHub() {
@@ -250,6 +281,7 @@ async function acceptInvite() {
 
 async function onSession(nextSession) {
   session = nextSession;
+  updateAccountControls();
   addAccountButton();
   if (!session) { familyId = null; setStatus('Локальный режим'); return; }
   try {
@@ -265,6 +297,7 @@ async function onSession(nextSession) {
 
 async function init() {
   observeHub();
+  bindAccountControls();
   if (!isConfigured()) return;
   const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
   supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });

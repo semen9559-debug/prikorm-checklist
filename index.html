@@ -47,11 +47,14 @@
 <body>
 
 <button class="menu-btn" id="menuBtn" aria-label="Разделы">▦</button>
+<button class="profile-btn" id="profileBtn" type="button" aria-label="Профиль и семья" title="Профиль и семья"><span aria-hidden="true">👤</span><span class="profile-btn-dot" aria-hidden="true"></span></button>
 <button class="theme-toggle" id="themeToggle" aria-label="Тёмная тема">🌙</button>
 
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 <nav class="drawer" id="drawer" aria-label="Разделы">
   <div class="drawer-title">Разделы</div>
+  <button class="drawer-item drawer-account" data-family-entry type="button"><span aria-hidden="true">👤</span><span>Регистрация и вход</span><small>сохранить данные семьи</small></button>
+  <div class="drawer-separator" aria-hidden="true"></div>
   <button class="drawer-item" data-view="prikorm" type="button">🌱 Трекер прикорма</button>
   <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>
   <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>

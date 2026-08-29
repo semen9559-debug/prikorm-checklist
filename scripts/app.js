@@ -1939,7 +1939,7 @@ vacMod.load();
 pregMod.load();
 document.getElementById("menuBtn").addEventListener("click", openDrawer);
 document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
-document.querySelectorAll(".drawer-item").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
+document.querySelectorAll(".drawer-item[data-view]").forEach(b=> b.addEventListener("click", ()=>{ setView(b.dataset.view); closeDrawer(); }));
 document.getElementById("sAddClose").addEventListener("click", sCloseAdd);
 document.getElementById("sAddBackdrop").addEventListener("click", sCloseAdd);
 document.getElementById("sAddSave").addEventListener("click", sSaveAdd);
