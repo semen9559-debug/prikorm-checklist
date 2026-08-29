@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v46";
+  window.APP_VERSION = "v48";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -53,7 +53,7 @@
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 <nav class="drawer" id="drawer" aria-label="Разделы">
   <div class="drawer-title">Разделы</div>
-  <button class="drawer-item drawer-account" data-family-entry type="button"><span aria-hidden="true">👤</span><span>Регистрация и вход</span><small>сохранить данные семьи</small></button>
+  <button class="drawer-item drawer-account" data-family-entry type="button"><span aria-hidden="true">👤</span><span>Регистрация · вход</span><small>сохранить данные семьи</small></button>
   <div class="drawer-separator" aria-hidden="true"></div>
   <button class="drawer-item" data-view="prikorm" type="button">🌱 Трекер прикорма</button>
   <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>

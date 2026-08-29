@@ -30,7 +30,7 @@ function updateAccountControls() {
   document.querySelectorAll('[data-family-entry]').forEach(button => {
     const label = button.querySelector('span:not(:first-child)');
     const hint = button.querySelector('small');
-    if (label) label.textContent = signedIn ? 'Моя семья' : 'Регистрация и вход';
+    if (label) label.textContent = signedIn ? 'Моя семья' : 'Регистрация · вход';
     if (hint) hint.textContent = signedIn ? 'участники и синхронизация' : 'сохранить данные семьи';
     button.setAttribute('aria-label', signedIn ? 'Моя семья' : 'Регистрация и вход');
   });
@@ -45,7 +45,10 @@ function openMenuAccount() {
 
 function bindAccountControls() {
   document.getElementById('profileBtn')?.addEventListener('click', openAccount);
-  document.querySelectorAll('[data-family-entry]').forEach(button => button.addEventListener('click', openMenuAccount));
+  document.querySelectorAll('[data-family-entry]').forEach(button => button.addEventListener('click', event => {
+    event.stopPropagation();
+    openMenuAccount();
+  }));
   updateAccountControls();
 }
 
@@ -59,7 +62,10 @@ function addAccountButton() {
   button.dataset.familyAccount = '1';
   button.setAttribute('aria-label', 'Аккаунт и семья');
   button.textContent = '👤';
-  button.addEventListener('click', openAccount);
+  button.addEventListener('click', event => {
+    event.stopPropagation();
+    openAccount();
+  });
   top.appendChild(button);
   updateAccountControls();
 }
