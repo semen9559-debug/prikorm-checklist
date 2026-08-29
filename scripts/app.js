@@ -917,8 +917,7 @@ try{
 /* ---------- СОСКА В ЧЁЛКЕ PWA ---------- */
 (function(){
   var standalone=window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
-  if(!standalone) return;
-  document.documentElement.classList.add('pwa-mode');
+  document.documentElement.classList.add(standalone?'pwa-mode':'browser-mode');
   var pacifier=document.getElementById('notchPacifier'); if(!pacifier) return;
   var enabled=false, tilt=0, timer;
   function setTilt(value){ tilt=Math.max(-18,Math.min(18,value)); pacifier.style.setProperty('--pacifier-tilt',tilt+'deg'); clearTimeout(timer); timer=setTimeout(function(){ pacifier.style.setProperty('--pacifier-tilt','0deg'); },620); }
