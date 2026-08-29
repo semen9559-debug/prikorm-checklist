@@ -1,4 +1,4 @@
-const CACHE = "prikorm-v25";
+const CACHE = "prikorm-v26";
 const ASSETS = [
   "./",
   "./index.html",
@@ -43,10 +43,9 @@ self.addEventListener("fetch", e => {
     return;
   }
 
-  // Остальные ресурсы: сначала кэш (быстро), потом сеть
+  // Ресурсы приложения: сначала сеть, кэш — надёжная офлайн-резервная копия.
+  // Так установленная PWA не остаётся на старых стилях или скриптах после релиза.
   e.respondWith((async () => {
-    const cached = await caches.match(req);
-    if (cached) return cached;
     try {
       const res = await fetch(req);
       const url = new URL(req.url);
@@ -56,7 +55,7 @@ self.addEventListener("fetch", e => {
       }
       return res;
     } catch (err) {
-      return caches.match("./index.html");
+      return (await caches.match(req)) || caches.match("./index.html");
     }
   })());
 });
