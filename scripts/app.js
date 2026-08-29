@@ -975,8 +975,8 @@ function showUndo(){
 }
 
 /* ===================== СУМКА В РОДДОМ ===================== */
-const SK_CHECK="prikorm-sumka-checked-v1", SK_NOTES="prikorm-sumka-notes-v1", SK_CUSTOM="prikorm-sumka-custom-v1", SK_OPEN="prikorm-sumka-open-v1", VIEW_KEY="prikorm-view";
-let sState={}, sNotes={}, sCustom={}, sOpen={}, sAddCtx=null;
+const SK_CHECK="prikorm-sumka-checked-v1", SK_NOTES="prikorm-sumka-notes-v1", SK_CUSTOM="prikorm-sumka-custom-v1", SK_OPEN="prikorm-sumka-open-v1", SK_REMOVED="prikorm-sumka-removed-v1", VIEW_KEY="prikorm-view";
+let sState={}, sNotes={}, sCustom={}, sOpen={}, sRemoved={}, sAddCtx=null;
 let currentView = (function(){ try{ return localStorage.getItem(VIEW_KEY) || "prikorm"; }catch(e){ return "prikorm"; } })();
 
 const SUMKA = [
@@ -1009,18 +1009,21 @@ function sLoad(){
   try{ const v=localStorage.getItem(SK_NOTES); if(v) sNotes=JSON.parse(v); }catch(e){}
   try{ const v=localStorage.getItem(SK_CUSTOM); if(v) sCustom=JSON.parse(v); }catch(e){}
   try{ const v=localStorage.getItem(SK_OPEN); if(v) sOpen=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(SK_REMOVED); if(v) sRemoved=JSON.parse(v); }catch(e){}
 }
 function sSaveCheck(){ try{ localStorage.setItem(SK_CHECK, JSON.stringify(sState)); }catch(e){} }
 function sSaveNotes(){ try{ localStorage.setItem(SK_NOTES, JSON.stringify(sNotes)); }catch(e){} }
 function sSaveCustom(){ try{ localStorage.setItem(SK_CUSTOM, JSON.stringify(sCustom)); }catch(e){} }
 function sSaveOpen(){ try{ localStorage.setItem(SK_OPEN, JSON.stringify(sOpen)); }catch(e){} }
+function sSaveRemoved(){ try{ localStorage.setItem(SK_REMOVED, JSON.stringify(sRemoved)); }catch(e){} }
 function subKeyOf(catId, si){ return catId+"|"+si; }
 function sCustomFor(sk){ return sCustom[sk] || []; }
+function sIsRemoved(key){ return !!sRemoved[key]; }
 
 function catCounts(cat){
   let total=0, checked=0;
   cat.subs.forEach((sub,si)=>{
-    sub.items.forEach((_,ii)=>{ total++; if(sState[cat.id+"-"+si+"-"+ii]) checked++; });
+    sub.items.forEach((_,ii)=>{ const key=cat.id+"-"+si+"-"+ii; if(!sIsRemoved(key)){ total++; if(sState[key]) checked++; } });
     sCustomFor(subKeyOf(cat.id,si)).forEach(ci=>{ total++; if(sState[cat.id+"-"+si+"-c"+ci.id]) checked++; });
   });
   return {total, checked};
@@ -1066,17 +1069,18 @@ function sBuildRow(cat, name, key, isCustom, sk, customId){
 
   const note = document.createElement("div");
   note.className = "s-note";
-  note.innerHTML = `<textarea placeholder="Например: забрать с WB, заехать в Детский мир">${esc(sNotes[key]||"")}</textarea>${isCustom ? '<button class="s-del" type="button">🗑 удалить пункт</button>' : ''}`;
+  note.innerHTML = `<textarea placeholder="Например: забрать с WB, заехать в Детский мир">${esc(sNotes[key]||"")}</textarea><button class="s-del" type="button">🗑 ${isCustom ? 'удалить свой пункт' : 'убрать из списка'}</button>`;
   const ta = note.querySelector("textarea");
   ta.addEventListener("input", ()=>{ const v=ta.value; if(v.trim()) sNotes[key]=v; else delete sNotes[key]; sSaveNotes(); nbtn.classList.toggle("has", !!sNotes[key]); });
   nbtn.classList.toggle("has", !!sNotes[key]);
   nbtn.addEventListener("click", e=>{ e.stopPropagation(); const opening=!note.classList.contains("open"); note.classList.toggle("open", opening); if(opening) setTimeout(()=>ta.focus(),60); });
   const del = note.querySelector(".s-del");
   if(del) del.addEventListener("click", ()=>{
-    if(confirm("Удалить пункт?")){
-      sCustom[sk] = sCustomFor(sk).filter(c=> c.id!==customId);
+    if(confirm(isCustom ? "Удалить свой пункт?" : "Убрать пункт из списка? Его можно будет вернуть через «Добавить».")){
+      if(isCustom) sCustom[sk] = sCustomFor(sk).filter(c=> c.id!==customId);
+      else sRemoved[key] = true;
       delete sState[key]; delete sNotes[key];
-      sSaveCustom(); sSaveCheck(); sSaveNotes(); renderSumka();
+      sSaveCustom(); sSaveRemoved(); sSaveCheck(); sSaveNotes(); renderSumka();
     }
   });
   wrap.appendChild(row); wrap.appendChild(note);
@@ -1104,9 +1108,9 @@ function renderSumka(){
     const body = document.createElement("div"); body.className="stage-body";
     cat.subs.forEach((sub,si)=>{
       const sh = document.createElement("div"); sh.className="sub-head"; sh.textContent=sub.name; body.appendChild(sh);
-      sub.items.forEach((name,ii)=> body.appendChild(sBuildRow(cat, name, cat.id+"-"+si+"-"+ii, false, subKeyOf(cat.id,si))));
+      sub.items.forEach((name,ii)=>{ const key=cat.id+"-"+si+"-"+ii; if(!sIsRemoved(key)) body.appendChild(sBuildRow(cat, name, key, false, subKeyOf(cat.id,si))); });
       sCustomFor(subKeyOf(cat.id,si)).forEach(ci=> body.appendChild(sBuildRow(cat, ci.n, cat.id+"-"+si+"-c"+ci.id, true, subKeyOf(cat.id,si), ci.id)));
-      const add = document.createElement("button"); add.className="add-product"; add.innerHTML=`<span class="ap-plus">+</span> Добавить своё`;
+      const add = document.createElement("button"); add.className="add-product"; add.innerHTML=`<span class="ap-plus">+</span> Добавить пункт`;
       add.addEventListener("click", ()=> sOpenAdd(cat, si)); body.appendChild(add);
     });
     if(cat.tip){ const t=document.createElement("div"); t.className="goal-note"; t.innerHTML=`<span class="ic">✔</span><span>${esc(cat.tip)}</span>`; body.appendChild(t); }
@@ -1129,9 +1133,18 @@ function sOpenAdd(cat, si){
   sAddCtx = { catId:cat.id, si };
   document.getElementById("sAddName").value = "";
   document.getElementById("sAddTitle").textContent = "Добавить в «" + cat.name + "»";
+  sRenderRestoreOptions();
   document.getElementById("sAddModal").classList.add("open");
   document.getElementById("sAddBackdrop").classList.add("open");
   setTimeout(()=> document.getElementById("sAddName").focus(), 80);
+}
+function sRenderRestoreOptions(){
+  const holder=document.getElementById("sRestoreOptions");
+  if(!holder || !sAddCtx) return;
+  const cat=SUMKA.find(x=>x.id===sAddCtx.catId), sub=cat?.subs[sAddCtx.si];
+  const items=(sub?.items||[]).map((name,ii)=>({name,key:cat.id+"-"+sAddCtx.si+"-"+ii})).filter(x=>sIsRemoved(x.key));
+  holder.hidden=!items.length; holder.innerHTML="";
+  items.forEach(item=>{ const button=document.createElement("button"); button.type="button"; button.className="restore-option"; button.innerHTML=`<span>${esc(item.name)}</span><span>Вернуть</span>`; button.addEventListener("click",()=>{ delete sRemoved[item.key]; sSaveRemoved(); sCloseAdd(); renderSumka(); const el=document.querySelector(`#sumkaMain .stage[data-cat="${cat.id}"]`); if(el){ el.classList.remove("collapsed"); sOpen[cat.id]=true; sSaveOpen(); } toast("Пункт возвращён"); }); holder.appendChild(button); });
 }
 function sCloseAdd(){
   document.getElementById("sAddModal").classList.remove("open");
@@ -1172,8 +1185,8 @@ function sCollapseAll(){
 }
 
 /* ===================== ПОКУПКИ К РОЖДЕНИЮ ===================== */
-const BK_CHECK="prikorm-buy-checked-v1", BK_NOTES="prikorm-buy-notes-v1", BK_CUSTOM="prikorm-buy-custom-v1", BK_OPEN="prikorm-buy-open-v1";
-let bState={}, bNotes={}, bCustom={}, bOpen={}, bAddCtx=null;
+const BK_CHECK="prikorm-buy-checked-v1", BK_NOTES="prikorm-buy-notes-v1", BK_CUSTOM="prikorm-buy-custom-v1", BK_OPEN="prikorm-buy-open-v1", BK_REMOVED="prikorm-buy-removed-v1";
+let bState={}, bNotes={}, bCustom={}, bOpen={}, bRemoved={}, bAddCtx=null;
 
 const PURCHASE = [
   { id:"home", emoji:"🏠", name:"Дом — комод и кроватка", theme:"plum",
@@ -1228,17 +1241,20 @@ function bLoad(){
   try{ const v=localStorage.getItem(BK_NOTES); if(v) bNotes=JSON.parse(v); }catch(e){}
   try{ const v=localStorage.getItem(BK_CUSTOM); if(v) bCustom=JSON.parse(v); }catch(e){}
   try{ const v=localStorage.getItem(BK_OPEN); if(v) bOpen=JSON.parse(v); }catch(e){}
+  try{ const v=localStorage.getItem(BK_REMOVED); if(v) bRemoved=JSON.parse(v); }catch(e){}
 }
 function bSaveCheck(){ try{ localStorage.setItem(BK_CHECK, JSON.stringify(bState)); }catch(e){} }
 function bSaveNotes(){ try{ localStorage.setItem(BK_NOTES, JSON.stringify(bNotes)); }catch(e){} }
 function bSaveCustom(){ try{ localStorage.setItem(BK_CUSTOM, JSON.stringify(bCustom)); }catch(e){} }
 function bSaveOpen(){ try{ localStorage.setItem(BK_OPEN, JSON.stringify(bOpen)); }catch(e){} }
+function bSaveRemoved(){ try{ localStorage.setItem(BK_REMOVED, JSON.stringify(bRemoved)); }catch(e){} }
 function bSubKey(catId, si){ return catId+"|"+si; }
 function bCustomFor(sk){ return bCustom[sk] || []; }
+function bIsRemoved(key){ return !!bRemoved[key]; }
 function bCatCounts(cat){
   let total=0, checked=0;
   cat.subs.forEach((sub,si)=>{
-    sub.items.forEach((_,ii)=>{ total++; if(bState[cat.id+"-"+si+"-"+ii]) checked++; });
+    sub.items.forEach((_,ii)=>{ const key=cat.id+"-"+si+"-"+ii; if(!bIsRemoved(key)){ total++; if(bState[key]) checked++; } });
     bCustomFor(bSubKey(cat.id,si)).forEach(ci=>{ total++; if(bState[cat.id+"-"+si+"-c"+ci.id]) checked++; });
   });
   return {total, checked};
@@ -1282,17 +1298,18 @@ function bBuildRow(cat, name, key, isCustom, sk, customId){
   row.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }});
   const note = document.createElement("div");
   note.className = "s-note";
-  note.innerHTML = `<textarea placeholder="Например: забрать с WB, заехать в Детский мир">${esc(bNotes[key]||"")}</textarea>${isCustom ? '<button class="s-del" type="button">🗑 удалить пункт</button>' : ''}`;
+  note.innerHTML = `<textarea placeholder="Например: забрать с WB, заехать в Детский мир">${esc(bNotes[key]||"")}</textarea><button class="s-del" type="button">🗑 ${isCustom ? 'удалить свой пункт' : 'убрать из списка'}</button>`;
   const ta = note.querySelector("textarea");
   ta.addEventListener("input", ()=>{ const v=ta.value; if(v.trim()) bNotes[key]=v; else delete bNotes[key]; bSaveNotes(); nbtn.classList.toggle("has", !!bNotes[key]); });
   nbtn.classList.toggle("has", !!bNotes[key]);
   nbtn.addEventListener("click", e=>{ e.stopPropagation(); const opening=!note.classList.contains("open"); note.classList.toggle("open", opening); if(opening) setTimeout(()=>ta.focus(),60); });
   const del = note.querySelector(".s-del");
   if(del) del.addEventListener("click", ()=>{
-    if(confirm("Удалить пункт?")){
-      bCustom[sk] = bCustomFor(sk).filter(c=> c.id!==customId);
+    if(confirm(isCustom ? "Удалить свой пункт?" : "Убрать пункт из списка? Его можно будет вернуть через «Добавить».")){
+      if(isCustom) bCustom[sk] = bCustomFor(sk).filter(c=> c.id!==customId);
+      else bRemoved[key] = true;
       delete bState[key]; delete bNotes[key];
-      bSaveCustom(); bSaveCheck(); bSaveNotes(); renderBuy();
+      bSaveCustom(); bSaveRemoved(); bSaveCheck(); bSaveNotes(); renderBuy();
     }
   });
   wrap.appendChild(row); wrap.appendChild(note);
@@ -1319,9 +1336,9 @@ function renderBuy(){
     const body = document.createElement("div"); body.className="stage-body";
     cat.subs.forEach((sub,si)=>{
       const sh = document.createElement("div"); sh.className="sub-head"; sh.textContent=sub.name; body.appendChild(sh);
-      sub.items.forEach((name,ii)=> body.appendChild(bBuildRow(cat, name, cat.id+"-"+si+"-"+ii, false, bSubKey(cat.id,si))));
+      sub.items.forEach((name,ii)=>{ const key=cat.id+"-"+si+"-"+ii; if(!bIsRemoved(key)) body.appendChild(bBuildRow(cat, name, key, false, bSubKey(cat.id,si))); });
       bCustomFor(bSubKey(cat.id,si)).forEach(ci=> body.appendChild(bBuildRow(cat, ci.n, cat.id+"-"+si+"-c"+ci.id, true, bSubKey(cat.id,si), ci.id)));
-      const add = document.createElement("button"); add.className="add-product"; add.innerHTML=`<span class="ap-plus">+</span> Добавить своё`;
+      const add = document.createElement("button"); add.className="add-product"; add.innerHTML=`<span class="ap-plus">+</span> Добавить пункт`;
       add.addEventListener("click", ()=> bOpenAdd(cat, si)); body.appendChild(add);
     });
     if(cat.tip){ const t=document.createElement("div"); t.className="goal-note"; t.innerHTML=`<span class="ic">✔</span><span>${esc(cat.tip)}</span>`; body.appendChild(t); }
@@ -1343,9 +1360,18 @@ function bOpenAdd(cat, si){
   bAddCtx = { catId:cat.id, si };
   document.getElementById("bAddName").value = "";
   document.getElementById("bAddTitle").textContent = "Добавить в «" + cat.name + "»";
+  bRenderRestoreOptions();
   document.getElementById("bAddModal").classList.add("open");
   document.getElementById("bAddBackdrop").classList.add("open");
   setTimeout(()=> document.getElementById("bAddName").focus(), 80);
+}
+function bRenderRestoreOptions(){
+  const holder=document.getElementById("bRestoreOptions");
+  if(!holder || !bAddCtx) return;
+  const cat=PURCHASE.find(x=>x.id===bAddCtx.catId), sub=cat?.subs[bAddCtx.si];
+  const items=(sub?.items||[]).map((name,ii)=>({name,key:cat.id+"-"+bAddCtx.si+"-"+ii})).filter(x=>bIsRemoved(x.key));
+  holder.hidden=!items.length; holder.innerHTML="";
+  items.forEach(item=>{ const button=document.createElement("button"); button.type="button"; button.className="restore-option"; button.innerHTML=`<span>${esc(item.name)}</span><span>Вернуть</span>`; button.addEventListener("click",()=>{ delete bRemoved[item.key]; bSaveRemoved(); bCloseAdd(); renderBuy(); const el=document.querySelector(`#buyMain .stage[data-cat="${cat.id}"]`); if(el){ el.classList.remove("collapsed"); bOpen[cat.id]=true; bSaveOpen(); } toast("Пункт возвращён"); }); holder.appendChild(button); });
 }
 function bCloseAdd(){
   document.getElementById("bAddModal").classList.remove("open");

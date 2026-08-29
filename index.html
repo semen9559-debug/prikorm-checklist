@@ -21,7 +21,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v51";
+  window.APP_VERSION = "v52";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -324,6 +324,7 @@
   </div>
   <label class="fld-label" for="sAddName">Название</label>
   <input id="sAddName" class="fld" type="text" maxlength="60" placeholder="Например: Плед">
+  <div class="restore-options" id="sRestoreOptions" hidden></div>
   <button class="add-submit" id="sAddSave">Добавить</button>
 </div>
 
@@ -335,6 +336,7 @@
   </div>
   <label class="fld-label" for="bAddName">Название</label>
   <input id="bAddName" class="fld" type="text" maxlength="80" placeholder="Например: Конверт на выписку">
+  <div class="restore-options" id="bRestoreOptions" hidden></div>
   <button class="add-submit" id="bAddSave">Добавить</button>
 </div>
 
