@@ -2057,15 +2057,44 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     "\u{1F464}":s('<circle cx="12" cy="8" r="3.3"/><path d="M5.5 20c.4-3.8 3-6.3 6.5-6.3s6.1 2.5 6.5 6.3"/>'),
     "\u{1F3E0}":s('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>')
   };
+  /* All remaining visual emoji use this local, consistent SVG set as well. */
+  var SET={
+    food:s('<path d="M5 5h14v4H5z"/><path d="M8 9v10M12 9v10M16 9v10"/><path d="M5 19h14"/>'),
+    baby:s('<circle cx="12" cy="7" r="3"/><path d="M7 21v-3.2a5 5 0 0 1 10 0V21"/><path d="M9 12.5l-2 3M15 12.5l2 3"/>'),
+    medical:s('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M12 8v8M8 12h8"/>'),
+    document:s('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 16h5"/>'),
+    home:s('<path d="M3.5 11.5L12 4l8.5 7.5"/><path d="M6 10.5V20h12v-9.5M10 20v-5h4v5"/>'),
+    bath:s('<path d="M4 13h16v4a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M7 13V9a5 5 0 0 1 10 0v4M5 21h14"/>'),
+    bag:s('<path d="M5 9h14l1 11H4z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/>'),
+    calendar:s('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M8 17h6"/>'),
+    award:s('<circle cx="12" cy="8" r="4.5"/><path d="M9 12l-2 9 5-3 5 3-2-9"/>'),
+    mood:s('<circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.5 15c2 1.7 5 1.7 7 0"/>'),
+    leaf:s('<path d="M5 19C7 10 11 6 19 5c-1 8-5 12-14 14z"/><path d="M6 18c3-3 6-5 10-7"/>'),
+    spark:s('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z"/>')
+  };
+  function add(hexes,icon){ for(var i=0;i<hexes.length;i++) ICONS[String.fromCodePoint(parseInt(hexes[i],16))]=icon; }
+  add('1F34E 1F350 1F34C 1F34A 1F351 1F352 1F353 1F347 1F349 1F95D 1F956 1F955 1F966 1F95C 1F96C 1F951 1F336 1FAD0 1F345 1F346 1F372 1F35D 1F35E 1F35A 1F35C 1F373 1F95E 1F950 1F9C0 1F9C8 1F95B 1F95E 1FAD8 1FAD9 1FAD7 1FAD6 1FAD5 1FAD4 1FAD3 1FAD2 1FAD1 1FAD0 1F95A 1F35F 1F957 1F96F 1F969 1F357 1F356 1F364 1FAD8 1F96B 1F9C6 1F37C 1F95B 1F942 1F963'.split(' '),SET.food);
+  add('1F430 1F43B 1F431 1F427 1F439 1F423 1F428 1F994 1F476 1F9D2 1F9D1 1F926 1F930 1F931 1F9B8 1F9B9 1F9DA 1F9DB'.split(' '),SET.baby);
+  add('1F489 1F48A 1F3E5 1FA7A 1F9EA 1F4A7 1F9F4'.split(' '),SET.medical);
+  add('1F4C4 1F4CB 1F4B0 1F3E6 1F4C5 1F4CF 1F4DD 1F4F7'.split(' '),SET.document);
+  add('1F3E0 1F6CD 1F45C 1F9F3 1F9F4 1F6D2'.split(' '),SET.home);
+  add('1F6C1 1F9F4'.split(' '),SET.bath);
+  add('1F4BC 1F9F3 1F45C 1F6CD'.split(' '),SET.bag);
+  add('1F3C5 1F3C6 1F3C1 1F381 1F389 1F3AF 1F3B2'.split(' '),SET.award);
+  add('1F600 1F604 1F60A 1F60B 1F610 1F614 1F62D 1F642 1F970 1F920 1F971 1F92E 1F927 1F634'.split(' '),SET.mood);
+  add('1F331 1F33F 1F33E 1F332 1F333 1F330'.split(' '),SET.leaf);
+  add('1F4A1 1F4AA 1F4DB 1F4AC 1F446 1F440 1F4A9 1F6AB 1F6BC 1F514 1F515 1F504 1F321 1F305 1F31F 1F4DB 1F4F7 1F3C1 1F9F9'.split(' '),SET.spark);
+  for(var d=0;d<=9;d++) ICONS[String(d)+'\uFE0F\u20E3']=SET.calendar;
+  ICONS['\u{1F51F}']=SET.calendar;
+  var FALLBACK=SET.spark;
   var st=document.createElement("style");
   st.textContent=".svgi{display:inline-flex;width:1em;height:1em;vertical-align:-0.14em;line-height:1;flex:0 0 auto}.svgi>svg{width:100%;height:100%;display:block}";
   document.head.appendChild(st);
-  function mk(ch){var sp=document.createElement("span");sp.className="svgi";sp.setAttribute("data-e",ch);sp.innerHTML=ICONS[ch];return sp;}
-  function proc(node){var txt=node.nodeValue; if(!txt) return; var hit=false; for(var ch in ICONS){ if(txt.indexOf(ch)>=0){hit=true;break;} } if(!hit) return;
-    var frag=document.createDocumentFragment(), buf="";
-    for(var c of txt){ if(ICONS[c]){ if(buf){frag.appendChild(document.createTextNode(buf));buf="";} frag.appendChild(mk(c)); } else if(c!=="\uFE0F"){ buf+=c; } }
-    if(buf) frag.appendChild(document.createTextNode(buf));
-    if(node.parentNode) node.parentNode.replaceChild(frag,node); }
+  function mk(ch,icon){var sp=document.createElement("span");sp.className="svgi";sp.setAttribute("data-e",ch);sp.innerHTML=icon;return sp;}
+  var TOKEN=/\d\uFE0F?\u20E3|[\u2713\u2714\u2715\u2716\u271A\u2705\u270E\u2795\u25BE\u25B4\u25A6\u2191]|\p{Extended_Pictographic}\uFE0F?/gu;
+  function proc(node){var txt=node.nodeValue; if(!txt) return; TOKEN.lastIndex=0; var found=false,match,last=0,frag=document.createDocumentFragment();
+    while((match=TOKEN.exec(txt))){ found=true; if(match.index>last) frag.appendChild(document.createTextNode(txt.slice(last,match.index))); var token=match[0],base=token.replace(/\uFE0F/g,""); frag.appendChild(mk(token,ICONS[token]||ICONS[base]||FALLBACK)); last=match.index+token.length; }
+    if(!found) return; if(last<txt.length) frag.appendChild(document.createTextNode(txt.slice(last))); if(node.parentNode) node.parentNode.replaceChild(frag,node); }
   function walk(n){ if(n.nodeType===3){proc(n);return;} if(n.nodeType!==1) return; var tg=n.tagName;
     if(tg==="SCRIPT"||tg==="STYLE"||tg==="svg"||(n.classList&&n.classList.contains("svgi"))) return;
     var k=[]; for(var x=n.firstChild;x;x=x.nextSibling) k.push(x); for(var i=0;i<k.length;i++) walk(k[i]); }
