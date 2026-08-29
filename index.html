@@ -27,7 +27,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v69";
+  window.APP_VERSION = "v70";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 
-  <link rel="stylesheet" href="styles/app.css?v=69">
+  <link rel="stylesheet" href="styles/app.css?v=70">
 </head>
 <body>
 
@@ -86,6 +86,7 @@
   <div class="hero-count" id="heroCount">0 из 0 продуктов</div>
   <div class="search-wrap">
     <span class="mag">🔍</span>
+    <label class="sr-only" for="search">Поиск продуктов</label>
     <input id="search" type="search" placeholder="Поиск продукта…" aria-label="Поиск продукта" autocomplete="off">
     <button class="search-clear" id="searchClear" aria-label="Очистить поиск">✕</button>
   </div>
@@ -125,6 +126,7 @@
     <div class="hero-count" id="sumkaCount">0 из 0 собрано</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="sumkaSearch">Поиск вещей</label>
       <input id="sumkaSearch" type="search" placeholder="Поиск вещи…" aria-label="Поиск вещи" autocomplete="off">
       <button class="search-clear" id="sumkaSearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -145,6 +147,7 @@
     <div class="hero-count" id="buyCount">0 из 0 куплено</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="buySearch">Поиск покупок</label>
       <input id="buySearch" type="search" placeholder="Поиск покупки…" aria-label="Поиск покупки" autocomplete="off">
       <button class="search-clear" id="buySearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -165,6 +168,7 @@
     <div class="hero-count" id="devCount">0 из 0 освоено</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="devSearch">Поиск навыков</label>
       <input id="devSearch" type="search" placeholder="Поиск навыка…" aria-label="Поиск навыка" autocomplete="off">
       <button class="search-clear" id="devSearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -211,6 +215,7 @@
     <div class="hero-count" id="docCount">0 из 0 оформлено</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="docsSearch">Поиск документов</label>
       <input id="docsSearch" type="search" placeholder="Поиск документа…" aria-label="Поиск документа" autocomplete="off">
       <button class="search-clear" id="docsSearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -233,6 +238,7 @@
     <div class="hero-count" id="vacCount">0 из 0 сделано</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="vacSearch">Поиск прививок</label>
       <input id="vacSearch" type="search" placeholder="Поиск прививки…" aria-label="Поиск прививки" autocomplete="off">
       <button class="search-clear" id="vacSearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -255,6 +261,7 @@
     <div class="hero-count" id="pregCount">0 из 0 выполнено</div>
     <div class="search-wrap">
       <span class="mag">🔍</span>
+      <label class="sr-only" for="pregSearch">Поиск шагов</label>
       <input id="pregSearch" type="search" placeholder="Поиск шага…" aria-label="Поиск шага" autocomplete="off">
       <button class="search-clear" id="pregSearchClear" aria-label="Очистить поиск">✕</button>
     </div>
@@ -311,11 +318,14 @@
     <button class="modal-x" id="addClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="addName">Название</label>
-  <input id="addName" class="fld" type="text" maxlength="60" placeholder="Например: Кабачок с индейкой">
+  <label class="fld-label" for="addName">Название продукта</label>
+  <input id="addName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Кабачок с индейкой">
   <label class="fld-label">Смайлик</label>
-  <input id="addEmoji" class="fld emoji-input" type="text" maxlength="4" placeholder="🥕">
+  <label class="fld-label" for="addEmoji">Значок</label>
+  <input id="addEmoji" class="fld emoji-input" type="text" maxlength="4" autocomplete="off" placeholder="🥕">
   <div class="emoji-grid" id="emojiGrid"></div>
   <label class="fld-label" for="addDesc">Описание / заметка</label>
+  <label class="fld-label" for="addDesc">Заметка</label>
   <textarea id="addDesc" class="fld" placeholder="Как готовить, особенности, ваши наблюдения…"></textarea>
   <button class="add-submit" id="addSubmit">Добавить продукт</button>
 </div>
@@ -327,7 +337,8 @@
     <button class="modal-x" id="kidClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="kidName">Имя ребёнка</label>
-  <input id="kidName" class="fld" type="text" maxlength="30" placeholder="Например: Аня">
+  <label class="fld-label" for="kidName">Имя ребёнка</label>
+  <input id="kidName" class="fld" type="text" maxlength="30" autocomplete="name" placeholder="Например: Аня">
   <button class="add-submit" id="kidSave">Сохранить</button>
   <button class="pcard-del" id="kidDelete" type="button" style="margin-top:10px; display:none">🗑 Удалить ребёнка</button>
 </div>
@@ -339,7 +350,8 @@
     <button class="modal-x" id="sAddClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="sAddName">Название</label>
-  <input id="sAddName" class="fld" type="text" maxlength="60" placeholder="Например: Плед">
+  <label class="fld-label" for="sAddName">Название вещи</label>
+  <input id="sAddName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Плед">
   <div class="restore-options" id="sRestoreOptions" hidden></div>
   <button class="add-submit" id="sAddSave">Добавить</button>
 </div>
@@ -351,7 +363,8 @@
     <button class="modal-x" id="bAddClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="bAddName">Название</label>
-  <input id="bAddName" class="fld" type="text" maxlength="80" placeholder="Например: Конверт на выписку">
+  <label class="fld-label" for="bAddName">Название покупки</label>
+  <input id="bAddName" class="fld" type="text" maxlength="80" autocomplete="off" placeholder="Например: Конверт на выписку">
   <div class="restore-options" id="bRestoreOptions" hidden></div>
   <button class="add-submit" id="bAddSave">Добавить</button>
 </div>
@@ -363,8 +376,10 @@
     <button class="modal-x" id="dyEditClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="dyEditTime">Время</label>
+  <label class="fld-label" for="dyEditTime">Время</label>
   <input id="dyEditTime" class="fld" type="time">
   <label class="fld-label" for="dyEditNote">Заметка (по желанию)</label>
+  <label class="fld-label" for="dyEditNote">Заметка</label>
   <textarea id="dyEditNote" class="fld" placeholder="Например: 120 мл, левая грудь / покакал / 37,2°"></textarea>
   <button class="add-submit" id="dyEditSave">Сохранить</button>
   <button class="pcard-del" id="dyEditDel" type="button" style="margin-top:10px">🗑 Удалить запись</button>
@@ -398,7 +413,7 @@
 
 
 
-<script src="scripts/app.js?v=69"></script>
-<script type="module" src="scripts/family-auth.js?v=69"></script>
+<script src="scripts/app.js?v=70"></script>
+<script type="module" src="scripts/family-auth.js?v=70"></script>
 </body>
 </html>
