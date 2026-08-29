@@ -14,6 +14,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>html.icons-loading body{visibility:hidden}</style>
+<script>
+  document.documentElement.classList.add('icons-loading');
+  window.addEventListener('load', function(){ document.documentElement.classList.remove('icons-loading'); }, {once:true});
+</script>
 <script>
   try{
     var t = localStorage.getItem('prikorm-theme');
@@ -22,7 +27,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v61";
+  window.APP_VERSION = "v62";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
