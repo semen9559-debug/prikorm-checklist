@@ -27,7 +27,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v68";
+  window.APP_VERSION = "v69";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 
-  <link rel="stylesheet" href="styles/app.css?v=68">
+  <link rel="stylesheet" href="styles/app.css?v=69">
 </head>
 <body>
 
@@ -92,6 +92,7 @@
   <div class="chips" id="chips">
     <button class="chip active" data-f="all" type="button">Все</button>
     <button class="chip" data-f="todo" type="button">Невведённые</button>
+    <button class="chip" data-f="done" type="button">Введённые</button>
     <button class="chip" data-f="allergens" type="button">Аллергены</button>
   </div>
   <div class="kids" id="kids"></div>
@@ -397,7 +398,7 @@
 
 
 
-<script src="scripts/app.js?v=68"></script>
-<script type="module" src="scripts/family-auth.js?v=68"></script>
+<script src="scripts/app.js?v=69"></script>
+<script type="module" src="scripts/family-auth.js?v=69"></script>
 </body>
 </html>

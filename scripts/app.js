@@ -810,6 +810,7 @@ function applyFilters(){
       const key = row.dataset.key;
       let m = (!q || row.dataset.name.includes(q));
       if(filterMode==="todo" && state[key]) m=false;
+      if(filterMode==="done" && !state[key]) m=false;
       row.classList.toggle("hidden", !m); if(m) vis++;
     });
     const show = vis>0;
