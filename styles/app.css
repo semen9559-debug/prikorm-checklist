@@ -975,6 +975,10 @@ body{ padding-bottom:76px; }
 #mamaTabs .tab:active{transform:scale(.92);}
 #mamaTabs .tab svg{width:21px;height:21px;filter:drop-shadow(0 1px 0 rgba(255,255,255,.3));}
 #mamaTabs .tab.on{color:var(--sage);text-shadow:0 1px 0 rgba(255,255,255,.35);}
+#mamaTabs .tab.on{touch-action:none;}
+#mamaTabs.is-dragging .tab-slider{transition:none;}
+#mamaTabs.is-dragging .tab{transition:none;}
+#mamaTabs.is-dragging .tab.on{cursor:grabbing;}
 html[data-theme="dark"] #mamaTabs .tab-slider{background:linear-gradient(145deg,rgba(255,255,255,.17),rgba(255,255,255,.055));border-color:rgba(255,255,255,.16);box-shadow:0 5px 16px rgba(0,0,0,.35),inset 0 1px 1px rgba(255,255,255,.18);}
 #mamaTabs.hidden{display:none;}
 @media(min-width:820px){ #mamaTabs{max-width:520px;margin:0 auto;} }

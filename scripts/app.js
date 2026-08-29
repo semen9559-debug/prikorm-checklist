@@ -3320,13 +3320,43 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
       var index=TABS.findIndex(function(t){ return t.k===active; });
       tabsEl.style.setProperty('--tab-index',Math.max(0,index));
     }
-    tabsEl.addEventListener('click',function(e){ var b=e.target.closest('[data-tab]'); if(!b) return; var k=b.getAttribute('data-tab'); tabsEl.__last=k;
+    function activateTab(k){ tabsEl.__last=k;
       if(k==='home'){ showHub(); }
       else if(k==='diary'){ hideHub(); try{ window.setView('diary'); }catch(_){} }
       else if(k==='plan'){ hideHub(); try{ window.setView(curFocusV); }catch(_){} }
       else if(k==='child'){ openOnb(); }
       else if(k==='more'){ hideHub(); appMenu(); }
       syncTabs();
+    }
+    var drag=null,skipTabClick=false;
+    tabsEl.addEventListener('pointerdown',function(e){
+      var b=e.target.closest('.tab.on'); if(!b || (e.pointerType==='mouse' && e.button!==0)) return;
+      var active=TABS.findIndex(function(t){ return t.k===b.getAttribute('data-tab'); });
+      var rect=tabsEl.getBoundingClientRect();
+      drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,startIndex:active,index:active,width:(rect.width-8)/TABS.length,moved:false};
+      tabsEl.setPointerCapture&&tabsEl.setPointerCapture(e.pointerId);
+    });
+    tabsEl.addEventListener('pointermove',function(e){
+      if(!drag || e.pointerId!==drag.id) return;
+      var dx=e.clientX-drag.startX,dy=e.clientY-drag.startY;
+      if(!drag.moved && Math.abs(dx)<6){ if(Math.abs(dy)>12) drag=null; return; }
+      drag.moved=true; e.preventDefault();
+      drag.index=Math.max(0,Math.min(TABS.length-1,drag.startIndex+dx/drag.width));
+      tabsEl.classList.add('is-dragging'); tabsEl.style.setProperty('--tab-index',drag.index);
+    });
+    function finishDrag(e){
+      if(!drag || e.pointerId!==drag.id) return;
+      var done=drag; drag=null; tabsEl.classList.remove('is-dragging');
+      if(!done.moved){ syncTabs(); return; }
+      skipTabClick=true;
+      var index=Math.max(0,Math.min(TABS.length-1,Math.round(done.index)));
+      activateTab(TABS[index].k);
+    }
+    tabsEl.addEventListener('pointerup',finishDrag);
+    tabsEl.addEventListener('pointercancel',function(e){ if(drag && e.pointerId===drag.id){ drag=null; tabsEl.classList.remove('is-dragging'); syncTabs(); } });
+    tabsEl.addEventListener('click',function(e){
+      if(skipTabClick){ skipTabClick=false; return; }
+      var b=e.target.closest('[data-tab]'); if(!b) return; activateTab(b.getAttribute('data-tab'));
     });
     /* hide tabs while an overlay (sheet/drawer/modal) is open */
     function overlayOpen(){ var s=document.querySelector('.sheet.open'), d=document.querySelector('.drawer.open'), m=document.querySelector('.modal'); return !!(s||d||(m&&getComputedStyle(m).display!=='none'&&getComputedStyle(m).opacity!=='0'&&m.offsetParent!==null)); }
