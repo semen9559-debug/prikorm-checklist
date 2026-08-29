@@ -168,7 +168,10 @@
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12.5px;
     padding:6px 14px; border-radius:99px; cursor:pointer; transition:all .2s;
   }
-  .kid.active{ background:var(--sky); border-color:var(--sky); color:#fff; box-shadow:0 2px 8px rgba(62,143,196,.3); }
+  .kid.active{ background:#286E9D; border-color:#286E9D; color:#fff; box-shadow:0 2px 8px rgba(40,110,157,.34); }
+  /* Выбор ребёнка всегда остаётся читаемым: без прозрачной анимированной подложки. */
+  .kids.m-pilled .m-pill{display:none;}
+  .kids.m-pilled>.kid.active{background:#286E9D !important;border-color:#286E9D !important;box-shadow:0 2px 8px rgba(40,110,157,.34) !important;color:#fff !important;}
   .kid-add{ color:var(--ink-soft); border-style:dashed; }
   .kid-edit{ padding:6px 11px; }
 
