@@ -934,10 +934,15 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 body{ padding-bottom:76px; }
 #homeHub{position:fixed; inset:0; z-index:200; background:var(--cream); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(16px + env(safe-area-inset-top)) 18px calc(94px + env(safe-area-inset-bottom));}
 #homeHub .wrap{max-width:1060px; margin:0 auto;}
-#homeHub .htop{display:flex; align-items:center; justify-content:space-between; margin:2px 0 16px;}
+#homeHub .htop{display:flex; align-items:center; justify-content:space-between; min-height:42px; margin:2px 0 16px;}
 #homeHub .htop .tbtn{width:42px;height:42px;border-radius:13px;background:var(--paper);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;}
 #homeHub .htop .tbtn svg{width:21px;height:21px;}
 #homeHub .htop .brand{font-weight:800;color:var(--ink);font-size:16px;}
+/* Keep the home controls on the exact same grid as every section: theme, then profile. */
+#homeHub .htop .brand{position:fixed;top:calc(env(safe-area-inset-top) + 23px);left:50%;z-index:201;transform:translateX(-50%);}
+#homeHub .htop .tbtn[data-menu]{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:14px;z-index:201;}
+#homeHub .htop .tbtn[data-theme]{position:fixed;top:calc(env(safe-area-inset-top) + 12px);right:64px;z-index:201;border-radius:50%;}
+#homeHub .htop .family-account-button{position:fixed;top:calc(env(safe-area-inset-top) + 12px);right:14px;z-index:201;border-radius:50%;}
 #homeHub .hhead{display:flex; align-items:center; gap:13px; margin:0 2px 20px;}
 #homeHub .hsprout{width:46px;height:46px;border-radius:15px;background:color-mix(in srgb, var(--sage) 20%, transparent);color:var(--sage);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 #homeHub .hsprout svg{width:26px;height:26px;}
