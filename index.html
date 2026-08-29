@@ -8,7 +8,7 @@
 <title>Трекер прикорма 5,5–12 месяцев</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="Прикорм">
 <link rel="manifest" href="manifest.webmanifest">
@@ -22,7 +22,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v59";
+  window.APP_VERSION = "v60";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -50,6 +50,10 @@
 <button class="menu-btn" id="menuBtn" aria-label="Разделы">▦</button>
 <button class="profile-btn" id="profileBtn" type="button" aria-label="Профиль и семья" title="Профиль и семья"><span aria-hidden="true">👤</span><span class="profile-btn-dot" aria-hidden="true"></span></button>
 <button class="theme-toggle" id="themeToggle" aria-label="Тёмная тема">🌙</button>
+<button class="notch-pacifier" id="notchPacifier" type="button" aria-label="Включить качание соски от тряски" title="Нажмите, чтобы включить реакцию на тряску">
+  <span class="notch-pacifier-cord" aria-hidden="true"></span>
+  <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5v9"/><path d="M14 15c0-5.5 4.5-10 10-10s10 4.5 10 10"/><circle cx="24" cy="25" r="10"/><path d="M18 25h12M24 19v12"/><path d="M20 35l-3 8h14l-3-8"/></svg>
+</button>
 
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 <nav class="drawer" id="drawer" aria-label="Разделы">

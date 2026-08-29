@@ -908,6 +908,39 @@ try{
   });
 }catch(e){}
 
+/* ---------- СОСКА В ЧЁЛКЕ PWA ---------- */
+(function(){
+  var standalone=window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
+  if(!standalone) return;
+  document.documentElement.classList.add('pwa-mode');
+  var pacifier=document.getElementById('notchPacifier'); if(!pacifier) return;
+  var enabled=false, tilt=0, timer;
+  function setTilt(value){ tilt=Math.max(-18,Math.min(18,value)); pacifier.style.setProperty('--pacifier-tilt',tilt+'deg'); clearTimeout(timer); timer=setTimeout(function(){ pacifier.style.setProperty('--pacifier-tilt','0deg'); },620); }
+  function onMotion(event){
+    var a=event.accelerationIncludingGravity||event.acceleration||{};
+    var rotation=(event.rotationRate&&event.rotationRate.gamma)||0;
+    var force=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);
+    if(force>3 || Math.abs(rotation)>12) setTilt(Math.max(-18,Math.min(18,rotation/3+(a.x||0)*1.4)));
+  }
+  async function enableMotion(){
+    if(enabled) return;
+    try{
+      if(typeof DeviceMotionEvent==='undefined') throw new Error('unsupported');
+      if(typeof DeviceMotionEvent.requestPermission==='function'){
+        var permission=await DeviceMotionEvent.requestPermission();
+        if(permission!=='granted') throw new Error('denied');
+      }
+      window.addEventListener('devicemotion',onMotion,{passive:true}); enabled=true;
+      pacifier.classList.add('motion-ready'); pacifier.setAttribute('aria-label','Качание соски от тряски включено'); pacifier.title='Качание от тряски включено';
+      try{localStorage.setItem('prikorm-pacifier-motion','1');}catch(e){}
+      if(typeof window.toast==='function') window.toast('Качание от тряски включено');
+    }catch(error){
+      if(typeof window.toast==='function') window.toast('Для реакции на тряску разрешите доступ к датчикам');
+    }
+  }
+  pacifier.addEventListener('click',enableMotion);
+})();
+
 /* ---------- НАВЕРХ ---------- */
 const fabTop = document.getElementById("fabTop");
 window.addEventListener("scroll", ()=>{ fabTop.classList.toggle("show", window.scrollY > 500); }, {passive:true});
