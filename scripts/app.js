@@ -1576,28 +1576,38 @@ const DEV_SLEEP=[
   {from:24,to:47,age:'2–3 года',total:'10–13 ч',naps:'0–1 дневной сон',note:'Дневной сон может постепенно уходить.'}
 ];
 const DEV_GROWTH_WEEKS=[2,3,6,12,18,26,39,52];
+const SLEEP_AGE_KEY='mama-sleep-age';
+const GROWTH_SELECTED_KEY='mama-growth-selected-week';
 function devBirthDate(){
   try{ const o=JSON.parse(localStorage.getItem('mama-onb')||'null'); return o&&o.mode==='baby'&&o.date ? new Date(o.date+'T00:00:00') : null; }catch(e){ return null; }
 }
+function getSleepAgeIndex(birth){
+  try{ const saved=Number(localStorage.getItem(SLEEP_AGE_KEY)); if(Number.isInteger(saved)&&DEV_SLEEP[saved]) return saved; }catch(e){}
+  const months=birth ? Math.max(0,Math.floor(((new Date()-birth)/86400000)/30.44)) : 0;
+  return Math.max(0,DEV_SLEEP.findIndex(x=>months>=x.from&&months<=x.to));
+}
+function growthRange(birth,week){
+  if(!birth) return 'Неделя '+week;
+  const a=new Date(birth.getTime()+(week-1)*604800000), b=new Date(birth.getTime()+week*604800000-86400000);
+  return a.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+'–'+b.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+}
 function devInsights(kind){
   const birth=devBirthDate(), now=new Date();
-  const months=birth ? Math.max(0,Math.floor(((now-birth)/86400000)/30.44)) : null;
-  const sleep=DEV_SLEEP.find(x=>months!==null&&months>=x.from&&months<=x.to)||DEV_SLEEP[0];
+  const sleepIndex=getSleepAgeIndex(birth), sleep=DEV_SLEEP[sleepIndex];
   const currentWeek=birth ? Math.max(1,Math.floor((now-birth)/604800000)+1) : null;
-  const start=currentWeek ? Math.max(1,currentWeek-6) : 1;
-  const weeks=Array.from({length:16},(_,i)=>start+i).map(week=>{
-    let range=''; if(birth){ const a=new Date(birth.getTime()+(week-1)*604800000), b=new Date(birth.getTime()+week*604800000-86400000); range=a.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+'–'+b.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}); }
+  let selected=currentWeek||1; try{ const s=Number(localStorage.getItem(GROWTH_SELECTED_KEY)); if(Number.isInteger(s)&&s>0&&s<=104) selected=s; }catch(e){}
+  const weeks=Array.from({length:88},(_,i)=>i+1).map(week=>{
+    const range=growthRange(birth,week);
     const near=DEV_GROWTH_WEEKS.some(w=>Math.abs(w-week)<=1);
-    return `<div class="growth-week ${week===currentWeek?'current':''} ${near?'possible':''}"><b>${week}</b><span>${range||'неделя'}</span></div>`;
+    return `<button type="button" class="growth-week ${week===currentWeek?'current':''} ${week===selected?'selected':''} ${near?'possible':''}" data-growth-week="${week}" aria-pressed="${week===selected}"><b>${week}</b><span>${range}</span></button>`;
   }).join('');
   return `<section class="dev-insights" aria-label="Сон и периоды развития">
-    <div class="dev-insights-intro"><span class="dev-insight-mark" aria-hidden="true"></span><div><h2>${kind==='sleep'?'Режим сна':'Периоды развития'}</h2><p>Ориентиры для вашей семьи, а не строгий график.</p></div></div>
-    ${kind==='sleep'?`<article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map(row=>`<div class="${row===sleep?'now':''}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></div>`).join('')}</div></details></article>`:''}
-    ${kind==='growth'?`<article class="dev-insight-card growth-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">ПЕРИОДЫ РАЗВИТИЯ</span><h3>${currentWeek?'Сейчас '+currentWeek+'-я неделя':'Укажите дату рождения'}</h3></div><span class="dev-calendar-icon" aria-hidden="true"></span></div><p class="growth-copy">${birth?'Календарь считает недели от даты рождения. Персиковые ячейки — возможные периоды, когда ребёнку может требоваться больше близости и кормлений.':'Добавьте дату рождения в «Главная → изменить», и календарь станет персональным.'}</p><div class="growth-grid">${weeks}</div><p class="growth-note">Это не диагноз и не точный прогноз: темп развития у детей индивидуален.</p></article>`:''}
+    ${kind==='sleep'?`<article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><div class="sleep-age-picker" role="group" aria-label="Возраст ребёнка">${DEV_SLEEP.map((row,i)=>`<button type="button" class="${i===sleepIndex?'on':''}" data-sleep-age="${i}" aria-pressed="${i===sleepIndex}">${row.age}</button>`).join('')}</div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map((row,i)=>`<button type="button" class="${i===sleepIndex?'now':''}" data-sleep-age="${i}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></button>`).join('')}</div></details></article>`:''}
+    ${kind==='growth'?`<article class="dev-insight-card growth-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">ПЕРИОДЫ РАЗВИТИЯ</span><h3>${currentWeek?'Сейчас '+currentWeek+'-я неделя':'Выберите неделю'}</h3></div><span class="dev-calendar-icon" aria-hidden="true"></span></div><p class="growth-copy">${birth?'Календарь считает недели от даты рождения. Нажмите на неделю, чтобы отметить её.':'Можно выбрать неделю вручную. Добавьте дату рождения в «Главная → изменить», чтобы увидеть даты.'}</p><div class="growth-legend"><span class="legend-current">Текущая</span><span class="legend-possible">Возможный период перемен</span></div><div class="growth-grid">${weeks}</div><p class="growth-selected">Выбрана ${selected}-я неделя · ${growthRange(birth,selected)}</p><p class="growth-note">Периоды — ориентир, а не диагноз: темп развития у детей индивидуален.</p></article>`:''}
   </section>`;
 }
-function renderSleepView(){ const main=document.getElementById('sleepMain'); if(main) main.innerHTML=devInsights('sleep'); }
-function renderGrowthView(){ const main=document.getElementById('growthMain'); if(main) main.innerHTML=devInsights('growth'); }
+function renderSleepView(){ const main=document.getElementById('sleepMain'); if(!main) return; main.innerHTML=devInsights('sleep'); main.querySelectorAll('[data-sleep-age]').forEach(btn=>btn.addEventListener('click',()=>{ try{localStorage.setItem(SLEEP_AGE_KEY,btn.dataset.sleepAge);}catch(e){} renderSleepView(); })); }
+function renderGrowthView(){ const main=document.getElementById('growthMain'); if(!main) return; main.innerHTML=devInsights('growth'); main.querySelectorAll('[data-growth-week]').forEach(btn=>btn.addEventListener('click',()=>{ try{localStorage.setItem(GROWTH_SELECTED_KEY,btn.dataset.growthWeek);}catch(e){} renderGrowthView(); const selected=main.querySelector('.growth-week.selected'); if(selected) selected.scrollIntoView({block:'center',behavior:'smooth'}); })); }
 function renderDev(){
   const main = document.getElementById("devMain"); main.innerHTML="";
   DEV.forEach(mo=>{
