@@ -1030,7 +1030,7 @@ function showUndo(){
 /* ===================== СУМКА В РОДДОМ ===================== */
 const SK_CHECK="prikorm-sumka-checked-v1", SK_NOTES="prikorm-sumka-notes-v1", SK_CUSTOM="prikorm-sumka-custom-v1", SK_OPEN="prikorm-sumka-open-v1", SK_REMOVED="prikorm-sumka-removed-v1", VIEW_KEY="prikorm-view";
 let sState={}, sNotes={}, sCustom={}, sOpen={}, sRemoved={}, sAddCtx=null;
-let currentView = (function(){ try{ return localStorage.getItem(VIEW_KEY) || "prikorm"; }catch(e){ return "prikorm"; } })();
+let currentView = (function(){ try{ return localStorage.getItem(VIEW_KEY) || "home"; }catch(e){ return "home"; } })();
 let viewReady = false;
 
 const SUMKA = [
@@ -2019,7 +2019,6 @@ const pregMod = makeInfoChecklist({ data:PREG, countWord:"выполнено", n
 /* ---------- переключение разделов ---------- */
 function setView(v){
   currentView = v; try{ localStorage.setItem(VIEW_KEY, v); }catch(e){}
-  if(viewReady){ try{ localStorage.setItem('mama-last-surface','section'); }catch(e){} }
   document.getElementById("viewPrikorm").hidden = (v!=="prikorm");
   document.getElementById("viewSumka").hidden = (v!=="sumka");
   document.getElementById("viewBuy").hidden = (v!=="buy");
@@ -3314,7 +3313,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
       hub.innerHTML='<div class="wrap"><div class="htop"><button class="tbtn" data-menu aria-label="Разделы">'+IC.list+'</button><div class="brand">Мама рядом</div><button class="tbtn" data-theme aria-label="Тема">'+themeIcon()+'</button></div><div class="hhead"><div class="hsprout">'+IC.sprout+'</div><div><div class="hgreet">'+greet+'</div><div class="hsub">'+greetSub(info,kidName)+editLink+'</div></div></div><div class="hgrid">'+feat+rest+addTile+'</div>'+'<div class="hub-trust"><span class="ht-ic">'+IC.shield+'</span><span class="ht-tx"><b>Проверенная информация.</b> Опираемся на нацкалендарь РФ, рекомендации ВОЗ и Минздрава РФ. Это справочник — он не заменяет консультацию врача. Регион: Россия · Обновлено: 2026.</span></div>'+'</div>';
     }
     function hideHub(){ hub.style.display='none'; syncTabs(); }
-    function showHub(){ try{localStorage.setItem('mama-last-surface','home');}catch(_){} renderHub(); hub.style.display='block'; window.scrollTo(0,0); syncTabs(); }
+    function showHub(){ currentView='home'; try{localStorage.setItem(VIEW_KEY,'home');}catch(_){} renderHub(); hub.style.display='block'; window.scrollTo(0,0); syncTabs(); }
     window.__showHub=showHub;
     renderHub();
 
@@ -3445,8 +3444,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     new MutationObserver(syncTabsVis).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','style']});
     syncTabsVis();
 
-    var lastSurface=(function(){try{return localStorage.getItem('mama-last-surface');}catch(_){return null;}})();
-    if(lastSurface==='section'){
+    if(currentView!=='home'){
       tabsEl.__last=currentView==='diary'?'diary':'plan';
       hideHub();
     }else showHub();
