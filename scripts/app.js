@@ -1561,8 +1561,36 @@ function dBuildRow(mo, name, key){
   wrap.appendChild(row); wrap.appendChild(note);
   return wrap;
 }
+const DEV_SLEEP=[
+  {from:0,to:3,age:'0–3 месяца',total:'14–17 ч',naps:'Ритм ещё формируется',note:'Короткие эпизоды сна днём и ночью — вариант нормы.'},
+  {from:4,to:6,age:'4–6 месяцев',total:'12–16 ч',naps:'Часто 2–4 дневных сна',note:'Ориентир — сон за все 24 часа, включая дневной.'},
+  {from:7,to:11,age:'7–11 месяцев',total:'12–16 ч',naps:'Часто 2–3 дневных сна',note:'Режим может меняться при новых навыках и болезнях.'},
+  {from:12,to:23,age:'1–2 года',total:'11–14 ч',naps:'Часто 1–2 дневных сна',note:'Регулярные время сна и подъёма помогают режиму.'},
+  {from:24,to:47,age:'2–3 года',total:'10–13 ч',naps:'0–1 дневной сон',note:'Дневной сон может постепенно уходить.'}
+];
+const DEV_GROWTH_WEEKS=[2,3,6,12,18,26,39,52];
+function devBirthDate(){
+  try{ const o=JSON.parse(localStorage.getItem('mama-onb')||'null'); return o&&o.mode==='baby'&&o.date ? new Date(o.date+'T00:00:00') : null; }catch(e){ return null; }
+}
+function devInsights(){
+  const birth=devBirthDate(), now=new Date();
+  const months=birth ? Math.max(0,Math.floor(((now-birth)/86400000)/30.44)) : null;
+  const sleep=DEV_SLEEP.find(x=>months!==null&&months>=x.from&&months<=x.to)||DEV_SLEEP[0];
+  const currentWeek=birth ? Math.max(1,Math.floor((now-birth)/604800000)+1) : null;
+  const start=currentWeek ? Math.max(1,currentWeek-6) : 1;
+  const weeks=Array.from({length:16},(_,i)=>start+i).map(week=>{
+    let range=''; if(birth){ const a=new Date(birth.getTime()+(week-1)*604800000), b=new Date(birth.getTime()+week*604800000-86400000); range=a.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+'–'+b.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}); }
+    const near=DEV_GROWTH_WEEKS.some(w=>Math.abs(w-week)<=1);
+    return `<div class="growth-week ${week===currentWeek?'current':''} ${near?'possible':''}"><b>${week}</b><span>${range||'неделя'}</span></div>`;
+  }).join('');
+  return `<section class="dev-insights" aria-label="Сон и периоды развития">
+    <div class="dev-insights-intro"><span class="dev-insight-mark" aria-hidden="true"></span><div><h2>Режим и развитие</h2><p>Ориентиры для вашей семьи, а не строгий график.</p></div></div>
+    <article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map(row=>`<div class="${row===sleep?'now':''}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></div>`).join('')}</div></details></article>
+    <article class="dev-insight-card growth-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">ПЕРИОДЫ РАЗВИТИЯ</span><h3>${currentWeek?'Сейчас '+currentWeek+'-я неделя':'Укажите дату рождения'}</h3></div><span class="dev-calendar-icon" aria-hidden="true"></span></div><p class="growth-copy">${birth?'Календарь считает недели от даты рождения. Персиковые ячейки — возможные периоды, когда ребёнку может требоваться больше близости и кормлений.':'Добавьте дату рождения в «Главная → изменить», и календарь станет персональным.'}</p><div class="growth-grid">${weeks}</div><p class="growth-note">Это не диагноз и не точный прогноз: темп развития у детей индивидуален.</p></article>
+  </section>`;
+}
 function renderDev(){
-  const main = document.getElementById("devMain"); main.innerHTML="";
+  const main = document.getElementById("devMain"); main.innerHTML=devInsights();
   DEV.forEach(mo=>{
     const el=document.createElement("div"); el.className=`stage theme-${mo.theme}`; el.dataset.cat=mo.id;
     const head=document.createElement("div"); head.className="stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
