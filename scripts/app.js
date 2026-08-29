@@ -3311,12 +3311,14 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
       {k:'more', ic:'dots', l:'Ещё'}
     ];
     var tabsEl=document.createElement('div'); tabsEl.id='mamaTabs';
-    tabsEl.innerHTML=TABS.map(function(t){ return '<button class="tab" data-tab="'+t.k+'">'+IC[t.ic]+'<span>'+t.l+'</span></button>'; }).join('');
+    tabsEl.innerHTML='<span class="tab-slider" aria-hidden="true"></span>'+TABS.map(function(t){ return '<button class="tab" type="button" data-tab="'+t.k+'">'+IC[t.ic]+'<span>'+t.l+'</span></button>'; }).join('');
     document.body.appendChild(tabsEl);
     function hubVisible(){ return getComputedStyle(hub).display!=='none'; }
     function syncTabs(){
       var active = hubVisible() ? 'home' : (tabsEl.__last||'home');
       tabsEl.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===active); });
+      var index=TABS.findIndex(function(t){ return t.k===active; });
+      tabsEl.style.setProperty('--tab-index',Math.max(0,index));
     }
     tabsEl.addEventListener('click',function(e){ var b=e.target.closest('[data-tab]'); if(!b) return; var k=b.getAttribute('data-tab'); tabsEl.__last=k;
       if(k==='home'){ showHub(); }
