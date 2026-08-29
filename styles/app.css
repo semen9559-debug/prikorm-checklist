@@ -445,7 +445,7 @@
 
   /* theme toggle */
   .theme-toggle{
-    position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:14px;
+    position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:64px;
     width:42px; height:42px; border-radius:50%; z-index:82;
     border:1px solid var(--glass-brd); background:var(--glass); color:var(--ink);
     backdrop-filter:blur(18px) saturate(180%); -webkit-backdrop-filter:blur(18px) saturate(180%);
@@ -455,7 +455,7 @@
   }
   .theme-toggle:active{ transform:scale(.9); }
   .profile-btn{
-    position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:64px;
+    position:fixed; top:calc(env(safe-area-inset-top) + 12px); right:14px;
     width:42px; height:42px; border-radius:50%; z-index:82;
     border:1px solid var(--glass-brd); background:var(--glass); color:var(--ink);
     backdrop-filter:blur(18px) saturate(180%); -webkit-backdrop-filter:blur(18px) saturate(180%);
@@ -572,6 +572,7 @@
     box-shadow:var(--glass-sh), inset 1px 0 0 var(--glass-hi);
     transform:translateX(-102%); transition:transform .32s cubic-bezier(.34,1.2,.5,1);
     padding:calc(env(safe-area-inset-top) + 64px) 16px 20px; display:flex; flex-direction:column; gap:8px;
+    overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y;
   }
   .drawer.open{ transform:translateX(0); }
   .drawer-title{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px; color:var(--ink-soft); letter-spacing:.6px; text-transform:uppercase; margin:0 0 6px 6px; }
@@ -799,9 +800,6 @@ html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !importan
 #dyReport .rp-btn{flex:1;font:inherit;font-weight:800;font-size:15px;padding:13px;border-radius:99px;cursor:pointer;border:none;}
 #dyReport .rp-png{background:var(--sage);color:#fff;}
 #dyReport .rp-print{background:var(--paper);color:var(--ink);border:1.5px solid var(--line);}
-
-
-body{margin:0;padding:16px;background:#fff}svg{width:100%;height:auto}
 
 
 /* Batch 1 (v40): full event catalog + structured forms */
