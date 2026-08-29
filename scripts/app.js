@@ -881,8 +881,12 @@ function currentTheme(){ return document.documentElement.getAttribute("data-them
 function applyThemeIcon(){
   const b = document.getElementById("themeToggle");
   const dark = currentTheme()==="dark";
-  b.textContent = dark ? "☀️" : "🌙";
-  b.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
+  if(b){
+    b.textContent = dark ? "☀️" : "🌙";
+    b.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
+  }
+  const hubButton = document.querySelector('#homeHub button[data-theme]');
+  if(hubButton) hubButton.innerHTML = dark ? IC.sun : IC.moon;
   const meta = document.querySelector('meta[name="theme-color"]');
   if(meta) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
 }
@@ -893,6 +897,15 @@ document.getElementById("themeToggle").addEventListener("click", ()=>{
   try{ localStorage.setItem(T_KEY, currentTheme()); }catch(e){}
   applyThemeIcon();
 });
+// Until a person chooses a theme in the app, follow the phone setting.
+try{
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  systemTheme.addEventListener('change', event=>{
+    if(localStorage.getItem(T_KEY)) return;
+    document.documentElement.toggleAttribute('data-theme', event.matches);
+    applyThemeIcon();
+  });
+}catch(e){}
 
 /* ---------- НАВЕРХ ---------- */
 const fabTop = document.getElementById("fabTop");
@@ -3197,7 +3210,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
 
     hub.addEventListener('click',function(e){
       if(e.target.closest('[data-menu]')){ hideHub(); appMenu(); return; }
-      if(e.target.closest('[data-theme]')){ appTheme(); setTimeout(function(){ var b=hub.querySelector('[data-theme]'); if(b) b.innerHTML=themeIcon(); },30); return; }
+      if(e.target.closest('button[data-theme]')){ appTheme(); setTimeout(function(){ var b=hub.querySelector('button[data-theme]'); if(b) b.innerHTML=themeIcon(); },30); return; }
       if(e.target.closest('[data-edit]')){ openOnb(); return; }
       if(e.target.closest('[data-customize]')){ openTiles(); return; }
       var t=e.target.closest('[data-v]'); if(!t) return; var v=t.getAttribute('data-v'); hideHub(); try{ window.setView(v); }catch(_){}
