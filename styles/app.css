@@ -49,13 +49,13 @@
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-  html,body{margin:0; padding:0;}
-  html{ background:var(--cream); }
+  html,body{margin:0; padding:0; min-height:100%; min-height:-webkit-fill-available;}
+  html{ background:var(--cream); height:-webkit-fill-available; }
   body{
     background:var(--cream);
     font-family:'Nunito', sans-serif;
     color:var(--ink);
-    min-height:100vh; min-height:100dvh;
+    min-height:100vh; min-height:100dvh; min-height:-webkit-fill-available;
     padding-bottom:calc(40px + env(safe-area-inset-bottom));
     overflow-x:hidden;
     transition: background .3s ease, color .3s ease;
