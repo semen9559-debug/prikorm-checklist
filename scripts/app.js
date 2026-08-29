@@ -218,6 +218,8 @@ function switchChild(id){
   if(typeof pregMod!=="undefined") pregMod.load();
   render();
   if(currentView==="dev") renderDev();
+  if(currentView==="sleep") renderSleepView();
+  if(currentView==="growth") renderGrowthView();
   if(currentView==="diary") renderDiary();
   if(currentView==="docs") renderDocs();
   if(currentView==="vac") vacMod.render();
@@ -271,6 +273,8 @@ function saveKid(){
     loadState(); dLoad(); dyLoad(); dcLoad(); vacMod.load(); pregMod.load();
     closeKidModal(); render();
     if(currentView==="dev") renderDev();
+    if(currentView==="sleep") renderSleepView();
+    if(currentView==="growth") renderGrowthView();
     if(currentView==="diary") renderDiary();
     if(currentView==="docs") renderDocs();
     if(currentView==="vac") vacMod.render();
@@ -289,6 +293,8 @@ function deleteKid(){
   if(activeChild === id){ activeChild = children[0].id; saveActive(); loadState(); dLoad(); dyLoad(); dcLoad(); vacMod.load(); pregMod.load(); }
   closeKidModal(); render();
   if(currentView==="dev") renderDev();
+  if(currentView==="sleep") renderSleepView();
+  if(currentView==="growth") renderGrowthView();
   if(currentView==="diary") renderDiary();
   if(currentView==="docs") renderDocs();
   if(currentView==="vac") vacMod.render();
@@ -1573,7 +1579,7 @@ const DEV_GROWTH_WEEKS=[2,3,6,12,18,26,39,52];
 function devBirthDate(){
   try{ const o=JSON.parse(localStorage.getItem('mama-onb')||'null'); return o&&o.mode==='baby'&&o.date ? new Date(o.date+'T00:00:00') : null; }catch(e){ return null; }
 }
-function devInsights(){
+function devInsights(kind){
   const birth=devBirthDate(), now=new Date();
   const months=birth ? Math.max(0,Math.floor(((now-birth)/86400000)/30.44)) : null;
   const sleep=DEV_SLEEP.find(x=>months!==null&&months>=x.from&&months<=x.to)||DEV_SLEEP[0];
@@ -1585,13 +1591,15 @@ function devInsights(){
     return `<div class="growth-week ${week===currentWeek?'current':''} ${near?'possible':''}"><b>${week}</b><span>${range||'неделя'}</span></div>`;
   }).join('');
   return `<section class="dev-insights" aria-label="Сон и периоды развития">
-    <div class="dev-insights-intro"><span class="dev-insight-mark" aria-hidden="true"></span><div><h2>Режим и развитие</h2><p>Ориентиры для вашей семьи, а не строгий график.</p></div></div>
-    <article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map(row=>`<div class="${row===sleep?'now':''}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></div>`).join('')}</div></details></article>
-    <article class="dev-insight-card growth-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">ПЕРИОДЫ РАЗВИТИЯ</span><h3>${currentWeek?'Сейчас '+currentWeek+'-я неделя':'Укажите дату рождения'}</h3></div><span class="dev-calendar-icon" aria-hidden="true"></span></div><p class="growth-copy">${birth?'Календарь считает недели от даты рождения. Персиковые ячейки — возможные периоды, когда ребёнку может требоваться больше близости и кормлений.':'Добавьте дату рождения в «Главная → изменить», и календарь станет персональным.'}</p><div class="growth-grid">${weeks}</div><p class="growth-note">Это не диагноз и не точный прогноз: темп развития у детей индивидуален.</p></article>
+    <div class="dev-insights-intro"><span class="dev-insight-mark" aria-hidden="true"></span><div><h2>${kind==='sleep'?'Режим сна':'Периоды развития'}</h2><p>Ориентиры для вашей семьи, а не строгий график.</p></div></div>
+    ${kind==='sleep'?`<article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map(row=>`<div class="${row===sleep?'now':''}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></div>`).join('')}</div></details></article>`:''}
+    ${kind==='growth'?`<article class="dev-insight-card growth-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">ПЕРИОДЫ РАЗВИТИЯ</span><h3>${currentWeek?'Сейчас '+currentWeek+'-я неделя':'Укажите дату рождения'}</h3></div><span class="dev-calendar-icon" aria-hidden="true"></span></div><p class="growth-copy">${birth?'Календарь считает недели от даты рождения. Персиковые ячейки — возможные периоды, когда ребёнку может требоваться больше близости и кормлений.':'Добавьте дату рождения в «Главная → изменить», и календарь станет персональным.'}</p><div class="growth-grid">${weeks}</div><p class="growth-note">Это не диагноз и не точный прогноз: темп развития у детей индивидуален.</p></article>`:''}
   </section>`;
 }
+function renderSleepView(){ const main=document.getElementById('sleepMain'); if(main) main.innerHTML=devInsights('sleep'); }
+function renderGrowthView(){ const main=document.getElementById('growthMain'); if(main) main.innerHTML=devInsights('growth'); }
 function renderDev(){
-  const main = document.getElementById("devMain"); main.innerHTML=devInsights();
+  const main = document.getElementById("devMain"); main.innerHTML="";
   DEV.forEach(mo=>{
     const el=document.createElement("div"); el.className=`stage theme-${mo.theme}`; el.dataset.cat=mo.id;
     const head=document.createElement("div"); head.className="stage-head"; head.setAttribute("role","button"); head.setAttribute("tabindex","0");
@@ -2016,6 +2024,8 @@ function setView(v){
   document.getElementById("viewSumka").hidden = (v!=="sumka");
   document.getElementById("viewBuy").hidden = (v!=="buy");
   document.getElementById("viewDev").hidden = (v!=="dev");
+  document.getElementById("viewSleep").hidden = (v!=="sleep");
+  document.getElementById("viewGrowth").hidden = (v!=="growth");
   document.getElementById("viewDiary").hidden = (v!=="diary");
   document.getElementById("viewDocs").hidden = (v!=="docs");
   document.getElementById("viewVac").hidden = (v!=="vac");
@@ -2024,6 +2034,8 @@ function setView(v){
   if(v==="sumka") renderSumka();
   if(v==="buy") renderBuy();
   if(v==="dev") renderDev();
+  if(v==="sleep") renderSleepView();
+  if(v==="growth") renderGrowthView();
   if(v==="diary") renderDiary();
   if(v==="docs") renderDocs();
   if(v==="vac") vacMod.render();
@@ -3225,6 +3237,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
   var IC={
     sprout:svg('<path d="M12 21V11"/><path d="M12 11c0-3 2.4-5.2 5.4-5.2C17.4 8.8 15 11 12 11z"/><path d="M12 12.5C12 9.8 9.7 7.7 6.8 7.7 6.8 10.5 9 12.5 12 12.5z"/>'),
     moon:svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+    calendar:svg('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M8 17h6"/>'),
     sun:svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/>'),
     shield:svg('<path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>'),
     steps:svg('<path d="M4 19h4v-4H4zM10 15h4v-4h-4zM16 11h4V7h-4z"/>'),
@@ -3248,12 +3261,14 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     diary:{v:'diary', n:'Дневник дня', d:'кормления, сон, уход', ic:'journal', c:'--sky'},
     vac:{v:'vac', n:'Прививки', d:'нацкалендарь РФ', ic:'shield', c:'--butter'},
     dev:{v:'dev', n:'Развитие', d:'навыки по месяцам', ic:'steps', c:'--sage'},
+    sleep:{v:'sleep', n:'Режим сна', d:'ориентиры по возрасту', ic:'moon', c:'--sky'},
+    growth:{v:'growth', n:'Периоды развития', d:'календарь недель малыша', ic:'calendar', c:'--coral'},
     docs:{v:'docs', n:'Документы', d:'и выплаты', ic:'doc', c:'--rust'},
     buy:{v:'buy', n:'Покупки', d:'к рождению', ic:'cart', c:'--sky'},
     sumka:{v:'sumka', n:'Сумка в роддом', d:'ничего не забыть', ic:'bag', c:'--sage'},
     preg:{v:'preg', n:'Беременность', d:'по триместрам', ic:'heart', c:'--butter'}
   };
-  var ORDER=['prikorm','diary','vac','dev','docs','buy','sumka','preg'];
+  var ORDER=['prikorm','diary','vac','dev','sleep','growth','docs','buy','sumka','preg'];
   var ONB_KEY='mama-onb';
   function getOnb(){ try{ return JSON.parse(localStorage.getItem(ONB_KEY)||'null'); }catch(_){ return null; } }
   function setOnb(o){ try{ localStorage.setItem(ONB_KEY, JSON.stringify(o)); }catch(_){} }

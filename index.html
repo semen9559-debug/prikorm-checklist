@@ -27,7 +27,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v62";
+  window.APP_VERSION = "v63";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -69,6 +69,8 @@
   <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>
   <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>
   <button class="drawer-item" data-view="dev" type="button">👣 Развитие по месяцам</button>
+  <button class="drawer-item" data-view="sleep" type="button">🌙 Режим сна</button>
+  <button class="drawer-item" data-view="growth" type="button">📅 Периоды развития</button>
   <button class="drawer-item" data-view="diary" type="button">😴 Дневник дня</button>
   <button class="drawer-item" data-view="docs" type="button">📄 Документы и выплаты</button>
   <button class="drawer-item" data-view="vac" type="button">💉 Календарь прививок</button>
@@ -174,6 +176,9 @@
     <button id="devCollapseBtn" type="button">🔽 Свернуть всё</button>
   </div>
 </div>
+
+<div id="viewSleep" hidden><div class="hero"><div class="hero-plant">🌙</div><h1>Режим сна</h1><p class="hero-sub">Ориентиры по возрасту, дневному и ночному сну</p></div><main id="sleepMain"></main></div>
+<div id="viewGrowth" hidden><div class="hero"><div class="hero-plant">📅</div><h1>Периоды развития</h1><p class="hero-sub">Личный календарь недель малыша</p></div><main id="growthMain"></main></div>
 
 <div id="viewDiary" hidden>
   <div class="hero">
