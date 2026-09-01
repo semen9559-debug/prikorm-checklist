@@ -121,7 +121,13 @@ const syncModule = await page.evaluate(async () => {
     skipsOpen: !mod.appKey('prikorm-dev-open__c1'),
     skipsAuth: !mod.appKey('sb-token'),
     mergeKeeps: mod.mergeValues('{"a":true}', '{"b":true}'),
-    mergeById: mod.mergeValues('[{"id":"c1","name":"Аня"}]', '[{"id":"c2","name":"Петя"}]')
+    mergeById: mod.mergeValues('[{"id":"c1","name":"Аня"}]', '[{"id":"c2","name":"Петя"}]'),
+    /* дневник: мама записала кормление, папа — сон, в тот же день */
+    mergeDiary: mod.mergeValues(
+      '{"2026-09-01":[{"id":"a","type":"feed"}]}',
+      '{"2026-09-01":[{"id":"b","type":"sleep"}]}'
+    ),
+    mergeNested: mod.mergeValues('{"s1":{"a":true}}', '{"s1":{"b":true},"s2":{"c":true}}')
   };
 });
 check('синхронизируются данные', syncModule.syncsData);
@@ -131,6 +137,11 @@ check('свёрнутые категории не уезжают', syncModule.sk
 check('токены авторизации не уезжают', syncModule.skipsAuth);
 check('слияние не теряет отметки', syncModule.mergeKeeps === '{"a":true,"b":true}', syncModule.mergeKeeps);
 check('слияние списка детей по id', JSON.parse(syncModule.mergeById).length === 2, syncModule.mergeById);
+check('дневник объединяется по записям',
+  JSON.parse(syncModule.mergeDiary)['2026-09-01'].length === 2, syncModule.mergeDiary);
+check('вложенные разделы объединяются',
+  Object.keys(JSON.parse(syncModule.mergeNested)).length === 2
+  && Object.keys(JSON.parse(syncModule.mergeNested).s1).length === 2, syncModule.mergeNested);
 
 /* 8. Обновление от семьи перерисовывает экран без перезагрузки. */
 check('событие family-sync перерисовывает', await page.evaluate(async () => {

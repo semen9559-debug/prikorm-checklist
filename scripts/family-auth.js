@@ -75,12 +75,36 @@ function hasIds(list) {
   return Array.isArray(list) && list.length > 0 && list.every(item => item && typeof item === 'object' && 'id' in item);
 }
 
+function mergeParsed(local, remote, depth) {
+  if (local === undefined) return remote;
+  if (remote === undefined) return local;
+
+  /* Списки записей с id (дети, свои продукты, события дневника)
+     объединяем по id, а не заменяем целиком. */
+  if (hasIds(local) && hasIds(remote)) {
+    const byId = new Map(local.map(item => [item.id, item]));
+    remote.forEach(item => byId.set(item.id, { ...(byId.get(item.id) || {}), ...item }));
+    return [...byId.values()];
+  }
+
+  if (isPlainObject(local) && isPlainObject(remote) && depth < 3) {
+    const merged = { ...local };
+    Object.keys(remote).forEach(key => {
+      merged[key] = key in local ? mergeParsed(local[key], remote[key], depth + 1) : remote[key];
+    });
+    return merged;
+  }
+
+  return remote;
+}
+
 /**
  * Объединяет локальное и удалённое значение одного ключа.
- * Объекты-справочники (отметки, заметки, даты) объединяются по ключам —
- * это защищает от потери отметок, когда двое родителей отмечают одновременно.
- * Списки объектов (дети, свои продукты) объединяются по id.
- * Всё остальное — берём удалённое как более свежее.
+ *
+ * Справочники отметок, заметок и дат объединяются по ключам — так не теряются
+ * отметки, когда двое родителей отмечают одновременно. Дневник дня объединяется
+ * на уровне отдельных записей: кормление, добавленное мамой, и сон, добавленный
+ * папой в тот же день, остаются оба.
  *
  * Компромисс: объединение может «воскресить» снятую галочку, если её сняли на
  * одном устройстве, пока второе было офлайн. Потерять одну галочку менее
@@ -93,16 +117,9 @@ export function mergeValues(localRaw, remoteRaw) {
 
   const local = parseJson(localRaw);
   const remote = parseJson(remoteRaw);
+  if (local === undefined || remote === undefined) return remoteRaw;
 
-  if (isPlainObject(local) && isPlainObject(remote)) {
-    return JSON.stringify({ ...local, ...remote });
-  }
-  if (hasIds(local) && hasIds(remote)) {
-    const byId = new Map(local.map(item => [item.id, item]));
-    remote.forEach(item => byId.set(item.id, { ...(byId.get(item.id) || {}), ...item }));
-    return JSON.stringify([...byId.values()]);
-  }
-  return remoteRaw;
+  return JSON.stringify(mergeParsed(local, remote, 0));
 }
 
 /* ============================ применение данных ========================== */

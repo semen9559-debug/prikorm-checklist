@@ -2471,7 +2471,6 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
 
 (function(){
   "use strict";
-  function has(n){ try{ return typeof window[n]==='function' || typeof eval(n)!=='undefined'; }catch(e){ return false; } }
   var TKEY='prikorm-diary-timer';
   function kk(key){ try{ return (typeof k==='function')?k(key):key; }catch(e){ return key; } }
   function getTimer(){ try{ return JSON.parse(localStorage.getItem(kk(TKEY))||'null'); }catch(e){ return null; } }
