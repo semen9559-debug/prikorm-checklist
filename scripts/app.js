@@ -164,7 +164,32 @@ const isDesktop = () => window.matchMedia("(min-width:981px)").matches;
 const REMOJI = {love:"😋", meh:"😐", no:"🤢"};
 const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 function fmtDate(iso){ const d = new Date(iso); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
-function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- ХРАНИЛИЩЕ: не терять данные молча ---------- */
+/* Все записи в проекте обёрнуты в try/catch, поэтому переполнение квоты
+   раньше проходило беззвучно: пользователь думал, что всё сохранено. */
+(function(){
+  var original = Storage.prototype.setItem;
+  var warnedAt = 0;
+  Storage.prototype.setItem = function(key, value){
+    try{
+      return original.call(this, key, value);
+    }catch(err){
+      if(this === localStorage){
+        var now = Date.now();
+        if(now - warnedAt > 30000){
+          warnedAt = now;
+          setTimeout(function(){
+            try{ toast("Не хватает места на устройстве. Сохраните копию (💾) и удалите лишнее"); }catch(e){}
+          }, 0);
+        }
+      }
+      throw err;
+    }
+  };
+})();
+
 
 /* ---------- ДЕТИ (профили) ---------- */
 function saveChildren(){ try{ localStorage.setItem(CH_KEY, JSON.stringify(children)); }catch(e){} }
@@ -894,7 +919,10 @@ function applyThemeIcon(){
     b.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
   }
   const hubButton = document.querySelector('#homeHub button[data-theme]');
-  if(hubButton) hubButton.innerHTML = dark ? IC.sun : IC.moon;
+  // IC живёт внутри модуля главного экрана и появляется позже — раньше здесь
+  // был ReferenceError, из-за которого не обновлялся цвет статус-бара.
+  const icons = window.IC;
+  if(hubButton && icons) hubButton.innerHTML = dark ? icons.sun : icons.moon;
   const meta = document.querySelector('meta[name="theme-color"]');
   if(meta) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
 }
@@ -981,11 +1009,16 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
 });
 
 /* ---------- РЕЗЕРВНАЯ КОПИЯ ---------- */
+/* Копия забирает все ключи приложения (prikorm-* и mama-*), кроме служебных
+   отметок синхронизации — раньше настройки и прогресс онбординга терялись. */
+function isBackupKey(key){
+  return (key.indexOf("prikorm-")===0 || key.indexOf("mama-")===0) && key.indexOf("mama-sync-")!==0;
+}
 document.getElementById("exportBtn").addEventListener("click", ()=>{
   const data = {};
   for(let i=0;i<localStorage.length;i++){
     const key = localStorage.key(i);
-    if(key && key.indexOf("prikorm-")===0) data[key] = localStorage.getItem(key);
+    if(key && isBackupKey(key)) data[key] = localStorage.getItem(key);
   }
   const blob = new Blob([JSON.stringify({app:"prikorm", version:2, data}, null, 2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
@@ -1002,7 +1035,7 @@ document.getElementById("importFile").addEventListener("change", e=>{
     try{
       const parsed = JSON.parse(r.result);
       const data = parsed.data || parsed;
-      Object.keys(data).forEach(key=>{ if(key.indexOf("prikorm-")===0) localStorage.setItem(key, data[key]); });
+      Object.keys(data).forEach(key=>{ if(isBackupKey(key)) localStorage.setItem(key, data[key]); });
       toast("Данные восстановили ✅");
       setTimeout(()=> location.reload(), 600);
     }catch(err){ toast("Не смогли открыть файл. Проверь формат и попробуй снова"); }
@@ -3265,6 +3298,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     gear:svg('<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2l-.4-2.6H8.9l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 4 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h4.2l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6A7 7 0 0 0 19 12z"/>'),
     plus:svg('<path d="M12 5v14M5 12h14"/>')
   };
+  window.IC = IC; // нужен applyThemeIcon() из шапки
   var MODS={
     prikorm:{v:'prikorm', n:'Прикорм', d:'что и когда вводить', ic:'sprout', c:'--sage'},
     diary:{v:'diary', n:'Дневник дня', d:'кормления, сон, уход', ic:'journal', c:'--sky'},
@@ -3460,4 +3494,116 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     }else showHub();
     if(getOnb()==null) openOnb();
   });
+})();
+
+/* ===================== ОБНОВЛЕНИЕ ОТ СЕМЬИ И ФОКУС В МОДАЛКАХ ===================== */
+(function(){
+  "use strict";
+
+  /* --- перечитать localStorage и перерисовать текущий экран ---
+     Раньше чужая правка вызывала location.reload(): у второго родителя
+     страница моргала на каждую галочку и терялся набранный текст. */
+  function refreshAllFromStorage(){
+    try{
+      loadChildrenMeta();
+      loadState();
+      if(typeof sLoad === "function") sLoad();
+      if(typeof bLoad === "function") bLoad();
+      if(typeof dLoad === "function") dLoad();
+      if(typeof dyLoad === "function") dyLoad();
+      if(typeof dcLoad === "function") dcLoad();
+      if(typeof vacMod !== "undefined") vacMod.load();
+      if(typeof pregMod !== "undefined") pregMod.load();
+
+      render();
+      renderKids();
+      updateHero();
+
+      if(currentView === "sumka" && typeof renderSumka === "function") renderSumka();
+      if(currentView === "buy" && typeof renderBuy === "function") renderBuy();
+      if(currentView === "dev" && typeof renderDev === "function") renderDev();
+      if(currentView === "sleep" && typeof renderSleepView === "function") renderSleepView();
+      if(currentView === "growth" && typeof renderGrowthView === "function") renderGrowthView();
+      if(currentView === "diary" && typeof renderDiary === "function") renderDiary();
+      if(currentView === "docs" && typeof renderDocs === "function") renderDocs();
+      if(currentView === "vac" && typeof vacMod !== "undefined") vacMod.render();
+      if(currentView === "preg" && typeof pregMod !== "undefined") pregMod.render();
+    }catch(err){
+      console.error("Не удалось применить изменения семьи:", err);
+    }
+  }
+  window.refreshAllFromStorage = refreshAllFromStorage;
+
+  /* Не выдёргиваем поле из-под рук: если человек печатает — ждём паузы. */
+  function isTyping(){
+    var el = document.activeElement;
+    if(!el) return false;
+    if(el.tagName === "TEXTAREA") return true;
+    return el.tagName === "INPUT" && ["text","search","time","email","password","number"].indexOf(el.type) !== -1;
+  }
+
+  var pendingRefresh = false;
+  function requestRefresh(){
+    if(pendingRefresh) return;
+    pendingRefresh = true;
+    (function attempt(){
+      if(isTyping()){ setTimeout(attempt, 2000); return; }
+      pendingRefresh = false;
+      refreshAllFromStorage();
+    })();
+  }
+
+  window.addEventListener("family-sync", requestRefresh);
+
+  /* --- фокус в модалках: ловушка Tab и возврат на кнопку-открыватель --- */
+  var openerByModal = new WeakMap();
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function activeOverlay(){
+    return document.querySelector(".modal.open, .sheet.open");
+  }
+
+  function onOpened(el, opener){
+    openerByModal.set(el, opener);
+    setTimeout(function(){
+      if(!el.classList.contains("open")) return;
+      var items = el.querySelectorAll(FOCUSABLE);
+      /* первый осмысленный элемент — обычно поле ввода, а не крестик */
+      var target = el.querySelector("input, textarea") || items[0];
+      if(target && typeof target.focus === "function") target.focus();
+    }, 60);
+  }
+
+  function onClosed(el){
+    var opener = openerByModal.get(el);
+    openerByModal.delete(el);
+    /* фокус не должен остаться в скрытом поле закрытой модалки */
+    if(el.contains(document.activeElement) && document.activeElement.blur) document.activeElement.blur();
+    if(opener && opener !== document.body && document.body.contains(opener) && typeof opener.focus === "function") opener.focus();
+  }
+
+  document.querySelectorAll(".modal, .sheet").forEach(function(el){
+    var wasOpen = el.classList.contains("open");
+    new MutationObserver(function(){
+      var isOpen = el.classList.contains("open");
+      if(isOpen === wasOpen) return;
+      wasOpen = isOpen;
+      if(isOpen) onOpened(el, document.activeElement);
+      else onClosed(el);
+    }).observe(el, { attributes:true, attributeFilter:["class"] });
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Tab") return;
+    var overlay = activeOverlay();
+    if(!overlay) return;
+    var items = Array.prototype.filter.call(overlay.querySelectorAll(FOCUSABLE), function(el){
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+    if(!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if(!overlay.contains(document.activeElement)){ e.preventDefault(); first.focus(); return; }
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }, true);
 })();
