@@ -1,5 +1,10 @@
-const CACHE = "prikorm-v29";
-const ASSETS = [
+/* Service worker.
+   Версию проставляет scripts/release.mjs — вручную её править не нужно. */
+const VERSION = "v70";
+const CACHE = `prikorm-${VERSION}`;
+
+/* Файлы, без которых приложение не откроется офлайн. */
+const CORE_ASSETS = [
   "./",
   "./index.html",
   "./styles/app.css",
@@ -12,10 +17,20 @@ const ASSETS = [
   "./icon-180.png"
 ];
 
+/* Необязательные файлы: их отсутствие не должно ломать установку. */
+const OPTIONAL_ASSETS = [
+  "./scripts/vendor/supabase.js"
+];
+
 self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // По одному файлу: раньше один 404 в addAll рушил установку целиком.
+    await Promise.all([...CORE_ASSETS, ...OPTIONAL_ASSETS].map(
+      asset => cache.add(asset).catch(() => {})
+    ));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", e => {
@@ -25,6 +40,12 @@ self.addEventListener("activate", e => {
       .then(() => self.clients.claim())
   );
 });
+
+self.addEventListener("message", e => {
+  if (e.data === "skip-waiting") self.skipWaiting();
+});
+
+const cacheable = res => res && res.ok && res.type !== "opaque";
 
 self.addEventListener("fetch", e => {
   const req = e.request;
@@ -37,7 +58,13 @@ self.addEventListener("fetch", e => {
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req)
-        .then(res => { const c = res.clone(); caches.open(CACHE).then(cc => cc.put("./index.html", c)); return res; })
+        .then(res => {
+          if (cacheable(res)) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put("./index.html", copy));
+          }
+          return res;
+        })
         .catch(() => caches.match("./index.html"))
     );
     return;
@@ -49,7 +76,9 @@ self.addEventListener("fetch", e => {
     try {
       const res = await fetch(req);
       const url = new URL(req.url);
-      if (url.origin === location.origin || url.host.includes("fonts.g")) {
+      // Ошибочные ответы в кэш не кладём: иначе 404 во время выката
+      // залипал в офлайн-копии до следующего релиза.
+      if (cacheable(res) && (url.origin === location.origin || url.host.includes("fonts.g"))) {
         const c = await caches.open(CACHE);
         c.put(req, res.clone());
       }

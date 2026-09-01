@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#FFF9F0">
 <meta name="description" content="Интерактивный трекер прикорма 5,5–12 месяцев: список продуктов по возрастам с короткими советами по каждому.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://esm.sh https://*.supabase.co wss://*.supabase.co; form-action 'self'">
+<link rel="canonical" href="https://prikorm.dverizapeli.ru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Мама рядом">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Трекер прикорма 5,5–12 месяцев">
+<meta property="og:description" content="Что и когда вводить малышу — по шагам, с советом на каждый продукт. Плюс сумка в роддом, прививки, документы и дневник дня.">
+<meta property="og:url" content="https://prikorm.dverizapeli.ru/">
+<meta property="og:image" content="https://prikorm.dverizapeli.ru/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Трекер прикорма 5,5–12 месяцев">
+<meta name="twitter:description" content="Что и когда вводить малышу — по шагам, с советом на каждый продукт.">
+<meta name="twitter:image" content="https://prikorm.dverizapeli.ru/icon-512.png">
 <title>Трекер прикорма 5,5–12 месяцев</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -16,8 +31,22 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>html.icons-loading body{visibility:hidden}</style>
 <script>
+  // Показываем страницу, как только готов текст: раньше ждали window.load,
+  // и при медленных шрифтах человек смотрел в белый экран сколько угодно долго.
   document.documentElement.classList.add('icons-loading');
-  window.addEventListener('load', function(){ document.documentElement.classList.remove('icons-loading'); }, {once:true});
+  (function(){
+    var shown = false;
+    function reveal(){
+      if(shown) return;
+      shown = true;
+      document.documentElement.classList.remove('icons-loading');
+    }
+    var fonts = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    Promise.race([fonts, new Promise(function(r){ setTimeout(r, 1200); })]).then(reveal, reveal);
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(reveal, 1500); });
+    window.addEventListener('load', reveal, {once:true});
+    setTimeout(reveal, 4000); // страховка на самый плохой случай
+  })();
 </script>
 <script>
   try{
@@ -36,7 +65,11 @@
           if(j && j.v && j.v !== window.APP_VERSION){
             if(sessionStorage.getItem('pk-upd') === j.v) return; // уже пробовали — не зацикливаемся
             sessionStorage.setItem('pk-upd', j.v);
-            location.replace(location.pathname + '?v=' + encodeURIComponent(j.v));
+            // сохраняем query и hash: иначе теряются ?invite=... и ссылки
+            // подтверждения email / сброса пароля (#access_token=...)
+            var u = new URL(location.href);
+            u.searchParams.set('v', j.v);
+            location.replace(u.toString());
           }
         })
         .catch(function(){});
@@ -45,12 +78,30 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!-- Шрифты не блокируют первую отрисовку: грузим как print-стиль и включаем после загрузки. -->
+<link id="fontsCss" rel="stylesheet" media="print" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<script>
+  (function(){
+    var fc = document.getElementById('fontsCss');
+    if(!fc) return;
+    var enable = function(){ fc.media = 'all'; };
+    fc.addEventListener('load', enable, {once:true});
+    fc.addEventListener('error', enable, {once:true});
+    setTimeout(enable, 3000);
+  })();
+</script>
 
 
   <link rel="stylesheet" href="styles/app.css?v=70">
 </head>
 <body>
+<noscript>
+  <div style="max-width:640px;margin:40px auto;padding:20px;font:16px/1.5 system-ui,sans-serif;text-align:center">
+    <h1 style="font-size:20px">Нужен включённый JavaScript</h1>
+    <p>Приложение хранит отметки прямо в браузере и без JavaScript работать не может.
+       Включите его в настройках браузера и обновите страницу.</p>
+  </div>
+</noscript>
 
 <button class="menu-btn" id="menuBtn" aria-label="Разделы">▦</button>
 <button class="profile-btn" id="profileBtn" type="button" aria-label="Профиль и семья" title="Профиль и семья"><span aria-hidden="true">👤</span><span class="profile-btn-dot" aria-hidden="true"></span></button>
@@ -278,6 +329,7 @@
 <footer>
   Отмечайте продукты по мере знакомства малыша с ними 🍼
   <div class="made-with">Создана с любовью <span class="heart">❤</span></div>
+  <div class="made-with"><a href="privacy.html" style="color:inherit">Конфиденциальность и данные</a></div>
   <div class="social">
     <a href="https://www.instagram.com/anastaaasia__/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -317,14 +369,11 @@
     <h3 id="addTitle">Новый продукт</h3>
     <button class="modal-x" id="addClose" aria-label="Закрыть">✕</button>
   </div>
-  <label class="fld-label" for="addName">Название</label>
   <label class="fld-label" for="addName">Название продукта</label>
   <input id="addName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Кабачок с индейкой">
-  <label class="fld-label">Смайлик</label>
   <label class="fld-label" for="addEmoji">Значок</label>
   <input id="addEmoji" class="fld emoji-input" type="text" maxlength="4" autocomplete="off" placeholder="🥕">
   <div class="emoji-grid" id="emojiGrid"></div>
-  <label class="fld-label" for="addDesc">Описание / заметка</label>
   <label class="fld-label" for="addDesc">Заметка</label>
   <textarea id="addDesc" class="fld" placeholder="Как готовить, особенности, ваши наблюдения…"></textarea>
   <button class="add-submit" id="addSubmit">Добавить продукт</button>
@@ -337,7 +386,6 @@
     <button class="modal-x" id="kidClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="kidName">Имя ребёнка</label>
-  <label class="fld-label" for="kidName">Имя ребёнка</label>
   <input id="kidName" class="fld" type="text" maxlength="30" autocomplete="name" placeholder="Например: Аня">
   <button class="add-submit" id="kidSave">Сохранить</button>
   <button class="pcard-del" id="kidDelete" type="button" style="margin-top:10px; display:none">🗑 Удалить ребёнка</button>
@@ -349,7 +397,6 @@
     <h3 id="sAddTitle">Добавить своё</h3>
     <button class="modal-x" id="sAddClose" aria-label="Закрыть">✕</button>
   </div>
-  <label class="fld-label" for="sAddName">Название</label>
   <label class="fld-label" for="sAddName">Название вещи</label>
   <input id="sAddName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Плед">
   <div class="restore-options" id="sRestoreOptions" hidden></div>
@@ -362,7 +409,6 @@
     <h3 id="bAddTitle">Добавить своё</h3>
     <button class="modal-x" id="bAddClose" aria-label="Закрыть">✕</button>
   </div>
-  <label class="fld-label" for="bAddName">Название</label>
   <label class="fld-label" for="bAddName">Название покупки</label>
   <input id="bAddName" class="fld" type="text" maxlength="80" autocomplete="off" placeholder="Например: Конверт на выписку">
   <div class="restore-options" id="bRestoreOptions" hidden></div>
@@ -376,10 +422,8 @@
     <button class="modal-x" id="dyEditClose" aria-label="Закрыть">✕</button>
   </div>
   <label class="fld-label" for="dyEditTime">Время</label>
-  <label class="fld-label" for="dyEditTime">Время</label>
   <input id="dyEditTime" class="fld" type="time">
   <label class="fld-label" for="dyEditNote">Заметка (по желанию)</label>
-  <label class="fld-label" for="dyEditNote">Заметка</label>
   <textarea id="dyEditNote" class="fld" placeholder="Например: 120 мл, левая грудь / покакал / 37,2°"></textarea>
   <button class="add-submit" id="dyEditSave">Сохранить</button>
   <button class="pcard-del" id="dyEditDel" type="button" style="margin-top:10px">🗑 Удалить запись</button>
