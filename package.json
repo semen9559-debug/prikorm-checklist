@@ -1,0 +1,20 @@
+{
+  "name": "prikorm-checklist",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Мама рядом — трекер прикорма и спутник первого года (PWA)",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint scripts sw.js tools tests",
+    "test": "node tests/smoke.mjs",
+    "check": "node --check scripts/app.js && node --check sw.js && npm run lint && npm test",
+    "release": "node tools/release.mjs",
+    "vendor": "node tools/vendor.mjs",
+    "serve": "node tools/serve.mjs"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "playwright": "^1.49.0"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,45 @@
+name: Проверки
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Установить зависимости
+        run: npm install --no-audit --no-fund
+
+      - name: Синтаксис
+        run: |
+          node --check scripts/app.js
+          node --check sw.js
+
+      - name: Линтер
+        run: npx eslint scripts sw.js tools tests eslint.config.js
+
+      - name: Версия одинаковая во всех файлах
+        run: node tools/check-version.mjs
+
+      - name: Браузер для тестов
+        run: npx playwright install --with-deps chromium
+
+      - name: Дымовые тесты
+        run: node tests/smoke.mjs
+
+      - name: Скриншоты
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: tests/screenshot-*.png
+          if-no-files-found: ignore
