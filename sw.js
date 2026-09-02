@@ -1,6 +1,6 @@
 /* Service worker.
    Версию проставляет scripts/release.mjs — вручную её править не нужно. */
-const VERSION = "v73";
+const VERSION = "v74";
 const CACHE = `prikorm-${VERSION}`;
 
 /* Файлы, без которых приложение не откроется офлайн. */
