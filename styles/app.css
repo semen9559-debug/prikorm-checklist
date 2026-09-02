@@ -1129,3 +1129,7 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:0 6px 18px rgba(0,0,0,.2);}
 
 /* Главная: подпись плитки не съезжает, когда заголовок занимает две строки */
 #homeHub .tile .n{ min-height:2.5em; }
+
+/* Разделы без боковой колонки («Режим сна», «Периоды развития») центрируются
+   на широком экране: у них общий main без авто-отступов, и он прижимался влево. */
+#sleepMain, #growthMain{ margin-left:auto; margin-right:auto; }
