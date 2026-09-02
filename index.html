@@ -56,7 +56,7 @@
     }
   }catch(e){}
   // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
-  window.APP_VERSION = "v71";
+  window.APP_VERSION = "v72";
   (function(){
     try{
       fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
@@ -92,7 +92,7 @@
 </script>
 
 
-  <link rel="stylesheet" href="styles/app.css?v=71">
+  <link rel="stylesheet" href="styles/app.css?v=72">
 </head>
 <body>
 <noscript>
@@ -106,10 +106,6 @@
 <button class="menu-btn" id="menuBtn" aria-label="Разделы">▦</button>
 <button class="profile-btn" id="profileBtn" type="button" aria-label="Профиль и семья" title="Профиль и семья"><span aria-hidden="true">👤</span><span class="profile-btn-dot" aria-hidden="true"></span></button>
 <button class="theme-toggle" id="themeToggle" aria-label="Тёмная тема">🌙</button>
-<button class="notch-pacifier" id="notchPacifier" type="button" aria-label="Включить качание соски от тряски" title="Нажмите, чтобы включить реакцию на тряску">
-  <span class="notch-pacifier-cord" aria-hidden="true"></span>
-  <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5v9"/><path d="M14 15c0-5.5 4.5-10 10-10s10 4.5 10 10"/><circle cx="24" cy="25" r="10"/><path d="M18 25h12M24 19v12"/><path d="M20 35l-3 8h14l-3-8"/></svg>
-</button>
 
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 <nav class="drawer" id="drawer" aria-label="Разделы">
@@ -327,7 +323,6 @@
 </div>
 
 <footer>
-  Отмечайте продукты по мере знакомства малыша с ними 🍼
   <div class="made-with">Создана с любовью <span class="heart">❤</span></div>
   <div class="made-with"><a href="privacy.html" style="color:inherit">Конфиденциальность и данные</a></div>
   <div class="social">
@@ -457,7 +452,7 @@
 
 
 
-<script src="scripts/app.js?v=71"></script>
-<script type="module" src="scripts/family-auth.js?v=71"></script>
+<script src="scripts/app.js?v=72"></script>
+<script type="module" src="scripts/family-auth.js?v=72"></script>
 </body>
 </html>

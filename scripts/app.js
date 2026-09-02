@@ -943,36 +943,10 @@ try{
   });
 }catch(e){}
 
-/* ---------- СОСКА В ЧЁЛКЕ PWA ---------- */
+/* ---------- РЕЖИМ ЗАПУСКА ---------- */
 (function(){
-  var standalone=window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
-  document.documentElement.classList.add(standalone?'pwa-mode':'browser-mode');
-  var pacifier=document.getElementById('notchPacifier'); if(!pacifier) return;
-  var enabled=false, tilt=0, timer;
-  function setTilt(value){ tilt=Math.max(-18,Math.min(18,value)); pacifier.style.setProperty('--pacifier-tilt',tilt+'deg'); clearTimeout(timer); timer=setTimeout(function(){ pacifier.style.setProperty('--pacifier-tilt','0deg'); },620); }
-  function onMotion(event){
-    var a=event.accelerationIncludingGravity||event.acceleration||{};
-    var rotation=(event.rotationRate&&event.rotationRate.gamma)||0;
-    var force=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);
-    if(force>3 || Math.abs(rotation)>12) setTilt(Math.max(-18,Math.min(18,rotation/3+(a.x||0)*1.4)));
-  }
-  async function enableMotion(){
-    if(enabled) return;
-    try{
-      if(typeof DeviceMotionEvent==='undefined') throw new Error('unsupported');
-      if(typeof DeviceMotionEvent.requestPermission==='function'){
-        var permission=await DeviceMotionEvent.requestPermission();
-        if(permission!=='granted') throw new Error('denied');
-      }
-      window.addEventListener('devicemotion',onMotion,{passive:true}); enabled=true;
-      pacifier.classList.add('motion-ready'); pacifier.setAttribute('aria-label','Качание соски от тряски включено'); pacifier.title='Качание от тряски включено';
-      try{localStorage.setItem('prikorm-pacifier-motion','1');}catch(e){}
-      if(typeof window.toast==='function') window.toast('Качание от тряски включено');
-    }catch(error){
-      if(typeof window.toast==='function') window.toast('Для реакции на тряску разрешите доступ к датчикам');
-    }
-  }
-  pacifier.addEventListener('click',enableMotion);
+  var standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  document.documentElement.classList.add(standalone ? 'pwa-mode' : 'browser-mode');
 })();
 
 /* ---------- НАВЕРХ ---------- */
@@ -1620,7 +1594,7 @@ function getSleepAgeIndex(birth){
   return Math.max(0,DEV_SLEEP.findIndex(x=>months>=x.from&&months<=x.to));
 }
 function growthRange(birth,week){
-  if(!birth) return 'Неделя '+week;
+  if(!birth) return '';   // без даты рождения подпись дублировала число
   const a=new Date(birth.getTime()+(week-1)*604800000), b=new Date(birth.getTime()+week*604800000-86400000);
   return a.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+'–'+b.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
 }
@@ -1632,7 +1606,7 @@ function devInsights(kind){
   const weeks=Array.from({length:88},(_,i)=>i+1).map(week=>{
     const range=growthRange(birth,week);
     const near=DEV_GROWTH_WEEKS.some(w=>Math.abs(w-week)<=1);
-    return `<button type="button" class="growth-week ${week===currentWeek?'current':''} ${week===selected?'selected':''} ${near?'possible':''}" data-growth-week="${week}" aria-pressed="${week===selected}"><b>${week}</b><span>${range}</span></button>`;
+    return `<button type="button" class="growth-week ${week===currentWeek?'current':''} ${week===selected?'selected':''} ${near?'possible':''}" data-growth-week="${week}" aria-pressed="${week===selected}"><b>${week}</b>${range?`<span>${range}</span>`:''}</button>`;
   }).join('');
   return `<section class="dev-insights" aria-label="Сон и периоды развития">
     ${kind==='sleep'?`<article class="dev-insight-card sleep-card"><div class="dev-insight-top"><div><span class="dev-eyebrow">РЕЖИМ СНА</span><h3>${sleep.age}</h3></div><span class="dev-hours">${sleep.total}<small>в сутки</small></span></div><div class="sleep-line"><b>${sleep.naps}</b><span>${sleep.note}</span></div><div class="sleep-age-picker" role="group" aria-label="Возраст ребёнка">${DEV_SLEEP.map((row,i)=>`<button type="button" class="${i===sleepIndex?'on':''}" data-sleep-age="${i}" aria-pressed="${i===sleepIndex}">${row.age}</button>`).join('')}</div><details class="sleep-details"><summary>Все возрастные ориентиры</summary><div class="sleep-table">${DEV_SLEEP.map((row,i)=>`<button type="button" class="${i===sleepIndex?'now':''}" data-sleep-age="${i}"><b>${row.age}</b><span>${row.total}</span><small>${row.naps}</small></button>`).join('')}</div></details></article>`:''}
@@ -1980,7 +1954,7 @@ function makeInfoChecklist(cfg){
 /* ---------- Данные: календарь прививок (нац. календарь РФ) ---------- */
 const VAC = [
   { id:"rd", emoji:"🏥", name:"В роддоме (первые дни)", theme:"sky",
-    tip:"Прививки по национальному календарю бесплатны по ОМС. Точные сроки — по графику педиатра; при медотводах схема сдвигается.",
+    tip:"В роддоме прививки делают с письменного согласия — его подписывают при поступлении.",
     items:[
       { n:"Гепатит B — 1-я вакцинация", info:"В первые 24 часа жизни. Схема для всех детей: 0–1–6 месяцев." },
       { n:"Туберкулёз (БЦЖ / БЦЖ-М)", info:"На 3–7 день жизни, ещё в роддоме." }
@@ -2543,7 +2517,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
       upd(); tick=setInterval(upd,1000);
     } else {
       card.classList.remove('run');
-      card.innerHTML='<div class="dt-idle"><span class="dt-ic">⏱</span><div class="dt-t">Таймер сна и кормления</div></div><div class="dt-start"><button type="button" data-start="sleep">😴 Начать сон</button><button type="button" data-start="feed">🍼 Начать кормление</button></div>';
+      card.innerHTML='<div class="dt-idle"><span class="dt-ic">⏱</span><div class="dt-t">Таймер сна и кормления</div></div><div class="dt-start"><button type="button" data-start="sleep">😴 Сон</button><button type="button" data-start="feed">🍼 Кормление</button></div>';
       card.querySelectorAll('[data-start]').forEach(function(b){ b.addEventListener('click', function(){ startTimer(b.getAttribute('data-start')); }); });
     }
   }
