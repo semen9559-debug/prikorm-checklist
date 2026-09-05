@@ -1151,31 +1151,32 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
 #mamaTabs .tab-slider{
   z-index:2;
   border-radius:999px;                        /* капля стекла, а не прямоугольник */
-  /* сильнее размытие: под линзой изображение «плывёт», как под лупой */
-  -webkit-backdrop-filter:blur(1.6px) saturate(155%) brightness(1.02);
-  backdrop-filter:blur(1.6px) saturate(155%) brightness(1.02);
-  /* заливки почти нет — стекло, а не молоко */
-  background:
-    linear-gradient(150deg,
-      rgba(255,255,255,.09) 0%,
-      rgba(255,255,255,.01) 45%,
-      rgba(255,255,255,.05) 100%);
+  /* центр линзы чистый: лёгкое преломление без пелены */
+  -webkit-backdrop-filter:blur(1.1px) saturate(118%);
+  backdrop-filter:blur(1.1px) saturate(118%);
+  background:transparent;                     /* никакой заливки поверх иконки */
   border:0;
   box-shadow:
-    0 10px 24px rgba(25,20,15,.18),                  /* тень под стеклом */
-    0 2px 5px rgba(25,20,15,.10),
-    inset 2px 2px 4px -1px rgba(255,255,255,.74),    /* толстая кромка: свет */
-    inset -2px -2px 4px -1px rgba(255,255,255,.34),  /* кромка снизу-справа */
-    inset 0 0 0 1px rgba(255,255,255,.22),           /* обод */
-    inset 7px 7px 16px -9px rgba(40,32,22,.24);      /* внутренняя глубина */
+    0 10px 24px rgba(25,20,15,.18),           /* тень под стеклом */
+    0 2px 5px rgba(25,20,15,.10);
 }
 
 /* Блик: яркое пятно сверху слева и мягкий отсвет снизу справа. */
 #mamaTabs .tab-slider::before{
   content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  /* толща стекла: фаска, блик и обод — но ТОЛЬКО по краю. Маска вырезает
+     середину, поэтому иконка под линзой остаётся чистой, а не сереет. */
   background:
-    radial-gradient(125% 68% at 28% -8%, rgba(255,255,255,.42), rgba(255,255,255,0) 60%),
-    radial-gradient(96% 60% at 82% 114%, rgba(255,255,255,.20), rgba(255,255,255,0) 70%);
+    linear-gradient(150deg,
+      rgba(255,255,255,.55) 0%,
+      rgba(255,255,255,.05) 45%,
+      rgba(255,255,255,.30) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.42),
+    inset 2px 2px 3px -1px rgba(255,255,255,.95),
+    inset -2px -2px 3px -1px rgba(255,255,255,.45);
+  -webkit-mask:radial-gradient(115% 120% at 50% 50%, transparent 38%, #000 76%);
+  mask:radial-gradient(115% 120% at 50% 50%, transparent 38%, #000 76%);
 }
 
 /* Кромка: у толстого стекла край светлее — это и читается как преломление. */
@@ -1203,24 +1204,23 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
 #mamaTabs.is-dragging .tab.on svg{ transform:scale(1.2); }
 
 html[data-theme="dark"] #mamaTabs .tab-slider{
-  -webkit-backdrop-filter:blur(1.6px) saturate(150%) brightness(1.12);
-  backdrop-filter:blur(1.6px) saturate(150%) brightness(1.12);
-  background:
-    linear-gradient(150deg,
-      rgba(255,255,255,.055) 0%,
-      rgba(255,255,255,.008) 45%,
-      rgba(255,255,255,.032) 100%);
+  -webkit-backdrop-filter:blur(1.1px) saturate(115%) brightness(1.04);
+  backdrop-filter:blur(1.1px) saturate(115%) brightness(1.04);
+  background:transparent;
   box-shadow:
     0 10px 26px rgba(0,0,0,.50),
-    inset 2px 2px 4px -1px rgba(255,255,255,.34),
-    inset -2px -2px 4px -1px rgba(255,255,255,.14),
-    inset 0 0 0 1px rgba(255,255,255,.10),
-    inset 7px 7px 16px -9px rgba(0,0,0,.55);
+    0 2px 5px rgba(0,0,0,.30);
 }
 html[data-theme="dark"] #mamaTabs .tab-slider::before{
   background:
-    radial-gradient(125% 72% at 28% -6%, rgba(255,255,255,.30), rgba(255,255,255,0) 62%),
-    radial-gradient(96% 62% at 82% 112%, rgba(255,255,255,.14), rgba(255,255,255,0) 72%);
+    linear-gradient(150deg,
+      rgba(255,255,255,.30) 0%,
+      rgba(255,255,255,.02) 45%,
+      rgba(255,255,255,.16) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.20),
+    inset 2px 2px 3px -1px rgba(255,255,255,.52),
+    inset -2px -2px 3px -1px rgba(255,255,255,.22);
 }
 
 @media (prefers-reduced-motion: reduce){
