@@ -1145,52 +1145,38 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
    растёт, как настоящая лупа.
    ========================================================================== */
 
-#mamaTabs .tab{ z-index:1; }
-#mamaTabs .tab.on{ z-index:3; }
+/* Иконки и подписи всегда НАД стеклом — так они не мутнеют под линзой. */
+#mamaTabs .tab{ z-index:3; }
 
 #mamaTabs .tab-slider{
   z-index:2;
-  border-radius:999px;                        /* капля стекла, а не прямоугольник */
-  /* центр линзы чистый: лёгкое преломление без пелены */
-  -webkit-backdrop-filter:blur(1.1px) saturate(118%);
-  backdrop-filter:blur(1.1px) saturate(118%);
-  background:transparent;                     /* никакой заливки поверх иконки */
+  border-radius:999px;
+  /* никакой заливки и никакого размытия: центр линзы — чистое стекло */
+  background:transparent;
   border:0;
+  -webkit-backdrop-filter:saturate(112%) brightness(1.03);
+  backdrop-filter:saturate(112%) brightness(1.03);
   box-shadow:
-    0 10px 24px rgba(25,20,15,.18),           /* тень под стеклом */
-    0 2px 5px rgba(25,20,15,.10);
+    0 8px 20px rgba(25,20,15,.16),
+    0 1px 3px rgba(25,20,15,.10),
+    inset 0 0 0 1px rgba(255,255,255,.50);   /* тонкий обод = кромка стекла */
 }
 
-/* Блик: яркое пятно сверху слева и мягкий отсвет снизу справа. */
+/* Блик строго по кромке: резкие линии в 1px сверху и снизу, без тумана. */
 #mamaTabs .tab-slider::before{
   content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  /* толща стекла: фаска, блик и обод — но ТОЛЬКО по краю. Маска вырезает
-     середину, поэтому иконка под линзой остаётся чистой, а не сереет. */
-  background:
-    linear-gradient(150deg,
-      rgba(255,255,255,.55) 0%,
-      rgba(255,255,255,.05) 45%,
-      rgba(255,255,255,.30) 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.42),
-    inset 2px 2px 3px -1px rgba(255,255,255,.95),
-    inset -2px -2px 3px -1px rgba(255,255,255,.45);
-  -webkit-mask:radial-gradient(115% 120% at 50% 50%, transparent 38%, #000 76%);
-  mask:radial-gradient(115% 120% at 50% 50%, transparent 38%, #000 76%);
+    inset 0 1.5px 0 -.5px rgba(255,255,255,.92),
+    inset 0 -1.5px 0 -.5px rgba(255,255,255,.34);
 }
 
-/* Кромка: у толстого стекла край светлее — это и читается как преломление. */
+/* Хроматическая кайма — тоже тонкой полоской по бокам. */
 #mamaTabs .tab-slider::after{
   content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  /* хроматическая кайма: холодная слева, тёплая справа — так свет ведёт себя
-     на краю толстого стекла, и именно это читается как «настоящая линза» */
   box-shadow:
-    inset 2px 0 3px -1px rgba(120,200,255,.55),
-    inset -2px 0 3px -1px rgba(255,190,135,.45),
-    inset 0 2px 3px -1px rgba(190,255,225,.38),
-    inset 0 -2px 3px -1px rgba(255,205,235,.30);
+    inset 1.5px 0 0 -.5px rgba(120,200,255,.50),
+    inset -1.5px 0 0 -.5px rgba(255,190,135,.46);
   mix-blend-mode:screen;
-  opacity:.9;
 }
 
 /* Увеличение под линзой: выбранный значок крупнее соседних. */
@@ -1204,23 +1190,19 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
 #mamaTabs.is-dragging .tab.on svg{ transform:scale(1.2); }
 
 html[data-theme="dark"] #mamaTabs .tab-slider{
-  -webkit-backdrop-filter:blur(1.1px) saturate(115%) brightness(1.04);
-  backdrop-filter:blur(1.1px) saturate(115%) brightness(1.04);
   background:transparent;
+  -webkit-backdrop-filter:saturate(110%) brightness(1.05);
+  backdrop-filter:saturate(110%) brightness(1.05);
   box-shadow:
-    0 10px 26px rgba(0,0,0,.50),
-    0 2px 5px rgba(0,0,0,.30);
+    0 8px 22px rgba(0,0,0,.45),
+    0 1px 3px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(255,255,255,.24);
 }
 html[data-theme="dark"] #mamaTabs .tab-slider::before{
-  background:
-    linear-gradient(150deg,
-      rgba(255,255,255,.30) 0%,
-      rgba(255,255,255,.02) 45%,
-      rgba(255,255,255,.16) 100%);
+  background:none;
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.20),
-    inset 2px 2px 3px -1px rgba(255,255,255,.52),
-    inset -2px -2px 3px -1px rgba(255,255,255,.22);
+    inset 0 1.5px 0 -.5px rgba(255,255,255,.52),
+    inset 0 -1.5px 0 -.5px rgba(255,255,255,.18);
 }
 
 @media (prefers-reduced-motion: reduce){
