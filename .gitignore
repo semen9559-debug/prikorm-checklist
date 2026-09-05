@@ -2,3 +2,8 @@ node_modules/
 tests/screenshot-*.png
 .DS_Store
 *.log
+
+# рабочие скриншоты
+lens-*.png
+desk-*.png
+audit/
