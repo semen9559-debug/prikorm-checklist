@@ -4,7 +4,11 @@ tests/screenshot-*.png
 *.log
 
 # рабочие скриншоты
+# временные рендеры для проверки вёрстки
+*-preview.png
 lens-*.png
 desk-*.png
 sh-*.png
+g-*.png
+glass.png
 audit/
