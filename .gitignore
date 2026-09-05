@@ -6,4 +6,5 @@ tests/screenshot-*.png
 # рабочие скриншоты
 lens-*.png
 desk-*.png
+sh-*.png
 audit/

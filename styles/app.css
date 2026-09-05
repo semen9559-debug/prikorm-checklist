@@ -5,6 +5,8 @@
     --ink-soft:#746B5D;
 
     --sage:#6FA25C;      --sage-l:#DFF0D4;
+    /* мягкая тень: свет слева сверху, тень справа снизу */
+    --sh-card:-7px -7px 14px rgba(255,255,255,.92), 6px 7px 16px rgba(58,52,44,.13);
     --sage-text:#4F7341; --sky-text:#307099; --coral-text:#9D4E61; --rust-text:#9E552B; --butter-text:#8B671C; --wheat-text:#856629; --plum-text:#994F70; --hazel-text:#845D34; --warn-text:#B83B3B;
     --rust:#E2793D;      --rust-l:#FBE4CF;
     --butter:#E8AC2E;    --butter-l:#FDF0D0;
@@ -33,6 +35,8 @@
     --ink:#F0E8DA;       --ink-soft:#A79C88;
 
     --sage-l:#22301F;    --rust-l:#33241A;   --butter-l:#33301C;
+    /* в темноте «свет» — не белый, иначе грязь вместо объёма */
+    --sh-card:-7px -7px 14px rgba(255,255,255,.055), 6px 7px 18px rgba(0,0,0,.44);
     --sage-text:#6FA25C; --sky-text:#4895C7; --coral-text:#E0708A; --rust-text:#E2793D; --butter-text:#E8AC2E; --wheat-text:#C99A3E; --plum-text:#B57391; --hazel-text:#A9855E; --warn-text:#DD6363;
     --sky-l:#182833;     --wheat-l:#302A1B;  --coral-l:#331F28;
     --plum-l:#2A1C27;    --hazel-l:#2A231A;  --warn-l:#331C1C;
@@ -267,7 +271,7 @@
     border-radius:20px;
     margin-bottom:16px;
     overflow:hidden;
-    box-shadow: 0 3px 14px rgba(58,52,44,0.07);
+    box-shadow: var(--sh-card);
     border:1px solid var(--line);
     border-left:5px solid var(--accent, #ccc);
   }
@@ -1019,7 +1023,7 @@ html[data-theme="dark"] #mamaTabs .tab-slider{background:linear-gradient(145deg,
 .dev-insight-mark::before{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--sky);border-top-color:transparent;border-right-color:transparent;border-radius:50%;left:10px;top:9px;transform:rotate(35deg);}
 .dev-insights h2,.dev-insights h3{margin:0;color:var(--ink);font-family:'Fredoka',sans-serif;}
 .dev-insights h2{font-size:18px;}.dev-insights-intro p{margin:2px 0 0;color:var(--ink-soft);font-size:12px;font-weight:700;}
-.dev-insight-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:0 5px 16px rgba(58,52,44,.05);}
+.dev-insight-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:var(--sh-card);}
 .dev-insight-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
 .dev-insight-top>*{min-width:0;}
 .dev-insight-card{max-width:100%;overflow-wrap:anywhere;}.dev-eyebrow{display:block;font-size:12px;letter-spacing:.08em;font-weight:900;color:var(--sage-text);margin-bottom:3px;}.dev-insight-card h3{font-size:19px;}
@@ -1028,7 +1032,7 @@ html[data-theme="dark"] #mamaTabs .tab-slider{background:linear-gradient(145deg,
 .sleep-age-picker{display:flex;gap:7px;overflow-x:auto;margin-top:12px;padding:1px 1px 5px;scrollbar-width:none;}.sleep-age-picker::-webkit-scrollbar{display:none;}.sleep-age-picker button{white-space:nowrap;border:1px solid var(--line);border-radius:99px;background:var(--cream);color:var(--ink-soft);font:700 12.5px 'Nunito',sans-serif;padding:9px 12px;cursor:pointer;}.sleep-age-picker button.on{background:var(--sage);border-color:var(--sage-text);color:#fff;box-shadow:0 3px 8px color-mix(in srgb,var(--sage) 30%,transparent);}.sleep-details{margin-top:8px;}.sleep-details summary{cursor:pointer;color:var(--sky-text);font-weight:800;font-size:12.5px;}.sleep-table{display:grid;gap:6px;margin-top:9px;}.sleep-table>button{width:100%;border:0;display:grid;grid-template-columns:1fr auto;gap:2px 9px;padding:8px 10px;border-radius:11px;background:var(--cream);color:var(--ink);font:inherit;text-align:left;cursor:pointer;}.sleep-table>button.now{outline:1.5px solid var(--sage);background:color-mix(in srgb,var(--sage) 12%,var(--paper));}.sleep-table small{grid-column:1/-1;color:var(--ink-soft);font-size:12px;}
 .dev-calendar-icon{width:34px;height:34px;border:2px solid var(--coral);border-radius:10px;position:relative;opacity:.8;}.dev-calendar-icon::before{content:"";position:absolute;left:5px;right:5px;top:9px;border-top:2px solid var(--coral);}.dev-calendar-icon::after{content:"";position:absolute;left:8px;top:-5px;width:3px;height:8px;background:var(--coral);box-shadow:12px 0 0 var(--coral);border-radius:3px;}
 .growth-copy{margin:11px 0 10px;}.growth-legend{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 11px;}.growth-legend span{font-size:12px;font-weight:800;color:var(--ink-soft);padding:5px 8px;border-radius:99px;background:var(--cream);}.growth-legend .legend-current{outline:1.5px solid var(--ink);}.growth-legend .legend-possible{background:color-mix(in srgb,var(--coral) 16%,var(--paper));color:var(--coral-text);}.growth-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}.growth-week{min-height:57px;border:0;border-radius:13px;padding:8px 6px;background:color-mix(in srgb,var(--sky) 9%,var(--paper));color:var(--sky-text);display:flex;flex-direction:column;justify-content:space-between;text-align:left;font:inherit;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}.growth-week:active{transform:scale(.94);}.growth-week b{font-size:16px;line-height:1;}.growth-week span{font-size:12px;opacity:.85;font-weight:700;white-space:nowrap;}.growth-week.possible{background:color-mix(in srgb,var(--coral) 16%,var(--paper));color:var(--coral-text);}.growth-week.current{outline:2px solid var(--ink);outline-offset:1px;}.growth-week.selected{box-shadow:0 4px 10px rgba(58,52,44,.18),inset 0 0 0 2px currentColor;}.growth-selected{margin:11px 0 0;font-size:12px;font-weight:800;color:var(--ink);}.growth-note{margin:8px 0 0;font-size:12px;}
-html[data-theme="dark"] .dev-insight-card{box-shadow:0 6px 18px rgba(0,0,0,.2);}
+html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
 /* customize overlay */
 #tilesOverlay{position:fixed;inset:0;z-index:265;background:color-mix(in srgb, var(--ink) 42%, transparent);display:flex;align-items:flex-end;justify-content:center;}
 #tilesOverlay .card{width:100%;max-width:460px;background:var(--cream);border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));max-height:86vh;overflow-y:auto;}
@@ -1216,3 +1220,7 @@ html[data-theme="dark"] #mamaTabs .tab-slider::before{
   #mamaTabs .tab span{ transition:none; }
   #mamaTabs.is-dragging .tab-slider{ --lens-scale:1; }
 }
+
+/* Плитки главного экрана получают тот же объём, что и карточки разделов. */
+#homeHub .tile{ box-shadow:var(--sh-card); }
+#homeHub .tile:active{ box-shadow:var(--sh-card); transform:scale(.985); }
