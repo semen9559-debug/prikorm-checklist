@@ -930,6 +930,7 @@ function applyThemeIcon(){
     else if(isDark) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
     else meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
   });
+  try{ window.webkit?.messageHandlers?.theme?.postMessage(dark ? "dark" : "light"); }catch(e){}
 }
 applyThemeIcon();
 document.getElementById("themeToggle").addEventListener("click", ()=>{

@@ -1242,9 +1242,9 @@ html[data-theme="dark"]{ --sky-strong:#3A8DC7; }
    meta[name=color-scheme] уже установлен, но iOS-WebView дополнительно
    читает prefers-color-scheme из CSS. */
 @media (prefers-color-scheme: dark){
-  html:not([data-theme="light"]) body,
-  html:not([data-theme="light"]) #homeHub,
-  html:not([data-theme="light"]) #onbOverlay{
+  html[data-theme="dark"] body,
+  html[data-theme="dark"] #homeHub,
+  html[data-theme="dark"] #onbOverlay{
     background-color: #17140F;
   }
 }

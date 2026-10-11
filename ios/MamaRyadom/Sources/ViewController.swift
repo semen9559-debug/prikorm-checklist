@@ -23,6 +23,11 @@ final class ViewController: UIViewController {
         // into picking desktop layout; force mobile explicitly.
         config.defaultWebpagePreferences.preferredContentMode = .mobile
 
+        // The web app can show light/dark independently of the system
+        // appearance (manual toggle); it reports its actual choice here so
+        // the native backing color never contradicts the page.
+        config.userContentController.add(self, name: "theme")
+
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -30,16 +35,9 @@ final class ViewController: UIViewController {
         webView.scrollView.contentInsetAdjustmentBehavior = .never  // we handle safe areas in CSS
         webView.scrollView.bounces = true
 
-        // Set background before isOpaque to avoid black flash
-        let isDarkBoot = UITraitCollection.current.userInterfaceStyle == .dark
-        let bgColor = isDarkBoot
-            ? UIColor(red: 0.09, green: 0.08, blue: 0.06, alpha: 1)
-            : UIColor(red: 1.00, green: 0.98, blue: 0.94, alpha: 1)
-        webView.backgroundColor = bgColor
-        webView.scrollView.backgroundColor = bgColor
-        if #available(iOS 15.0, *) {
-            webView.underPageBackgroundColor = bgColor
-        }
+        // Guess from the system appearance before the page has loaded and
+        // reported its real theme; avoids a black/white flash at boot.
+        applyBackground(dark: UITraitCollection.current.userInterfaceStyle == .dark)
         webView.isOpaque = false
 
         view = webView
@@ -47,22 +45,18 @@ final class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        applySystemBackground()
         loadApp()
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            applySystemBackground()
-        }
-    }
-
-    private func applySystemBackground() {
-        let isDark = traitCollection.userInterfaceStyle == .dark
-        view.backgroundColor = isDark
+    private func applyBackground(dark: Bool) {
+        let bgColor = dark
             ? UIColor(red: 0.09, green: 0.08, blue: 0.06, alpha: 1)   // #17140F
             : UIColor(red: 1.00, green: 0.98, blue: 0.94, alpha: 1)   // #FFF9F0
+        view.backgroundColor = bgColor
+        webView.scrollView.backgroundColor = bgColor
+        if #available(iOS 15.0, *) {
+            webView.underPageBackgroundColor = bgColor
+        }
     }
 
     private func loadApp() {
@@ -111,6 +105,16 @@ extension ViewController: WKNavigationDelegate {
         default:
             decisionHandler(.cancel)
         }
+    }
+}
+
+// MARK: – WKScriptMessageHandler
+
+extension ViewController: WKScriptMessageHandler {
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "theme", let theme = message.body as? String else { return }
+        applyBackground(dark: theme == "dark")
     }
 }
 
