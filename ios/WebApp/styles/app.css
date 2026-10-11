@@ -1245,3 +1245,21 @@ html[data-theme="dark"]{ --sky-strong:#3A8DC7; }
     background-color: #17140F;
   }
 }
+
+/* ==========================================================================
+   UI/UX Pro Max — аудит октябрь 2026
+   ========================================================================== */
+
+/* Overscroll: предотвращает случайный pull-to-refresh в drawer/sheet */
+.drawer, .sheet{ overscroll-behavior: contain; }
+
+/* scroll-padding: нижний таббар не перекрывает сфокусированные элементы */
+html{ scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+/* cursor:pointer на всех интерактивных элементах без явного указателя */
+.tools button, .dy-addbtn, #dyPicker .pk-item, .sleep-table > button,
+.growth-week, .daynav button{ cursor: pointer; }
+
+/* SVG-иконки в кнопках: убираем лишние отступы блочного контекста */
+.menu-btn svg, .theme-toggle svg, .profile-btn svg,
+.sheet-close svg, .modal-x svg, .fab-top svg{ display: block; }
