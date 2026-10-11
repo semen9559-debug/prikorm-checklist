@@ -25,8 +25,18 @@ final class ViewController: UIViewController {
         webView.allowsBackForwardNavigationGestures = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never  // we handle safe areas in CSS
         webView.scrollView.bounces = true
+
+        // Set background before isOpaque to avoid black flash
+        let isDarkBoot = UITraitCollection.current.userInterfaceStyle == .dark
+        let bgColor = isDarkBoot
+            ? UIColor(red: 0.09, green: 0.08, blue: 0.06, alpha: 1)
+            : UIColor(red: 1.00, green: 0.98, blue: 0.94, alpha: 1)
+        webView.backgroundColor = bgColor
+        webView.scrollView.backgroundColor = bgColor
+        if #available(iOS 15.0, *) {
+            webView.underPageBackgroundColor = bgColor
+        }
         webView.isOpaque = false
-        webView.backgroundColor = .clear
 
         view = webView
     }
@@ -60,6 +70,18 @@ final class ViewController: UIViewController {
 // MARK: – WKNavigationDelegate
 
 extension ViewController: WKNavigationDelegate {
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        NSLog("❌ didFailProvisionalNavigation: \(error)")
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        NSLog("❌ didFail: \(error)")
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        NSLog("✅ didFinish: \(webView.url?.absoluteString ?? "nil")")
+    }
 
     func webView(
         _ webView: WKWebView,

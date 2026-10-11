@@ -23,6 +23,10 @@ settings:
     Debug:
       SWIFT_OPTIMIZATION_LEVEL: "-Onone"
       DEBUG_INFORMATION_FORMAT: dwarf
+      CODE_SIGN_STYLE: Manual
+      CODE_SIGN_IDENTITY: "-"
+      CODE_SIGNING_REQUIRED: "YES"
+      DEVELOPMENT_TEAM: ""
 
 targets:
   MamaRyadom:
@@ -31,9 +35,10 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - path: MamaRyadom/Sources
-    resources:
       - path: MamaRyadom/Resources
       - path: WebApp
+        buildPhase: resources
+        type: folder
     info:
       path: MamaRyadom/Info.plist
       properties:
@@ -51,13 +56,12 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIViewControllerBasedStatusBarAppearance: true
         UIUserInterfaceStyle: Automatic
-        UISceneManifest:
-          UIApplicationSceneManifest:
-            UIApplicationSupportsMultipleScenes: false
-            UISceneConfigurations:
-              UIWindowSceneSessionRoleApplication:
-                - UISceneConfigurationName: Default Configuration
-                  UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
         CFBundleURLTypes:

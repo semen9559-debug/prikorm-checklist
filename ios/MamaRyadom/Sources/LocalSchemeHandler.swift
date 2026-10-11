@@ -39,8 +39,7 @@ final class LocalSchemeHandler: NSObject, WKURLSchemeHandler {
             fileURL.path.hasPrefix(Self.webAppRoot.path),   // path traversal guard
             let data = try? Data(contentsOf: fileURL)
         else {
-            let err = NSError(domain: NSURLErrorDomain, code: NSURLErrorFileDoesNotExist)
-            urlSchemeTask.didFailWithError(err)
+            urlSchemeTask.didFailWithError(NSError(domain: NSURLErrorDomain, code: NSURLErrorFileDoesNotExist))
             return
         }
 

@@ -9,16 +9,24 @@
 /* Begin PBXBuildFile section */
 		14CD473A5BE7C95D790BB238 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95338296EDB2B86F825B4875 /* ViewController.swift */; };
 		179553FC01753AA000F513D2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A71E30DFEAB0D38291E6ED6 /* AppDelegate.swift */; };
+		18E5A994115510901E6E379D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5403370080C7A370DAA5AC10 /* LaunchScreen.storyboard */; };
 		830B80E8D1BBE3DD132D21F5 /* LocalSchemeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B798B9E420B94B7719F572A /* LocalSchemeHandler.swift */; };
+		8934FB6D9AA554AEE509A53E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8C60EF2CEB7389CB3EEE74C5 /* Assets.xcassets */; };
+		9F2576B3DB9428BE8D1C2C90 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 91D2B6B908708F87F1C47B71 /* PrivacyInfo.xcprivacy */; };
 		C9490236502F3196936A707F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F94F4BE16409409DAA9710 /* SceneDelegate.swift */; };
+		D1B1849A81AB32C4EA218757 /* WebApp in Resources */ = {isa = PBXBuildFile; fileRef = D00C096C33A984EE10ECC6DB /* WebApp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		15F94F4BE16409409DAA9710 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		5403370080C7A370DAA5AC10 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A71E30DFEAB0D38291E6ED6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5B798B9E420B94B7719F572A /* LocalSchemeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSchemeHandler.swift; sourceTree = "<group>"; };
+		8C60EF2CEB7389CB3EEE74C5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		91D2B6B908708F87F1C47B71 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		95338296EDB2B86F825B4875 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		AA5DFAEB8AE0E9E15CA36CC4 /* MamaRyadom.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MamaRyadom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D00C096C33A984EE10ECC6DB /* WebApp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebApp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -33,14 +41,26 @@
 		2CE145F62DDF49B19D577D6C /* MamaRyadom */ = {
 			isa = PBXGroup;
 			children = (
+				556E3EE4492D95F035AC80AC /* Resources */,
 				90D16E36C347375CE57876F3 /* Sources */,
 			);
 			path = MamaRyadom;
 			sourceTree = "<group>";
 		};
+		556E3EE4492D95F035AC80AC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8C60EF2CEB7389CB3EEE74C5 /* Assets.xcassets */,
+				5403370080C7A370DAA5AC10 /* LaunchScreen.storyboard */,
+				91D2B6B908708F87F1C47B71 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		864F5D3B0C2E575512DC2D4B = {
 			isa = PBXGroup;
 			children = (
+				D00C096C33A984EE10ECC6DB /* WebApp */,
 				2CE145F62DDF49B19D577D6C /* MamaRyadom */,
 				0C0D5AE1D0E157F8CE7A7BBA /* Products */,
 			);
@@ -65,6 +85,7 @@
 			buildConfigurationList = 37DE5DE0AE15ABA089CDBC88 /* Build configuration list for PBXNativeTarget "MamaRyadom" */;
 			buildPhases = (
 				11DED8D0C25B7381A8B7F2A8 /* Sources */,
+				5EBCE25D85689C4784ACF3ED /* Resources */,
 			);
 			buildRules = (
 			);
@@ -86,9 +107,6 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					DD8DAED7497CB9E2E132B4AE = {
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = 6F405F15BE9BE4DC4CA12EAC /* Build configuration list for PBXProject "MamaRyadom" */;
@@ -109,6 +127,20 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5EBCE25D85689C4784ACF3ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8934FB6D9AA554AEE509A53E /* Assets.xcassets in Resources */,
+				18E5A994115510901E6E379D /* LaunchScreen.storyboard in Resources */,
+				9F2576B3DB9428BE8D1C2C90 /* PrivacyInfo.xcprivacy in Resources */,
+				D1B1849A81AB32C4EA218757 /* WebApp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		11DED8D0C25B7381A8B7F2A8 /* Sources */ = {
@@ -176,10 +208,13 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

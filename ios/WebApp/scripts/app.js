@@ -3406,9 +3406,9 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
 
     /* bottom tab bar */
     var TABS=[
-      {k:'home', ic:'home', l:'Сегодня'},
       {k:'diary', ic:'journal', l:'Дневник'},
       {k:'plan', ic:'check', l:'План'},
+      {k:'home', ic:'home', l:'Сегодня'},
       {k:'child', ic:'face', l:'Ребёнок'},
       {k:'more', ic:'dots', l:'Ещё'}
     ];
