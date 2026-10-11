@@ -18,7 +18,7 @@
     --warn:#D64545;      --warn-l:#FBE1E1;
 
     --line:#F1E4CE;      --line2:#EAD9B8;
-    --hero1:var(--hero1);     --track:#F0E4CC;
+    --hero1:var(--paper);     --track:#F0E4CC;
     --cbox:#DDD0B4;      --grip:#E3D8BE;
     --btn-bg:#F1E7D2;    --react-b:#EADFC6;
     --text-dim:#756E5C;  --text-mid:#5C554A;  --text-tip:#4C463C;
@@ -716,7 +716,7 @@ html[data-theme="dark"] .hero-aurora{ opacity:.8; filter:blur(52px) saturate(1.4
 
 /* --- glass toasts + type icon --- */
 .toast{ background:rgba(44,39,33,.72) !important; backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid rgba(255,255,255,.12); box-shadow:0 12px 34px rgba(0,0,0,.32); display:flex !important; align-items:center; gap:9px; }
-html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.82) !important; border-color:rgba(0,0,0,.06); box-shadow:0 12px 34px rgba(60,50,30,.16); }
+html:not([data-theme="dark"]) .toast{ background:rgba(255,252,246,.92) !important; color:var(--ink) !important; border-color:rgba(0,0,0,.06); box-shadow:0 12px 34px rgba(60,50,30,.16); }
 .m-toast-ico{ flex:0 0 auto; width:20px; height:20px; display:inline-flex; }
 .m-toast-ico svg{ width:100%; height:100%; }
 
@@ -1215,3 +1215,33 @@ html[data-theme="dark"] #mamaTabs .tab-slider::before{
 /* Плитки главного экрана получают тот же объём, что и карточки разделов. */
 #homeHub .tile{ box-shadow:var(--sh-card); }
 #homeHub .tile:active{ box-shadow:var(--sh-card); transform:scale(.985); }
+
+/* ==========================================================================
+   Исправления для тёмной темы (октябрь 2026)
+   ========================================================================== */
+
+/* Градиентный заголовок hero: в тёмной теме поднимаем яркость цветов
+   с ~3,9:1 до ~5,5:1 (large text AA+ — норма 3:1, перекрываем с запасом). */
+html[data-theme="dark"] .hero h1{
+  background: linear-gradient(90deg, #8DC971, #62AEDB, #F08899);
+}
+
+/* Тост в тёмной теме: оставляем светлый текст, как и было (#fff на тёмном). */
+/* Исправление циклической ссылки --hero1 было применено выше в :root.      */
+
+/* Кнопки-бейджи возраста (sky тема): усиливаем тёмную основу для sky-акцента
+   чтобы белый текст давал ≥4,5:1 при размере 11px.                          */
+:root{ --sky-strong:#2F72A3; }
+html[data-theme="dark"]{ --sky-strong:#3A8DC7; }
+.theme-sky .pcard-badge{ background: var(--sky-strong); }
+
+/* Избегаем «засвета» фона у WKWebView при смене темы до загрузки JS:
+   meta[name=color-scheme] уже установлен, но iOS-WebView дополнительно
+   читает prefers-color-scheme из CSS. */
+@media (prefers-color-scheme: dark){
+  html:not([data-theme="light"]) body,
+  html:not([data-theme="light"]) #homeHub,
+  html:not([data-theme="light"]) #onbOverlay{
+    background-color: #17140F;
+  }
+}

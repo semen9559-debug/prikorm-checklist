@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFF9F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Интерактивный трекер прикорма 5,5–12 месяцев: список продуктов по возрастам с короткими советами по каждому.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://esm.sh https://*.supabase.co wss://*.supabase.co; form-action 'self'">
+<link rel="canonical" href="https://prikorm.dverizapeli.ru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Мама рядом">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Трекер прикорма 5,5–12 месяцев">
+<meta property="og:description" content="Что и когда вводить малышу — по шагам, с советом на каждый продукт. Плюс сумка в роддом, прививки, документы и дневник дня.">
+<meta property="og:url" content="https://prikorm.dverizapeli.ru/">
+<meta property="og:image" content="https://prikorm.dverizapeli.ru/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Трекер прикорма 5,5–12 месяцев">
+<meta name="twitter:description" content="Что и когда вводить малышу — по шагам, с советом на каждый продукт.">
+<meta name="twitter:image" content="https://prikorm.dverizapeli.ru/icon-512.png">
+<title>Трекер прикорма 5,5–12 месяцев</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-title" content="Прикорм">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>html.icons-loading body{visibility:hidden}</style>
+<script>
+  // Показываем страницу, как только готов текст: раньше ждали window.load,
+  // и при медленных шрифтах человек смотрел в белый экран сколько угодно долго.
+  document.documentElement.classList.add('icons-loading');
+  (function(){
+    var shown = false;
+    function reveal(){
+      if(shown) return;
+      shown = true;
+      document.documentElement.classList.remove('icons-loading');
+    }
+    var fonts = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    Promise.race([fonts, new Promise(function(r){ setTimeout(r, 1200); })]).then(reveal, reveal);
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(reveal, 1500); });
+    window.addEventListener('load', reveal, {once:true});
+    setTimeout(reveal, 4000); // страховка на самый плохой случай
+  })();
+</script>
+<script>
+  try{
+    var t = localStorage.getItem('prikorm-theme');
+    if(t==='dark' || (!t && window.matchMedia('(prefers-color-scheme:dark)').matches)){
+      document.documentElement.setAttribute('data-theme','dark');
+    }
+  }catch(e){}
+  // Автообновление: если на сервере версия новее — тихо перезагружаемся на свежую
+  window.APP_VERSION = "v80";
+  (function(){
+    try{
+      fetch('version.json?ts=' + Date.now(), {cache:'no-store'})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if(j && j.v && j.v !== window.APP_VERSION){
+            if(sessionStorage.getItem('pk-upd') === j.v) return; // уже пробовали — не зацикливаемся
+            sessionStorage.setItem('pk-upd', j.v);
+            // сохраняем query и hash: иначе теряются ?invite=... и ссылки
+            // подтверждения email / сброса пароля (#access_token=...)
+            var u = new URL(location.href);
+            u.searchParams.set('v', j.v);
+            location.replace(u.toString());
+          }
+        })
+        .catch(function(){});
+    }catch(e){}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Шрифты не блокируют первую отрисовку: грузим как print-стиль и включаем после загрузки. -->
+<link id="fontsCss" rel="stylesheet" media="print" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<script>
+  (function(){
+    var fc = document.getElementById('fontsCss');
+    if(!fc) return;
+    var enable = function(){ fc.media = 'all'; };
+    fc.addEventListener('load', enable, {once:true});
+    fc.addEventListener('error', enable, {once:true});
+    setTimeout(enable, 3000);
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="styles/app.css?v=80">
+</head>
+<body>
+<noscript>
+  <div style="max-width:640px;margin:40px auto;padding:20px;font:16px/1.5 system-ui,sans-serif;text-align:center">
+    <h1 style="font-size:20px">Нужен включённый JavaScript</h1>
+    <p>Приложение хранит отметки прямо в браузере и без JavaScript работать не может.
+       Включите его в настройках браузера и обновите страницу.</p>
+  </div>
+</noscript>
+
+<button class="menu-btn" id="menuBtn" aria-label="Разделы">▦</button>
+<button class="profile-btn" id="profileBtn" type="button" aria-label="Профиль и семья" title="Профиль и семья"><span aria-hidden="true">👤</span><span class="profile-btn-dot" aria-hidden="true"></span></button>
+<button class="theme-toggle" id="themeToggle" aria-label="Тёмная тема">🌙</button>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<nav class="drawer" id="drawer" aria-label="Разделы">
+  <div class="drawer-title">Разделы</div>
+  <button class="drawer-item drawer-account" data-family-entry type="button"><span aria-hidden="true">👤</span><span>Регистрация · вход</span><small>сохранить данные семьи</small></button>
+  <div class="drawer-separator" aria-hidden="true"></div>
+  <button class="drawer-item" data-view="prikorm" type="button">🌱 Трекер прикорма</button>
+  <button class="drawer-item" data-view="sumka" type="button">👜 Сумка в роддом</button>
+  <button class="drawer-item" data-view="buy" type="button">🛒 Покупки к рождению</button>
+  <button class="drawer-item" data-view="dev" type="button">👣 Развитие по месяцам</button>
+  <button class="drawer-item" data-view="sleep" type="button">🌙 Режим сна</button>
+  <button class="drawer-item" data-view="growth" type="button">📅 Периоды развития</button>
+  <button class="drawer-item" data-view="diary" type="button">😴 Дневник дня</button>
+  <button class="drawer-item" data-view="docs" type="button">📄 Документы и выплаты</button>
+  <button class="drawer-item" data-view="vac" type="button">💉 Календарь прививок</button>
+  <button class="drawer-item" data-view="preg" type="button">🤰 До родов по триместрам</button>
+</nav>
+
+<div id="viewPrikorm">
+<div class="hero">
+  <div class="hero-plant" id="heroPlant">🌱</div>
+  <h1>Прикорм без паники</h1>
+  <p class="hero-sub">Что и когда вводить — по шагам, с советом на каждый продукт</p>
+  <div class="stem-wrap"><div class="stem-fill" id="stemFill"></div></div>
+  <div class="hero-count" id="heroCount">0 из 0 продуктов</div>
+  <div class="search-wrap">
+    <span class="mag">🔍</span>
+    <label class="sr-only" for="search">Поиск продуктов</label>
+    <input id="search" type="search" placeholder="Поиск продукта…" aria-label="Поиск продукта" autocomplete="off">
+    <button class="search-clear" id="searchClear" aria-label="Очистить поиск">✕</button>
+  </div>
+  <div class="chips" id="chips">
+    <button class="chip active" data-f="all" type="button">Все</button>
+    <button class="chip" data-f="todo" type="button">Невведённые</button>
+    <button class="chip" data-f="done" type="button">Введённые</button>
+    <button class="chip" data-f="allergens" type="button">Аллергены</button>
+  </div>
+  <div class="kids" id="kids"></div>
+</div>
+
+<div class="layout">
+  <main id="main"></main>
+  <aside class="guide" aria-label="Гайд по прикорму">
+    <div class="guide-card" id="guideCard"></div>
+  </aside>
+</div>
+
+<div class="no-results" id="noResults">Ничего не найдено 🙈<br>Попробуйте другое слово</div>
+
+<div class="tools" id="tools">
+  <button id="collapseAllBtn">🔽 Свернуть всё</button>
+  <button id="shareBtn">📤 Поделиться</button>
+  <button id="exportBtn">💾 Копия</button>
+  <button id="importBtn">📥 Восстановить</button>
+</div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+</div><!-- /viewPrikorm -->
+
+<div id="viewSumka" hidden>
+  <div class="hero">
+    <div class="hero-plant">👜</div>
+    <h1>Собери сумку — и ничего не забудь</h1>
+    <p class="hero-sub">Всё нужное для тебя и малыша в одном списке ✅</p>
+    <div class="stem-wrap"><div class="stem-fill" id="sumkaFill"></div></div>
+    <div class="hero-count" id="sumkaCount">0 из 0 собрано</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="sumkaSearch">Поиск вещей</label>
+      <input id="sumkaSearch" type="search" placeholder="Поиск вещи…" aria-label="Поиск вещи" autocomplete="off">
+      <button class="search-clear" id="sumkaSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+  </div>
+  <main id="sumkaMain" class="sumka-main"></main>
+  <div class="no-results" id="sumkaNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="sumkaCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewBuy" hidden>
+  <div class="hero">
+    <div class="hero-plant">🛒</div>
+    <h1>Готовимся к встрече</h1>
+    <p class="hero-sub">Что купить до рождения — без лишнего и в спокойном темпе</p>
+    <div class="stem-wrap"><div class="stem-fill" id="buyFill"></div></div>
+    <div class="hero-count" id="buyCount">0 из 0 куплено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="buySearch">Поиск покупок</label>
+      <input id="buySearch" type="search" placeholder="Поиск покупки…" aria-label="Поиск покупки" autocomplete="off">
+      <button class="search-clear" id="buySearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+  </div>
+  <main id="buyMain" class="sumka-main"></main>
+  <div class="no-results" id="buyNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="buyCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewDev" hidden>
+  <div class="hero">
+    <div class="hero-plant">👣</div>
+    <h1>Смотри, как растёт малыш</h1>
+    <p class="hero-sub">Новые умения месяц за месяцем — отмечай первые победы</p>
+    <div class="stem-wrap"><div class="stem-fill" id="devFill"></div></div>
+    <div class="hero-count" id="devCount">0 из 0 освоено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="devSearch">Поиск навыков</label>
+      <input id="devSearch" type="search" placeholder="Поиск навыка…" aria-label="Поиск навыка" autocomplete="off">
+      <button class="search-clear" id="devSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="devKids"></div>
+  </div>
+  <div class="dev-intro"><div>Сроки примерные — каждый малыш растёт в своём темпе. Это опора, а не диагноз. Сомневаешься — покажись педиатру или неврологу.</div></div>
+  <main id="devMain" class="sumka-main"></main>
+  <div class="no-results" id="devNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="devCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewSleep" hidden><div class="hero"><div class="hero-plant">🌙</div><h1>Режим сна</h1><p class="hero-sub">Ориентиры по возрасту, дневному и ночному сну</p></div><main id="sleepMain"></main></div>
+<div id="viewGrowth" hidden><div class="hero"><div class="hero-plant">📅</div><h1>Периоды развития</h1><p class="hero-sub">Личный календарь недель малыша</p></div><main id="growthMain"></main></div>
+
+<div id="viewDiary" hidden>
+  <div class="hero">
+    <div class="hero-plant">😴</div>
+    <h1>День малыша — как на ладони</h1>
+    <p class="hero-sub">Кормления, сон и подгузники в одном месте</p>
+    <div class="kids" id="diaryKids"></div>
+  </div>
+  <div class="diary-wrap">
+    <div class="daynav">
+      <button id="dyPrev" type="button" aria-label="Предыдущий день">‹</button>
+      <div class="dn-date" id="dyDate">Сегодня</div>
+      <button id="dyNext" type="button" aria-label="Следующий день">›</button>
+    </div>
+    <div class="diary-sum" id="dySum"></div>
+    <p class="qadd-title">➕ Добавить запись</p>
+    <div class="diary-hint">Нажмите на кнопку — событие запишется с текущим временем. Затем нажмите на запись в списке, чтобы поправить время или добавить детали (мл, грудь, температуру).</div>
+    <div class="qadd" id="dyAdd"></div>
+    <ul class="diary-list" id="dyList"></ul>
+  </div>
+</div>
+
+<div id="viewDocs" hidden>
+  <div class="hero">
+    <div class="hero-plant">📄</div>
+    <h1>Документы без беготни</h1>
+    <p class="hero-sub">Что оформить после родов и какие выплаты не пропустить</p>
+    <div class="stem-wrap"><div class="stem-fill" id="docFill"></div></div>
+    <div class="hero-count" id="docCount">0 из 0 оформлено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="docsSearch">Поиск документов</label>
+      <input id="docsSearch" type="search" placeholder="Поиск документа…" aria-label="Поиск документа" autocomplete="off">
+      <button class="search-clear" id="docsSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="docsKids"></div>
+  </div>
+  <div class="dev-intro"><div>Справочная информация на 2026 год. Суммы индексируются, правила зависят от региона и могут меняться. Это ориентир, а не юридическая консультация — уточняйте на Госуслугах, в СФР и соцзащите.</div></div>
+  <main id="docsMain" class="sumka-main"></main>
+  <div class="no-results" id="docsNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="docsCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewVac" hidden>
+  <div class="hero">
+    <div class="hero-plant">💉</div>
+    <h1>Прививки под контролем</h1>
+    <p class="hero-sub">Национальный календарь РФ — по возрасту, без путаницы</p>
+    <div class="stem-wrap"><div class="stem-fill" id="vacFill"></div></div>
+    <div class="hero-count" id="vacCount">0 из 0 сделано</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="vacSearch">Поиск прививок</label>
+      <input id="vacSearch" type="search" placeholder="Поиск прививки…" aria-label="Поиск прививки" autocomplete="off">
+      <button class="search-clear" id="vacSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="vacKids"></div>
+  </div>
+  <div class="dev-intro"><div>Ориентир по национальному календарю РФ. Точные сроки и схема — индивидуально с педиатром (возможны медотводы и группы риска). Прививки по календарю бесплатны по ОМС.</div></div>
+  <main id="vacMain" class="sumka-main"></main>
+  <div class="no-results" id="vacNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="vacCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<div id="viewPreg" hidden>
+  <div class="hero">
+    <div class="hero-plant">🤰</div>
+    <h1>Спокойная беременность по неделям</h1>
+    <p class="hero-sub">Скрининги, анализы и подготовка — вовремя и по порядку</p>
+    <div class="stem-wrap"><div class="stem-fill" id="pregFill"></div></div>
+    <div class="hero-count" id="pregCount">0 из 0 выполнено</div>
+    <div class="search-wrap">
+      <span class="mag">🔍</span>
+      <label class="sr-only" for="pregSearch">Поиск шагов</label>
+      <input id="pregSearch" type="search" placeholder="Поиск шага…" aria-label="Поиск шага" autocomplete="off">
+      <button class="search-clear" id="pregSearchClear" aria-label="Очистить поиск">✕</button>
+    </div>
+    <div class="kids" id="pregKids"></div>
+  </div>
+  <div class="dev-intro"><div>Справочная информация. Сроки ориентировочные, ведение беременности индивидуально — следуйте назначениям вашего врача женской консультации.</div></div>
+  <main id="pregMain" class="sumka-main"></main>
+  <div class="no-results" id="pregNoResults">Ничего не найдено 🙈</div>
+  <div class="tools">
+    <button id="pregCollapseBtn" type="button">🔽 Свернуть всё</button>
+  </div>
+</div>
+
+<footer>
+  <div class="made-with">Создана с любовью <span class="heart">❤</span></div>
+  <div class="made-with"><a href="privacy.html" style="color:inherit">Конфиденциальность и данные</a></div>
+  <div class="social">
+    <a href="https://www.instagram.com/anastaaasia__/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="igGrad" x1="2" y1="22" x2="22" y2="2" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#F9CE34"/>
+            <stop offset="0.5" stop-color="#EE2A7B"/>
+            <stop offset="1" stop-color="#6228D7"/>
+          </linearGradient>
+        </defs>
+        <rect x="2.2" y="2.2" width="19.6" height="19.6" rx="5.6" stroke="url(#igGrad)" stroke-width="2"/>
+        <circle cx="12" cy="12" r="4.4" stroke="url(#igGrad)" stroke-width="2"/>
+        <circle cx="17.6" cy="6.4" r="1.25" fill="url(#igGrad)"/>
+      </svg>
+    </a>
+    <a href="https://t.me/mamaclub_ru" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#29A9EB" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.892-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.14.121.098.154.23.169.323.016.093.036.306.02.472z"/>
+      </svg>
+    </a>
+  </div>
+</footer>
+
+<!-- mobile sheet -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Совет по продукту">
+  <button class="sheet-close" id="sheetClose" aria-label="Закрыть">✕</button>
+  <div class="sheet-grip" id="sheetGrip"></div>
+  <div class="sheet-inner" id="sheetInner">
+    <div id="sheetContent"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="addBackdrop"></div>
+<div class="modal" id="addModal" role="dialog" aria-modal="true" aria-label="Новый продукт">
+  <div class="modal-head">
+    <h3 id="addTitle">Новый продукт</h3>
+    <button class="modal-x" id="addClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="addName">Название продукта</label>
+  <input id="addName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Кабачок с индейкой">
+  <label class="fld-label" for="addEmoji">Значок</label>
+  <input id="addEmoji" class="fld emoji-input" type="text" maxlength="4" autocomplete="off" placeholder="🥕">
+  <div class="emoji-grid" id="emojiGrid"></div>
+  <label class="fld-label" for="addDesc">Заметка</label>
+  <textarea id="addDesc" class="fld" placeholder="Как готовить, особенности, ваши наблюдения…"></textarea>
+  <button class="add-submit" id="addSubmit">Добавить продукт</button>
+</div>
+
+<div class="modal-backdrop" id="kidBackdrop"></div>
+<div class="modal" id="kidModal" role="dialog" aria-modal="true" aria-label="Ребёнок">
+  <div class="modal-head">
+    <h3 id="kidTitle">Ребёнок</h3>
+    <button class="modal-x" id="kidClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="kidName">Имя ребёнка</label>
+  <input id="kidName" class="fld" type="text" maxlength="30" autocomplete="name" placeholder="Например: Аня">
+  <button class="add-submit" id="kidSave">Сохранить</button>
+  <button class="pcard-del" id="kidDelete" type="button" style="margin-top:10px; display:none">🗑 Удалить ребёнка</button>
+</div>
+
+<div class="modal-backdrop" id="sAddBackdrop"></div>
+<div class="modal" id="sAddModal" role="dialog" aria-modal="true" aria-label="Добавить своё">
+  <div class="modal-head">
+    <h3 id="sAddTitle">Добавить своё</h3>
+    <button class="modal-x" id="sAddClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="sAddName">Название вещи</label>
+  <input id="sAddName" class="fld" type="text" maxlength="60" autocomplete="off" placeholder="Например: Плед">
+  <div class="restore-options" id="sRestoreOptions" hidden></div>
+  <button class="add-submit" id="sAddSave">Добавить</button>
+</div>
+
+<div class="modal-backdrop" id="bAddBackdrop"></div>
+<div class="modal" id="bAddModal" role="dialog" aria-modal="true" aria-label="Добавить покупку">
+  <div class="modal-head">
+    <h3 id="bAddTitle">Добавить своё</h3>
+    <button class="modal-x" id="bAddClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="bAddName">Название покупки</label>
+  <input id="bAddName" class="fld" type="text" maxlength="80" autocomplete="off" placeholder="Например: Конверт на выписку">
+  <div class="restore-options" id="bRestoreOptions" hidden></div>
+  <button class="add-submit" id="bAddSave">Добавить</button>
+</div>
+
+<div class="modal-backdrop" id="dyEditBackdrop"></div>
+<div class="modal" id="dyEditModal" role="dialog" aria-modal="true" aria-label="Запись дневника">
+  <div class="modal-head">
+    <h3 id="dyEditTitle">Запись</h3>
+    <button class="modal-x" id="dyEditClose" aria-label="Закрыть">✕</button>
+  </div>
+  <label class="fld-label" for="dyEditTime">Время</label>
+  <input id="dyEditTime" class="fld" type="time">
+  <label class="fld-label" for="dyEditNote">Заметка (по желанию)</label>
+  <textarea id="dyEditNote" class="fld" placeholder="Например: 120 мл, левая грудь / покакал / 37,2°"></textarea>
+  <button class="add-submit" id="dyEditSave">Сохранить</button>
+  <button class="pcard-del" id="dyEditDel" type="button" style="margin-top:10px">🗑 Удалить запись</button>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+<button class="fab-top" id="fabTop" aria-label="Наверх">↑</button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="scripts/app.js?v=80"></script>
+<script type="module" src="scripts/family-auth.js?v=80"></script>
+</body>
+</html>

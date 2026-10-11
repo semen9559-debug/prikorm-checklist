@@ -923,8 +923,13 @@ function applyThemeIcon(){
   // был ReferenceError, из-за которого не обновлялся цвет статус-бара.
   const icons = window.IC;
   if(hubButton && icons) hubButton.innerHTML = dark ? icons.sun : icons.moon;
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
+  document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+    const isLight = meta.getAttribute("media") === "(prefers-color-scheme: light)";
+    const isDark = meta.getAttribute("media") === "(prefers-color-scheme: dark)";
+    if(isLight) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
+    else if(isDark) meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
+    else meta.setAttribute("content", dark ? "#17140F" : "#FFF9F0");
+  });
 }
 applyThemeIcon();
 document.getElementById("themeToggle").addEventListener("click", ()=>{
