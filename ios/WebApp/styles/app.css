@@ -601,7 +601,7 @@
   .note-btn.has{ color:var(--sage-text); border-color:var(--sage-text); background:var(--sage-l); }
   .s-note{ display:none; padding:12px 10px 14px 46px; }
   .s-note.open{ display:block; }
-  .s-note textarea{ width:100%; min-height:46px; resize:vertical; border:1.5px solid var(--line2); border-radius:10px; padding:8px 10px; font-family:'Nunito',sans-serif; font-weight:600; font-size:13px; color:var(--ink); background:var(--cream); }
+  .s-note textarea{ width:100%; min-height:46px; resize:vertical; border:1.5px solid var(--line2); border-radius:10px; padding:8px 10px; font-family:'Nunito',sans-serif; font-weight:600; font-size:16px; color:var(--ink); background:var(--cream); }
   .s-del{ margin-top:6px; border:none; background:none; color:var(--warn-text); font-weight:800; font-size:12px; cursor:pointer; padding:2px 0; }
 
   /* ---- развитие: инфо-блоки ---- */
@@ -1065,7 +1065,7 @@ html[data-theme="dark"] .dev-insight-card{box-shadow:var(--sh-card);}
 .family-modal-body p{line-height:1.5;}
 .family-form{display:flex;flex-direction:column;gap:13px;}
 .family-form label,#familyInviteResult label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:800;color:var(--ink);}
-.family-form input,#familyInviteResult input{width:100%;border:1.5px solid var(--line2);border-radius:13px;background:var(--paper);padding:12px;font:inherit;color:var(--ink);}
+.family-form input,#familyInviteResult input{width:100%;border:1.5px solid var(--line2);border-radius:13px;background:var(--paper);padding:12px;font:inherit;font-size:16px;color:var(--ink);}
 .family-form input:focus,#familyInviteResult input:focus{outline:3px solid color-mix(in srgb,var(--sky) 30%,transparent);border-color:var(--sky-text);}
 .family-primary,.family-secondary,.family-danger,.family-actions button,.family-modal-buttons button{border:none;border-radius:13px;padding:12px 14px;font:inherit;font-weight:800;cursor:pointer;}
 .family-primary{width:100%;background:var(--sage);color:#fff;}
