@@ -19,6 +19,10 @@ final class ViewController: UIViewController {
         // Allow inline media; block autoplay of audio
         config.mediaTypesRequiringUserActionForPlayback = [.audio]
 
+        // The custom "app" scheme confuses WKWebView's content-mode heuristic
+        // into picking desktop layout; force mobile explicitly.
+        config.defaultWebpagePreferences.preferredContentMode = .mobile
+
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
