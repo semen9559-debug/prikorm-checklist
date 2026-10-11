@@ -1224,6 +1224,9 @@ html[data-theme="dark"] #mamaTabs .tab-slider::before{
    с ~3,9:1 до ~5,5:1 (large text AA+ — норма 3:1, перекрываем с запасом). */
 html[data-theme="dark"] .hero h1{
   background: linear-gradient(90deg, #8DC971, #62AEDB, #F08899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Тост в тёмной теме: оставляем светлый текст, как и было (#fff на тёмном). */
