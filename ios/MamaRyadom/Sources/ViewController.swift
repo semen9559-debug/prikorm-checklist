@@ -34,13 +34,15 @@ final class ViewController: UIViewController {
         webView.allowsBackForwardNavigationGestures = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never  // we handle safe areas in CSS
         webView.scrollView.bounces = true
+        webView.isOpaque = false
+
+        // Assign before applyBackground: it touches `view`, and reading an
+        // unset `view` inside loadView re-enters loadView forever.
+        view = webView
 
         // Guess from the system appearance before the page has loaded and
         // reported its real theme; avoids a black/white flash at boot.
         applyBackground(dark: UITraitCollection.current.userInterfaceStyle == .dark)
-        webView.isOpaque = false
-
-        view = webView
     }
 
     override func viewDidLoad() {
