@@ -223,6 +223,30 @@ begin
 end;
 $$;
 
+-- Удалить свой аккаунт целиком (правило App Store 5.1.1(v)).
+-- Семьи, которыми человек владеет, удаляются вместе с данными: у общего
+-- пространства не остаётся хозяина. В чужой семье его записи остаются у
+-- семьи, авторство переходит владельцу. Профиль и членство уходят каскадом.
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := auth.uid();
+  owned uuid;
+begin
+  if me is null then raise exception 'Authentication required'; end if;
+  for owned in select id from public.families where owner_id = me loop
+    delete from public.app_state where family_id = owned;
+    delete from public.family_invitations where family_id = owned;
+    delete from public.family_members where family_id = owned;
+    delete from public.families where id = owned;
+  end loop;
+  update public.app_state s set updated_by = f.owner_id
+  from public.families f
+  where s.family_id = f.id and s.updated_by = me;
+  delete from auth.users where id = me;
+end;
+$$;
+
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -308,8 +332,11 @@ grant execute on function
   public.leave_family(),
   public.remove_family_member(uuid),
   public.delete_family_data(),
-  public.delete_family()
+  public.delete_family(),
+  public.delete_my_account()
 to authenticated;
+-- Удаление аккаунта — только для вошедшего, не для анонимного ключа.
+revoke execute on function public.delete_my_account() from public, anon;
 
 /* ============================== realtime ================================ */
 
