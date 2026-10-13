@@ -1010,6 +1010,9 @@ html[data-theme="dark"] #mamaTabs .tab-slider{background:linear-gradient(145deg,
 #onbOverlay .obtn .od{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
 #onbOverlay label.fl{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:18px 2px 7px;}
 #onbOverlay input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);}
+/* iOS WebKit gives <input type=date> a native min width wider than the card. */
+#onbOverlay input[type="date"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;min-height:50px;text-align:left;}
+#onbOverlay input[type="date"]::-webkit-date-and-time-value{text-align:left;}
 #onbOverlay input:focus{outline:none;border-color:var(--sky-text);}
 #onbOverlay .odone{margin-top:22px;width:100%;background:var(--sage);color:#fff;font-weight:800;font-size:16px;padding:14px;border:none;border-radius:99px;cursor:pointer;}
 #onbOverlay .oskip{display:block;margin:14px auto 0;background:none;border:none;color:var(--ink-soft);font-weight:700;font-size:13.5px;cursor:pointer;}

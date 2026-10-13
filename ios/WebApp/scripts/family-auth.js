@@ -481,7 +481,8 @@ async function openFamily() {
     ${isOwner
       ? '<button type="button" class="family-danger" data-wipe>Удалить данные семьи с сервера</button>'
       : '<button type="button" class="family-danger" data-leave>Выйти из семьи</button>'}
-    <button type="button" class="family-danger" data-sign-out>Выйти из аккаунта</button>`);
+    <button type="button" class="family-danger" data-sign-out>Выйти из аккаунта</button>
+    <button type="button" class="family-danger" data-delete-account>Удалить аккаунт</button>`);
 
   modal.querySelector('[data-invite]')?.addEventListener('click', openInvite);
 
@@ -535,6 +536,20 @@ async function openFamily() {
     flushNow();
     await supabase.auth.signOut();
     modal.close();
+  });
+
+  modal.querySelector('[data-delete-account]').addEventListener('click', async () => {
+    const what = isOwner
+      ? 'Удалить аккаунт? Вместе с ним с сервера удалится семья и все её данные — у всех участников.'
+      : 'Удалить аккаунт? Вы выйдете из семьи, ваши записи останутся у семьи.';
+    if (!confirm(`${what} Записи на этом телефоне останутся. Отменить нельзя.`)) return;
+    if (!confirm('Точно удалить аккаунт? Это необратимо.')) return;
+    const { error } = await supabase.rpc('delete_my_account');
+    if (error) return notify(rpcError(error));
+    // Пользователя на сервере уже нет: выходим только локально.
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    modal.close();
+    notify('Аккаунт удалён');
   });
 }
 
@@ -627,7 +642,21 @@ async function loadClient() {
   }
 }
 
+/* В приложении для iPhone (оболочка грузит страницу по схеме app://) аккаунта
+   и семейной синхронизации пока нет: убираем входы и не грузим клиент. */
+const IN_IOS_APP = location.protocol === 'app:';
+
+function removeAccountEntryPoints() {
+  document.getElementById('profileBtn')?.remove();
+  document.querySelectorAll('[data-family-entry]').forEach(button => {
+    const separator = button.nextElementSibling;
+    if (separator?.classList.contains('drawer-separator')) separator.remove();
+    button.remove();
+  });
+}
+
 async function init() {
+  if (IN_IOS_APP) { removeAccountEntryPoints(); return; }
   observeHub();
   bindAccountControls();
   if (!isConfigured()) return;

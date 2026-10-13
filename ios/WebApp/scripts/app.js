@@ -913,7 +913,12 @@ function currentTheme(){ return document.documentElement.getAttribute("data-them
 function applyThemeIcon(){
   const b = document.getElementById("themeToggle");
   const dark = currentTheme()==="dark";
-  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  // Pin color-scheme only for a theme chosen in the app: a pinned "light"
+  // makes WebKit report prefers-color-scheme as light forever, so the
+  // follow-the-phone listener below never fires.
+  let chosen = null;
+  try{ chosen = localStorage.getItem(T_KEY); }catch(e){}
+  document.documentElement.style.colorScheme = chosen ? (dark ? "dark" : "light") : "";
   if(b){
     b.textContent = dark ? "☀️" : "🌙";
     b.setAttribute("aria-label", dark ? "Светлая тема" : "Тёмная тема");
@@ -944,7 +949,9 @@ try{
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   systemTheme.addEventListener('change', event=>{
     if(localStorage.getItem(T_KEY)) return;
-    document.documentElement.toggleAttribute('data-theme', event.matches);
+    // toggleAttribute would set data-theme="" — the dark styles need "dark".
+    if(event.matches) document.documentElement.setAttribute('data-theme','dark');
+    else document.documentElement.removeAttribute('data-theme');
     applyThemeIcon();
   });
 }catch(e){}
@@ -1595,7 +1602,7 @@ function devBirthDate(){
   try{ const o=JSON.parse(localStorage.getItem('mama-onb')||'null'); return o&&o.mode==='baby'&&o.date ? new Date(o.date+'T00:00:00') : null; }catch(e){ return null; }
 }
 function getSleepAgeIndex(birth){
-  try{ const saved=Number(localStorage.getItem(SLEEP_AGE_KEY)); if(Number.isInteger(saved)&&DEV_SLEEP[saved]) return saved; }catch(e){}
+  try{ const raw=localStorage.getItem(SLEEP_AGE_KEY); const saved=Number(raw); if(raw!==null&&raw!==''&&Number.isInteger(saved)&&DEV_SLEEP[saved]) return saved; }catch(e){}
   const months=birth ? Math.max(0,Math.floor(((new Date()-birth)/86400000)/30.44)) : 0;
   return Math.max(0,DEV_SLEEP.findIndex(x=>months>=x.from&&months<=x.to));
 }
@@ -2289,7 +2296,7 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     function playEnter(v){ if(reduced()) return; spring({from:0,to:1,damping:1.0,response:0.4,onUpdate:function(p){ v.style.opacity=String(p); v.style.transform='translateY('+((1-p)*8)+'px)'; }, onComplete:function(){ v.style.opacity=''; v.style.transform=''; }}); }
     function relayoutPillsIn(v){ requestAnimationFrame(function(){ [].forEach.call(v.querySelectorAll('.chips'), function(gr){ if(gr.__relayout) gr.__relayout(false); }); }); }
     views.forEach(function(v){ var shown=getComputedStyle(v).display!=='none';
-      new MutationObserver(function(){ var now=getComputedStyle(v).display!=='none'; if(now&&!shown){ playEnter(v); relayoutPillsIn(v); } shown=now; }).observe(v,{attributes:true,attributeFilter:['style','class']}); });
+      new MutationObserver(function(){ var now=getComputedStyle(v).display!=='none'; if(now&&!shown){ playEnter(v); relayoutPillsIn(v); } shown=now; }).observe(v,{attributes:true,attributeFilter:['style','class','hidden']}); });
 
     /* ===== 4. GLASS materialize (sheet / drawer) ===== */
     function materialize(el, blurPx){ if(reduced()) return; blurPx=blurPx||26;
@@ -3561,14 +3568,21 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     if(opener && opener !== document.body && document.body.contains(opener) && typeof opener.focus === "function") opener.focus();
   }
 
-  document.querySelectorAll(".modal, .sheet").forEach(function(el){
+  /* закрытые окна и меню прячем от VoiceOver: иначе он читает их поверх экрана */
+  function setShown(el, shown){
+    el.inert = !shown;
+    if(shown) el.removeAttribute("aria-hidden"); else el.setAttribute("aria-hidden", "true");
+  }
+
+  document.querySelectorAll(".modal, .sheet, .drawer").forEach(function(el){
     var wasOpen = el.classList.contains("open");
+    setShown(el, wasOpen);
     new MutationObserver(function(){
       var isOpen = el.classList.contains("open");
       if(isOpen === wasOpen) return;
       wasOpen = isOpen;
-      if(isOpen) onOpened(el, document.activeElement);
-      else onClosed(el);
+      if(isOpen){ setShown(el, true); onOpened(el, document.activeElement); }
+      else { onClosed(el); setShown(el, false); }
     }).observe(el, { attributes:true, attributeFilter:["class"] });
   });
 
